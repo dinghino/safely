@@ -1,11 +1,11 @@
 {
   "name": "safely",
+  "devDependencies": {
+    "@biomejs/biome": "^2.2.4",
+    "turbo": "^2.5.6"
+  },
+  "packageManager": "bun@1.2.22",
   "private": true,
-  "type": "module",
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
   "scripts": {
     "check": "biome check --write .",
     "dev": "turbo dev",
@@ -16,10 +16,6 @@
     "dev:server": "turbo -F @safely/backend dev",
     "dev:setup": "turbo -F @safely/backend dev:setup"
   },
-  "dependencies": {},
-  "devDependencies": {
-    "turbo": "^2.5.4",
-    "@biomejs/biome": "^2.2.0"
-  },
-  "packageManager": "bun@1.2.21"
+  "type": "module",
+  "workspaces": ["apps/*", "packages/*"]
 }

@@ -1,14 +1,11 @@
 'use client'
+
 /** @format */
 
-import Loader from "@/components/loader";
-import { Authenticated, Unauthenticated } from "convex/react";
+import { Authenticated, Unauthenticated } from 'convex/react'
+import Loader from '@/components/loader'
 
-export default function AuthenticatedLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
       <Authenticated>{children}</Authenticated>
@@ -16,5 +13,5 @@ export default function AuthenticatedLayout({
         <Loader />
       </Unauthenticated>
     </>
-  );
+  )
 }

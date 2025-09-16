@@ -1,12 +1,12 @@
 /** @format */
 
-import { defineTable } from "convex/server";
-import { v } from "convex/values";
+import { defineTable } from 'convex/server'
+import { v } from 'convex/values'
 
 export default defineTable({
   completed: v.boolean(),
   text: v.string(),
-  created_by: v.id("users"),
+  created_by: v.id('users'),
 })
-  .index("byCreatedBy", ["created_by"])
-  .index("byCompleted", ["completed"]);
+  .index('byCreatedBy', ['created_by'])
+  .index('byCompleted', ['completed'])

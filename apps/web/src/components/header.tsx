@@ -1,17 +1,17 @@
 /** @format */
 
-"use client";
-import Link from "next/link";
-import { ModeToggle } from "./mode-toggle";
-import { Authenticated, Unauthenticated } from "convex/react";
-import { SignInButton, UserButton } from "@clerk/nextjs";
+'use client'
+import { SignInButton, UserButton } from '@clerk/nextjs'
+import { Authenticated, Unauthenticated } from 'convex/react'
+import Link from 'next/link'
+import { ModeToggle } from './mode-toggle'
 
 export default function Header() {
   const links = [
-    { to: "/", label: "Home" },
-    { to: "/dashboard", label: "Dashboard" },
-    { to: "/todos", label: "Todos" },
-  ] as const;
+    { to: '/', label: 'Home' },
+    { to: '/dashboard', label: 'Dashboard' },
+    { to: '/todos', label: 'Todos' },
+  ] as const
 
   return (
     <div>
@@ -22,7 +22,7 @@ export default function Header() {
               <Link key={to} href={to}>
                 {label}
               </Link>
-            );
+            )
           })}
         </nav>
         <div className="flex items-center gap-2">
@@ -37,5 +37,5 @@ export default function Header() {
       </div>
       <hr />
     </div>
-  );
+  )
 }

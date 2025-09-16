@@ -32,7 +32,7 @@ export default function RootLayout({
 			>
 				<ClerkProvider>
 					<Providers>
-						<div className="grid grid-rows-[auto_1fr] h-svh">
+						<div className="grid h-svh grid-rows-[auto_1fr]">
 							<Header />
 							{children}
 						</div>

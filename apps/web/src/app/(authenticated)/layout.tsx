@@ -4,14 +4,20 @@
 
 import { Authenticated, Unauthenticated } from 'convex/react'
 import Loader from '@/components/loader'
+import { ClerkLoaded, ClerkLoading } from '@clerk/nextjs'
 
 export default function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
-      <Authenticated>{children}</Authenticated>
-      <Unauthenticated>
+      <ClerkLoading>
         <Loader />
-      </Unauthenticated>
+      </ClerkLoading>
+      <ClerkLoaded>
+        <Authenticated>{children}</Authenticated>
+        <Unauthenticated>
+          <Loader />
+        </Unauthenticated>
+      </ClerkLoaded>
     </>
   )
 }

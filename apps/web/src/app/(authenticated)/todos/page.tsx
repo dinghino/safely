@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
+import { toast } from 'sonner'
 
 export default function TodosPage() {
   const [newTodoText, setNewTodoText] = useState('')
@@ -23,16 +24,13 @@ export default function TodosPage() {
     const text = newTodoText.trim()
     if (!text) return
     await createTodoMutation({ text })
+    toast.success('Todo added!')
     setNewTodoText('')
   }
 
-  const handleToggleTodo = (id: Id<'todos'>, currentCompleted: boolean) => {
-    toggleTodoMutation({ id, completed: !currentCompleted })
-  }
-
-  const handleDeleteTodo = (id: Id<'todos'>) => {
-    deleteTodoMutation({ id })
-  }
+  const handleToggleTodo = (id: Id<'todos'>, current: boolean) => toggleTodoMutation({ id, completed: !current })
+  const handleDeleteTodo = (id: Id<'todos'>) => deleteTodoMutation({ id })
+  
 
   return (
     <div className="mx-auto w-full max-w-md py-10">
@@ -84,6 +82,7 @@ export default function TodosPage() {
                     size="icon"
                     onClick={() => handleDeleteTodo(todo._id)}
                     aria-label="Delete todo"
+                    className='cursor-pointer'
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>

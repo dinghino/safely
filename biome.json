@@ -57,7 +57,8 @@
         "useEnumInitializers": "error",
         "useNumberNamespace": "error",
         "useSelfClosingElements": "error",
-        "useSingleVarDeclarator": "error"
+        "useSingleVarDeclarator": "error",
+        "noNonNullAssertion": "off"
       }
     }
   },
@@ -71,12 +72,20 @@
       "bracketSameLine": false,
       "quoteStyle": "single",
       "attributePosition": "auto",
-      "bracketSpacing": true
+      "bracketSpacing": true,
+      "indentStyle": "space",
+      "indentWidth": 2
     }
   },
   "html": { "formatter": { "selfCloseVoidElements": "always" } },
   "overrides": [
-    { "includes": ["*.jsonc"], "javascript": { "formatter": { "trailingCommas": "none" } } }
+    {
+      "includes": ["*.jsonc"],
+      "javascript": { "formatter": { "trailingCommas": "none" } }
+    }
   ],
-  "assist": { "enabled": null, "actions": { "source": { "organizeImports": "on" } } }
+  "assist": {
+    "enabled": null,
+    "actions": { "source": { "organizeImports": "on" } }
+  }
 }

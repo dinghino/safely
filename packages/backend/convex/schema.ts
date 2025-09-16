@@ -1,9 +1,8 @@
-import { defineSchema, defineTable } from "convex/server";
-import { v } from "convex/values";
+import { defineSchema } from "convex/server";
+import { users, todos } from "./schemas";
 
 export default defineSchema({
-	todos: defineTable({
-		text: v.string(),
-		completed: v.boolean(),
-	}),
+  // Other tables here...
+  users,
+  todos,
 });

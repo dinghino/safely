@@ -1,0 +1,48 @@
+/** @format */
+
+import { v, type Validator } from "convex/values";
+import type { UserJSON } from "@clerk/backend";
+import { internalMutation, query } from "./_generated/server";
+import { getCurrentUser, userByExternalId } from "./auth";
+
+export const current = query({
+  handler: async (ctx) => await getCurrentUser(ctx),
+});
+
+// ----------------------------------------------------------------------------
+// Internals for syncing Clerk users via webhooks
+// ----------------------------------------------------------------------------
+
+export const upsertFromClerk = internalMutation({
+  args: { data: v.any() as Validator<UserJSON> }, // no runtime validation, trust Clerk
+  async handler(ctx, { data }) {
+    const userAttributes = {
+      name: `${data.first_name} ${data.last_name}`,
+      external_id: data.id,
+    };
+
+    const user = await userByExternalId(ctx, data.id);
+    if (user === null) {
+      await ctx.db.insert("users", userAttributes);
+    } else {
+      await ctx.db.patch(user._id, userAttributes);
+    }
+  },
+});
+
+export const deleteFromClerk = internalMutation({
+  args: { clerkUserId: v.string() },
+  async handler(ctx, { clerkUserId }) {
+    const user = await userByExternalId(ctx, clerkUserId);
+
+    if (user !== null) {
+      await ctx.db.delete(user._id);
+    } else {
+      console.warn(
+        `Can't delete user, there is none for Clerk user ID: ${clerkUserId}`
+      );
+    }
+  },
+});
+
+// ----------------------------------------------------------------------------

@@ -9,10 +9,13 @@
   "license": "ISC",
   "description": "",
   "devDependencies": {
-    "@types/node": "^24.3.0",
+    "@types/node": "^24.5.0",
     "typescript": "^5.9.2"
   },
   "dependencies": {
-    "convex": "^1.25.4"
+    "@clerk/backend": "^2.14.0",
+    "@convex-dev/geospatial": "^0.1.9",
+    "convex": "^1.27.0",
+    "svix": "^1.76.1"
   }
 }

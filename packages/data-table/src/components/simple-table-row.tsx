@@ -1,5 +1,5 @@
 import { flexRender, type Row } from '@tanstack/react-table'
-import { TableCell, TableRow as TableRowPrimitive } from '@/components/ui/table'
+import { TableCell, TableRow as TableRowPrimitive } from '@workspace/ui/components/table'
 import { cn } from '@/lib/utils'
 
 export namespace SimpleRow {

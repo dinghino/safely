@@ -13,7 +13,7 @@ import {
 } from '@dnd-kit/core'
 import { restrictToVerticalAxis } from '@dnd-kit/modifiers'
 
-import { createContext } from '@safely/react-utils'
+import { createContext } from '@workspace/react-utils'
 import type { DragEndEventHandler, SortableItem } from './types'
 import { reorderItems } from './utils'
 

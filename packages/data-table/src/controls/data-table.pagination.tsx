@@ -7,14 +7,14 @@ import {
   ChevronsRightIcon,
 } from 'lucide-react'
 
-import { Button } from '@/components/ui/button'
+import { Button } from '@workspace/ui/components/button'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
+} from '@workspace/ui/components/select'
 
 import { useDataTable } from '../data-table.context'
 

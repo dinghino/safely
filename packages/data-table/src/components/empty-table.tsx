@@ -1,7 +1,7 @@
 import { XIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
-import { TableCell, TableRow } from '@/components/ui/table'
+import { Button } from '@workspace/ui/components/button'
+import { TableCell, TableRow } from '@workspace/ui/components/table'
 
 import { useDataTable } from '../data-table.context'
 import { EmptyTableIcon } from './empty-table-icon'

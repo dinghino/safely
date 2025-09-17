@@ -1,8 +1,8 @@
 'use client'
 
 import { useMutation, useQuery } from 'convex/react'
-import { api } from '@safely/backend/convex/_generated/api'
-import type { Doc } from '@safely/backend/convex/_generated/dataModel'
+import { api } from '@workspace/backend/convex/_generated/api'
+import type { Doc } from '@workspace/backend/convex/_generated/dataModel'
 
 import {
   createColumnHelper,
@@ -11,10 +11,10 @@ import {
   DataTable,
   DataTableToolbar,
   useDataTable,
-} from '@safely/data-table'
+} from '@workspace/data-table'
 import dayjs from '@/lib/dayjs'
 import { useMemo } from 'react'
-import { Badge } from '@/components/ui/badge'
+import { Badge } from '@workspace/ui/components/badge'
 import { useIsCurrent } from '../hooks/use-is-current'
 import { useIsActive } from '../hooks/use-is-active'
 import { cn } from '@/lib/utils'
@@ -23,9 +23,9 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+} from '@workspace/ui/components/dropdown-menu'
 import { MoreVertical } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { Button } from '@workspace/ui/components/button'
 
 type Device = Doc<'devices'> & { id: string }
 
@@ -128,7 +128,7 @@ function DeviceRowActions({ device }: { device: Device }) {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger>
+      <DropdownMenuTrigger asChild>
         <Button size="icon" variant="ghost">
           <span className="sr-only">Open menu</span>
           <MoreVertical />

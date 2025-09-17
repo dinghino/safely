@@ -4,10 +4,10 @@ import { useState, useEffect } from 'react'
 import type { Column } from '@tanstack/react-table'
 import { Search, X } from 'lucide-react'
 
-import { useDebounce } from '@safely/react-utils'
+import { useDebounce } from '@workspace/react-utils'
 
-import { Input } from '@/components/ui/input'
-import { Button } from '@/components/ui/button'
+import { Input } from '@workspace/ui/components/input'
+import { Button } from '@workspace/ui/components/button'
 import { cn } from '@/lib/utils'
 
 export namespace DataTableSearchFilter {

@@ -1,7 +1,7 @@
 'use client'
 
 import { flexRender } from '@tanstack/react-table'
-import { Skeleton } from '@/components/ui/skeleton'
+import { Skeleton } from '@workspace/ui/components/skeleton'
 import {
   Table,
   TableBody,
@@ -9,7 +9,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table'
+} from '@workspace/ui/components/table'
 import { cn } from '@/lib/utils'
 import { DataTableColumnHeader } from './components/column-header'
 import { EmptyTableError } from './components/empty-table'

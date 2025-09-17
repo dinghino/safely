@@ -9,8 +9,8 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select'
-import { Button } from '@/components/ui/button'
+} from '@workspace/ui/components/select'
+import { Button } from '@workspace/ui/components/button'
 
 export namespace DataTableSelectFilter {
   export type Props<T extends object> = {

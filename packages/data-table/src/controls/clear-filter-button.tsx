@@ -1,7 +1,7 @@
 'use client'
 
 import { XIcon } from 'lucide-react'
-import { Button } from '@/components/ui/button'
+import { Button } from '@workspace/ui/components/button'
 import { useDataTable } from '../data-table.context'
 
 export function ClearFiltersButton() {

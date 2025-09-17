@@ -2,7 +2,7 @@
 
 import { Settings2 } from 'lucide-react'
 
-import { Button } from '@/components/ui/button'
+import { Button } from '@workspace/ui/components/button'
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -10,7 +10,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+} from '@workspace/ui/components/dropdown-menu'
 
 import { useDataTable } from '../data-table.context'
 

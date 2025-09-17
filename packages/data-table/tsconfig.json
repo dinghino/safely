@@ -1,4 +1,5 @@
 {
+  "extends": "@workspace/typescript-config/react-library.json",
   "compilerOptions": {
     // Environment setup & latest features
     "lib": ["ESNext", "DOM", "DOM.Iterable"],
@@ -10,8 +11,6 @@
 
     // Library mode
     "moduleResolution": "node",
-    "declaration": true,
-    "declarationMap": true,
     "outDir": "dist",
     "rootDir": "src",
     "noEmit": false,
@@ -29,9 +28,10 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noPropertyAccessFromIndexSignature": false,
-    "baseUrl": ".",
+    "baseUrl": "./src",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./*"],
+      "@workspace/ui/*": ["../../../packages/ui/src/*"]
     }
   },
   "include": ["src/**/*"],

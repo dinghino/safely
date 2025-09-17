@@ -3,7 +3,7 @@ import { SignInButton, UserButton } from '@clerk/nextjs'
 import { Authenticated, Unauthenticated } from 'convex/react'
 import Link from 'next/link'
 import { ModeToggle } from './mode-toggle'
-import { Button } from './ui/button'
+import { Button } from '@workspace/ui/components/button'
 
 export default function Header() {
   const links = [

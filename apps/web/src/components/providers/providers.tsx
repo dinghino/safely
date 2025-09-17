@@ -3,9 +3,10 @@
 import { useAuth } from '@clerk/nextjs'
 import { ConvexReactClient } from 'convex/react'
 import { ConvexProviderWithClerk } from 'convex/react-clerk'
-import { NuqsAdapter } from '@safely/nuqs'
+import { NuqsAdapter } from '@workspace/nuqs'
 import { AuthProvider } from './auth-provider'
-import { ThemeProvider } from './theme-provider'
+// import { ThemeProvider } from './theme-provider'
+import { ThemeProvider } from '@workspace/ui/providers/theme-provider'
 
 const convex = new ConvexReactClient(process.env.NEXT_PUBLIC_CONVEX_URL!)
 

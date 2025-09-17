@@ -1,10 +1,10 @@
 'use client'
 
-import { api } from '@safely/backend/convex/_generated/api'
+import { api } from '@workspace/backend/convex/_generated/api'
 import { useMutation, useQuery } from 'convex/react'
 import { Trash2 } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
+import { Badge } from '@workspace/ui/components/badge'
+import { Button } from '@workspace/ui/components/button'
 import { dayjs } from '@/lib/dayjs'
 import { cn } from '@/lib/utils'
 import { useDeviceInfo } from '../hooks'

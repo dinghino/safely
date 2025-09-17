@@ -1,14 +1,14 @@
 'use client'
 
-import { api } from '@safely/backend/convex/_generated/api'
-import type { Id } from '@safely/backend/convex/_generated/dataModel'
+import { api } from '@workspace/backend/convex/_generated/api'
+import type { Id } from '@workspace/backend/convex/_generated/dataModel'
 import { useMutation, useQuery } from 'convex/react'
 import { Loader2, Trash2 } from 'lucide-react'
 import { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Input } from '@/components/ui/input'
+import { Button } from '@workspace/ui/components/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@workspace/ui/components/card'
+import { Checkbox } from '@workspace/ui/components/checkbox'
+import { Input } from '@workspace/ui/components/input'
 import { toast } from 'sonner'
 
 export default function TodosPage() {

@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext } from '@safely/react-utils'
+import { createContext } from '@workspace/react-utils'
 import {
   type ColumnDef,
   type ColumnFiltersState,

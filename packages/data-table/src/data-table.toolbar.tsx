@@ -1,7 +1,7 @@
 'use client'
 
 import { cn } from '@/lib/utils'
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
+import { ScrollArea, ScrollBar } from '@workspace/ui/components/scroll-area'
 import { ClearFiltersButton } from './controls/clear-filter-button'
 import { DataTableColumnToggle } from './controls/column-toggle'
 

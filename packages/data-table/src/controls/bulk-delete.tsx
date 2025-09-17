@@ -12,9 +12,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from '@/components/ui/alert-dialog'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
+} from '@workspace/ui/components/alert-dialog'
+import { Button } from '@workspace/ui/components/button'
+import { Badge } from '@workspace/ui/components/badge'
 import { useDataTable } from '../data-table.context'
 import { useTransition } from 'react'
 

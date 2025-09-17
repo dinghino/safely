@@ -1,4 +1,4 @@
-import { parseAsIndex, parseAsInteger, useQueryStates } from '@safely/nuqs'
+import { parseAsIndex, parseAsInteger, useQueryStates } from '@workspace/nuqs'
 
 type PaginationDefaults = {
   pageIndex?: number

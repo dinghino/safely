@@ -4,7 +4,7 @@ import type { UniqueIdentifier } from '@dnd-kit/core'
 import { useSortable } from '@dnd-kit/sortable'
 import { GripVertical } from 'lucide-react'
 
-import { Button } from '@/components/ui/button'
+import { Button } from '@workspace/ui/components/button'
 import { cn } from '@/lib/utils'
 
 export namespace DragHandle {

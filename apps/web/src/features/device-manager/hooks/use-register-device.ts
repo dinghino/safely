@@ -1,6 +1,6 @@
 import { useMutation } from "convex/react"
 import { useDeviceInfo } from "./use-device-info"
-import { api } from "@safely/backend/convex/_generated/api"
+import { api } from "@workspace/backend/convex/_generated/api"
 
 export function useRegisterDevice() {
   const deviceInfo = useDeviceInfo()

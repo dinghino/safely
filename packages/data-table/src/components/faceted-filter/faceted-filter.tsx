@@ -2,8 +2,8 @@ import { useMemo } from 'react'
 import { CheckIcon, Loader, PlusCircleIcon } from 'lucide-react'
 import { type IconName, DynamicIcon } from 'lucide-react/dynamic'
 
-import { Button } from '@/components/ui/button'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Button } from '@workspace/ui/components/button'
+import { Popover, PopoverContent, PopoverTrigger } from '@workspace/ui/components/popover'
 import {
   Command,
   CommandEmpty,
@@ -12,9 +12,9 @@ import {
   CommandItem,
   CommandList,
   CommandSeparator,
-} from '@/components/ui/command'
-import { Separator } from '@/components/ui/separator'
-import { Badge } from '@/components/ui/badge'
+} from '@workspace/ui/components/command'
+import { Separator } from '@workspace/ui/components/separator'
+import { Badge } from '@workspace/ui/components/badge'
 import { cn } from '@/lib/utils'
 
 export namespace FacetedFilter {

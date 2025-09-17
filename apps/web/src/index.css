@@ -1,29 +1,2 @@
-@import "tailwindcss";
-@import "tw-animate-css";
 @import '@clerk/themes/shadcn.css';
-@import "./theme.css";
 @import "./content-grid.css";
-@custom-variant dark (&:where(.dark, .dark *));
-
-@theme {
-  --font-sans:
-    "Inter", "Geist", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
-    "Segoe UI Symbol", "Noto Color Emoji";
-}
-
-
-html,
-body {
-  @media (prefers-color-scheme: dark) {
-    color-scheme: dark;
-  }
-}
-
-@layer base {
-  * {
-    @apply border-border outline-ring/50;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
-}

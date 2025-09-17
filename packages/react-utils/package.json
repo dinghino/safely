@@ -1,5 +1,5 @@
 {
-  "name": "@safely/react-utils",
+  "name": "@workspace/react-utils",
   "version": "1.0.0",
   "type": "module",
   "main": "dist/index.js",
@@ -31,6 +31,8 @@
     "@types/bun": "latest",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
-    "tsup": "^8.5.0"
+    "tsup": "^8.5.0",
+    "@workspace/eslint-config": "workspace:^",
+    "@workspace/typescript-config": "workspace:*"
   }
 }

@@ -3,6 +3,7 @@
 import { DashboardHero } from './dashboard.hero'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { DeviceManager } from '@/features/device-manager'
+import { DevicesTable } from '@/features/device-manager/components'
 
 export default function Dashboard() {
   return (
@@ -22,13 +23,14 @@ export default function Dashboard() {
 
 function AuthContent() {
   return (
-    <main className="content-grid">
+    <main className="py-4 content-grid">
       <DashboardHero />
-      <div>{/* <DeviceInfoComponent /> */}</div>
+      {/* <div><DeviceInfoComponent /></div> */}
       <Card>
         <CardHeader>Device Manager</CardHeader>
         <CardContent>
           <DeviceManager />
+          <DevicesTable />
         </CardContent>
       </Card>
     </main>

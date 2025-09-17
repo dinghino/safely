@@ -8,7 +8,7 @@ export function DashboardHero() {
   const user = useUser()
   const privateData = useQuery(api.privateData.get)
   return (
-    <header>
+    <header className="space-y-2 py-4">
       <h1 className="font-bold text-2xl">Dashboard</h1>
       <p>Welcome {user.user?.fullName}</p>
       <p>privateData: {privateData?.message}</p>

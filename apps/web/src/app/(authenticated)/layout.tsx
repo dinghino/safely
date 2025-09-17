@@ -1,10 +1,9 @@
 'use client'
 
-/** @format */
-
+import { ClerkLoaded, ClerkLoading } from '@clerk/nextjs'
 import { Authenticated, Unauthenticated } from 'convex/react'
 import Loader from '@/components/loader'
-import { ClerkLoaded, ClerkLoading } from '@clerk/nextjs'
+
 
 export default function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
   return (

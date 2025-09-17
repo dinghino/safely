@@ -1,29 +1,36 @@
-'use client'
-
-import { SignInButton, UserButton, useUser } from '@clerk/nextjs'
-import { api } from '@safely/backend/convex/_generated/api'
-import { Authenticated, AuthLoading, Unauthenticated, useQuery } from 'convex/react'
+// import { Authenticated, AuthLoading, Unauthenticated } from 'convex/react'
+// import DeviceInfoComponent from './device-info'
+import { DashboardHero } from './dashboard.hero'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { DeviceManager } from '@/features/device-manager'
 
 export default function Dashboard() {
-  const user = useUser()
-  const privateData = useQuery(api.privateData.get)
-
   return (
     <>
-      <Authenticated>
-        <div>
-          <h1>Dashboard</h1>
-          <p>Welcome {user.user?.fullName}</p>
-          <p>privateData: {privateData?.message}</p>
-          <UserButton />
-        </div>
-      </Authenticated>
+      {/* <Authenticated> */}
+      <AuthContent />
+      {/* </Authenticated>
       <Unauthenticated>
-        <SignInButton />
+        {null}
       </Unauthenticated>
       <AuthLoading>
         <div>Loading...</div>
-      </AuthLoading>
+      </AuthLoading> */}
     </>
+  )
+}
+
+function AuthContent() {
+  return (
+    <main className="content-grid">
+      <DashboardHero />
+      <div>{/* <DeviceInfoComponent /> */}</div>
+      <Card>
+        <CardHeader>Device Manager</CardHeader>
+        <CardContent>
+          <DeviceManager />
+        </CardContent>
+      </Card>
+    </main>
   )
 }

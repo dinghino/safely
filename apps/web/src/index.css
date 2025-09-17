@@ -2,7 +2,7 @@
 @import "tw-animate-css";
 @import '@clerk/themes/shadcn.css';
 @import "./theme.css";
-
+@import "./content-grid.css";
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {

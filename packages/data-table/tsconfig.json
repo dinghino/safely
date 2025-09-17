@@ -12,7 +12,6 @@
     // Library mode
     "moduleResolution": "node",
     "outDir": "dist",
-    "rootDir": "src",
     "noEmit": false,
 
     // Best practices

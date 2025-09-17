@@ -1,8 +1,7 @@
 import { defineSchema } from 'convex/server'
-import { todos, users } from './schemas'
+import * as schema from './schemas'
 
 export default defineSchema({
+  ...schema,
   // Other tables here...
-  users,
-  todos,
 })

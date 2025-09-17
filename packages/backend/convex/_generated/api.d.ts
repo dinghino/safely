@@ -9,6 +9,7 @@
  */
 
 import type * as auth_index from "../auth/index.js";
+import type * as devices from "../devices.js";
 import type * as healthCheck from "../healthCheck.js";
 import type * as http from "../http.js";
 import type * as privateData from "../privateData.js";
@@ -32,6 +33,7 @@ import type {
  */
 declare const fullApi: ApiFromModules<{
   "auth/index": typeof auth_index;
+  devices: typeof devices;
   healthCheck: typeof healthCheck;
   http: typeof http;
   privateData: typeof privateData;

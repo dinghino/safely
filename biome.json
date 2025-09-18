@@ -39,7 +39,11 @@
     "enabled": true,
     "rules": {
       "recommended": true,
-      "correctness": { "useExhaustiveDependencies": "info" },
+      "correctness": { 
+        "useExhaustiveDependencies": "info",
+        "useJsxKeyInIterable": "off",
+        "noChildrenProp": "off"
+      },
       "nursery": {
         "useSortedClasses": {
           "level": "warn",
@@ -59,6 +63,16 @@
         "useSelfClosingElements": "error",
         "useSingleVarDeclarator": "error",
         "noNonNullAssertion": "off"
+      },
+      "a11y": {
+        "useValidAnchor": "off"
+      },
+      "complexity": {
+        "noBannedTypes": "off"
+      },
+      "suspicious": {
+        "noExplicitAny": "off",
+        "noArrayIndexKey": "off"
       }
     }
   },

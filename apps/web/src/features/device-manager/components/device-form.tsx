@@ -1,34 +1,45 @@
 'use client'
 
+import z from 'zod/v4'
+import { toast } from 'sonner'
 import { useMutation } from 'convex/react'
-import type { Device } from '../types'
 import { api } from '@workspace/backend/api'
-import { Input } from '@workspace/ui/components/input'
-import { Button } from '@workspace/ui/components/button'
+import { useAppForm } from '@workspace/form'
+import type { Device } from '../types'
 
 /**
  * Allow renaming a device.
- * This will be expanded with more fields to edit the device properties when
+ * @note This will be expanded with more fields to edit the device properties when
  * we add them
- * @todo refactor with tanstac/react-form
- * @see {@link https://tanstack.com/form}
- * @see {@link https://www.youtube.com/watch?v=YJ3rW85fnKo} for quickstart
  */
-
 export function DeviceForm({ device }: { device: Device }) {
   const rename = useMutation(api.devices.renameDevice)
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const form = useAppForm({
+    defaultValues: { name: device.name ?? '' },
+    validators: {
+      onChange: z.object({ name: z.string() }),
+    },
+    onSubmit: async ({ value }) => {
+      toast.promise(rename({ deviceId: device._id, name: value.name }), {
+        loading: 'Renaming device...',
+        success: 'Device renamed',
+        error: 'Failed to rename device',
+      })
+    },
+  })
+
+  function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    const formData = new FormData(e.target as HTMLFormElement)
-    const name = formData.get('name') as string
-    rename({ deviceId: device._id, name })
+    form.handleSubmit()
   }
 
   return (
-    <form className="mt-4 flex w-full gap-2" onSubmit={handleSubmit}>
-      <Input name="name" defaultValue={device.name} placeholder="Enter new device name" />
-      <Button type="submit">Rename</Button>
+    <form className="mt-4 flex w-full flex-col gap-2" onSubmit={handleSubmit}>
+      <form.AppField name="name" children={(field) => <field.TextField />} />
+      <form.AppForm>
+        <form.SubmitButton>Submit</form.SubmitButton>
+      </form.AppForm>
     </form>
   )
 }

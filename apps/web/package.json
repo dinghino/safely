@@ -13,6 +13,7 @@
     "@tanstack/react-form": "^1.21.1",
     "@workspace/backend": "workspace:*",
     "@workspace/data-table": "workspace:*",
+    "@workspace/form": "workspace:*",
     "@workspace/nuqs": "workspace:*",
     "@workspace/react-utils": "workspace:*",
     "@workspace/ui": "workspace:*",

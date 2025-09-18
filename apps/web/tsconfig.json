@@ -6,7 +6,8 @@
     "baseUrl": "./src",
     "paths": {
       "@/*": ["./*"],
-      "@workspace/ui/*": ["../../packages/ui/src/*"]
+      "@workspace/ui/*": ["../../packages/ui/src/*"],
+      "@workspace/form/*": ["../../packages/form/src/*"]
     }
   },
   "include": [

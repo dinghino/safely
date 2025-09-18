@@ -46,6 +46,7 @@
         "@tanstack/react-form": "^1.21.1",
         "@workspace/backend": "workspace:*",
         "@workspace/data-table": "workspace:*",
+        "@workspace/form": "workspace:*",
         "@workspace/nuqs": "workspace:*",
         "@workspace/react-utils": "workspace:*",
         "@workspace/ui": "workspace:*",
@@ -133,6 +134,27 @@
         "globals": "^15.15.0",
         "typescript": "^5.9.2",
         "typescript-eslint": "^8.44.0",
+      },
+    },
+    "packages/form": {
+      "name": "@workspace/form",
+      "version": "0.0.0",
+      "dependencies": {
+        "@tanstack/react-form": "^1.21.1",
+        "@workspace/ui": "workspace:*",
+        "lucide-react": "^0.544.0",
+        "react": "^19.1.1",
+        "zod": "^4.1.9",
+      },
+      "devDependencies": {
+        "@tailwindcss/postcss": "^4.1.13",
+        "@turbo/gen": "^2.5.6",
+        "@types/node": "^24.5.2",
+        "@types/react": "^19.1.13",
+        "@types/react-dom": "^19.1.9",
+        "@workspace/eslint-config": "workspace:*",
+        "@workspace/typescript-config": "workspace:*",
+        "typescript": "^5.9.2",
       },
     },
     "packages/nuqs": {
@@ -808,6 +830,8 @@
     "@workspace/data-table": ["@workspace/data-table@workspace:packages/data-table"],
 
     "@workspace/eslint-config": ["@workspace/eslint-config@workspace:packages/eslint-config"],
+
+    "@workspace/form": ["@workspace/form@workspace:packages/form"],
 
     "@workspace/nuqs": ["@workspace/nuqs@workspace:packages/nuqs"],
 

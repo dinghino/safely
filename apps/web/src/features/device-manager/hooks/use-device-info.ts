@@ -1,5 +1,5 @@
-import { useMemo } from "react"
-import { useDeviceId } from "./use-device-id"
+import { useMemo } from 'react'
+import { useDeviceId } from './use-device-id'
 
 interface DeviceInfo {
   deviceId: string
@@ -12,13 +12,7 @@ interface DeviceInfo {
 }
 export function useDeviceInfo() {
   const [deviceId] = useDeviceId()
-  return useMemo(() => {
-    return {
-      deviceId,
-      ...gatherDeviceInfo()
-    }
-  }, [deviceId])
-
+  return useMemo(() => ({ deviceId, ...gatherDeviceInfo() }), [deviceId])
 }
 
 const gatherDeviceInfo = () => {

@@ -6,7 +6,7 @@ import { Button } from "@workspace/ui/components/button"
 import { useMutation } from "convex/react"
 import { Loader2, RefreshCcw, ClockIcon } from "lucide-react"
 import { useEffect } from "react"
-import type { Device } from "../types"
+import type { Device } from "../../../entities/device/types"
 
 /**
  * Test component to handle device position and geospatial data with convex.

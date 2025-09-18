@@ -1,12 +1,19 @@
 'use client'
 
 import { useMemo } from 'react'
-import { Badge } from '@workspace/ui/components/badge'
-
 import { cn } from '@/lib/utils'
-import type { Device } from '../../types'
+import { Badge } from '@workspace/ui/components/badge'
+import type { Device } from '@/entities/device/types'
 
-export function DeviceStatusBadge({ device }: { device: Device }) {
+export namespace DeviceStatusBadge {
+  export type Props = {
+    device: Device
+    className?: string
+  }
+}
+
+export function DeviceStatusBadge(props: DeviceStatusBadge.Props) {
+  const { device, className } = props
   const color = useMemo(() => {
     switch (device.status) {
       case 'online':
@@ -21,9 +28,9 @@ export function DeviceStatusBadge({ device }: { device: Device }) {
   }, [device.status])
   device.status
   return (
-    <Badge variant="secondary" className={cn('max-md:aspect-square')}>
+    <Badge variant="secondary" className={cn('@max-lg:aspect-square max-md:aspect-square', className)}>
       <span className={cn('h-2 w-2 rounded-full', color)} />
-      <span className="max-md:sr-only">{device.status}</span>
+      <span className="@max-lg:sr-only max-md:sr-only">{device.status}</span>
     </Badge>
   )
 }

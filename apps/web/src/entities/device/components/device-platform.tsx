@@ -1,6 +1,6 @@
 'use client'
 
-import type { Device } from '@/features/device-manager/types'
+import type { Device } from '@/entities/device/types'
 import { cn } from '@/lib/utils'
 
 export function DevicePlatform({ device }: { device: Device }) {

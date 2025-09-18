@@ -1,7 +1,7 @@
 'use client'
 
 import { useIsCurrent } from '@/features/device-manager/hooks'
-import type { Device } from '@/features/device-manager/types'
+import type { Device } from '@/entities/device/types'
 import { cn } from '@/lib/utils'
 
 export function DeviceName({ device }: { device: Device }) {

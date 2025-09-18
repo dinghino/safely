@@ -5,7 +5,7 @@ import { toast } from 'sonner'
 import { useMutation } from 'convex/react'
 import { api } from '@workspace/backend/api'
 import { useAppForm } from '@workspace/form'
-import type { Device } from '../types'
+import type { Device } from '@/entities/device/types'
 
 /**
  * Allow renaming a device.

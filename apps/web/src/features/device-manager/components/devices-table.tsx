@@ -32,14 +32,17 @@ import {
 } from '@workspace/data-table'
 import { useIsCurrent } from '../hooks/use-is-current'
 
-import type { Device } from '../types'
-import { DeviceName, DevicePlatform, DeviceStatusBadge } from './atoms'
+import type { Device } from '@/entities/device/types'
+import { DeviceName, DevicePlatform, DeviceStatusBadge } from '@/entities/device/components'
 import { DeviceForm } from './device-form'
 import { DevicePositionManager } from './position-manager'
+import Link from 'next/link'
 
-const c = createColumnHelper<Device>()
+type DeviceWithId = Device & { id: string }
 
-const useDeviceColumns = () => {
+const c = createColumnHelper<DeviceWithId>()
+
+const useDeviceColumns = ({ deviceBaseUrl }: { deviceBaseUrl: string }) => {
   return useMemo(
     () =>
       [
@@ -52,7 +55,15 @@ const useDeviceColumns = () => {
         c.accessor('name', {
           id: 'name',
           header: 'Device',
-          cell: ({ row }) => <DeviceName device={row.original} />,
+          cell: ({ row }) => {
+            const href = `${deviceBaseUrl}/${row.original.deviceId}`
+            return (
+              // @ts-ignore href is broken?
+              <Link href={href}>
+                <DeviceName device={row.original} />
+              </Link>
+            )
+          },
         }),
         c.accessor('deviceId', {
           id: 'deviceId',
@@ -82,16 +93,23 @@ const useDeviceColumns = () => {
           enableSorting: false,
           cell: ({ row }) => <ActionsCell device={row.original} />,
         }),
-      ] as ColumnDef<Device>[],
-    [],
+      ] as ColumnDef<DeviceWithId>[],
+    [deviceBaseUrl],
   )
 }
 
-export function DevicesTable() {
+export namespace DevicesTable {
+  export type Props = {
+    deviceBaseUrl?: string
+  }
+}
+
+export function DevicesTable(props: DevicesTable.Props) {
+  const { deviceBaseUrl = '/dashboard/devices' } = props
   const devices = useQuery(api.devices.getAll)
   const _unregister = useMutation(api.devices.deleteDevice)
 
-  const columns = useDeviceColumns()
+  const columns = useDeviceColumns({ deviceBaseUrl })
   // data-table expects an 'id' field for now
   const data = useMemo(() => devices?.map((d) => ({ ...d, id: d._id })) ?? [], [devices])
 

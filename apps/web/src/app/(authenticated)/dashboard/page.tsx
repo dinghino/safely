@@ -1,8 +1,8 @@
 // import { Authenticated, AuthLoading, Unauthenticated } from 'convex/react'
 // import DeviceInfoComponent from './device-info'
-import { DashboardHero } from './dashboard.hero'
 import { Card, CardContent, CardHeader } from '@workspace/ui/components/card'
-import { DeviceManager, DevicesTable } from '@/features/device-manager'
+import { DevicesTable } from '@/features/device-manager'
+import { DashboardHero } from './dashboard.hero'
 
 export default function Dashboard() {
   return (
@@ -28,7 +28,6 @@ function AuthContent() {
       <Card>
         <CardHeader>Device Manager</CardHeader>
         <CardContent>
-          <DeviceManager />
           <DevicesTable />
         </CardContent>
       </Card>

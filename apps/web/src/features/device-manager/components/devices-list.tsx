@@ -1,6 +1,6 @@
 'use client'
 
-import { api } from '@workspace/backend/convex/_generated/api'
+import { api } from '@workspace/backend/api'
 import { useMutation, useQuery } from 'convex/react'
 import { Trash2 } from 'lucide-react'
 import { Badge } from '@workspace/ui/components/badge'

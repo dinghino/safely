@@ -14,7 +14,6 @@ export function useDeviceId() {
   })
 
   useEffect(() => {
-    console.log('Device ID:', deviceId)
     if (sent.current) return
     sent.current = true
     if (!deviceId) setId(staticId)

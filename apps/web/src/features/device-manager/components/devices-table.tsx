@@ -1,29 +1,13 @@
 'use client'
 
-import { api } from '@workspace/backend/convex/_generated/api'
-import type { Doc } from '@workspace/backend/convex/_generated/dataModel'
-import {
-  type ColumnDef,
-  createColumnHelper,
-  DataTable,
-  DataTableProvider,
-  DataTableToolbar,
-} from '@workspace/data-table'
-import { Badge } from '@workspace/ui/components/badge'
-import { Button } from '@workspace/ui/components/button'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@workspace/ui/components/dropdown-menu'
 import { useMutation, useQuery } from 'convex/react'
 import { MoreVertical } from 'lucide-react'
 import { useMemo } from 'react'
 import dayjs from '@/lib/dayjs'
-import { cn } from '@/lib/utils'
-import { useIsActive } from '../hooks/use-is-active'
-import { useIsCurrent } from '../hooks/use-is-current'
+
+import { api } from '@workspace/backend/api'
+import { Badge } from '@workspace/ui/components/badge'
+import { Button } from '@workspace/ui/components/button'
 import {
   Dialog,
   DialogContent,
@@ -32,9 +16,26 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@workspace/ui/components/dialog'
-import { Input } from '@workspace/ui/components/input'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@workspace/ui/components/dropdown-menu'
 
-type Device = Doc<'devices'> & { id: string }
+import {
+  type ColumnDef,
+  createColumnHelper,
+  DataTable,
+  DataTableProvider,
+  DataTableToolbar,
+} from '@workspace/data-table'
+import { useIsCurrent } from '../hooks/use-is-current'
+
+import type { Device } from '../types'
+import { DeviceName, DevicePlatform, DeviceStatusBadge } from './atoms'
+import { DeviceForm } from './device-form'
+import { DevicePositionManager } from './position-manager'
 
 const c = createColumnHelper<Device>()
 
@@ -45,7 +46,7 @@ const useDeviceColumns = () => {
         c.display({
           id: 'active',
           header: 'Status',
-          cell: ({ row }) => <ActiveIndicator device={row.original} />,
+          cell: ({ row }) => <DeviceStatusBadge device={row.original} />,
           enableSorting: false,
         }),
         c.accessor('name', {
@@ -79,11 +80,7 @@ const useDeviceColumns = () => {
         c.display({
           id: 'actions',
           enableSorting: false,
-          cell: ({ row }) => (
-            <div className="inline-flex w-full justify-end">
-              <DeviceRowActions device={row.original} />
-            </div>
-          ),
+          cell: ({ row }) => <ActionsCell device={row.original} />,
         }),
       ] as ColumnDef<Device>[],
     [],
@@ -119,37 +116,14 @@ const Toolbar = () => {
   return <span className="w-full rounded border bg-background px-2 py-1">Toolbar goes here</span>
 }
 
-function DeviceName({ device }: { device: Device }) {
+function ActionsCell({ device }: { device: Device }) {
   const isCurrent = useIsCurrent({ device })
-  const name = device.name ?? 'Unknown device'
-  const hasName = Boolean(device.name)
+
   return (
-    <div className="inline-flex w-full items-center justify-between gap-2">
-      {/* <ActiveIndicator device={device} /> */}
-      <span className={cn(!hasName && 'text-muted-foreground', isCurrent && 'font-bold')}>
-        {name}
-      </span>
-      {/* <CurrentIndicator device={row.original} /> */}
+    <div className="inline-flex w-full justify-end gap-1">
+      {isCurrent && <DevicePositionManager device={device} />}
+      <DeviceRowActions device={device} />
     </div>
-  )
-}
-
-function DevicePlatform({ device }: { device: Device }) {
-  const platform = device.platform ?? 'Unknown platform'
-  const hasPlatform = Boolean(device.platform)
-  return <span className={cn(!hasPlatform && 'text-muted-foreground')}>{platform}</span>
-}
-
-function ActiveIndicator({ device }: { device: Device }) {
-  const active = useIsActive({ device })
-  return (
-    <Badge
-      variant="secondary"
-      className={cn('max-md:aspect-square', active ? 'text-green-500' : 'text-gray-500')}
-    >
-      <span className={cn('h-2 w-2 rounded-full', active ? 'bg-green-500' : 'bg-gray-500')} />
-      <span className="max-md:sr-only">{active ? 'Online' : 'Offline'}</span>
-    </Badge>
   )
 }
 
@@ -178,28 +152,10 @@ function DeviceRowActions({ device }: { device: Device }) {
               <DialogTitle>Rename Device</DialogTitle>
               <DialogDescription>Enter a new name for your device.</DialogDescription>
             </DialogHeader>
-            <RenameForm device={device} />
+            <DeviceForm device={device} />
           </DialogContent>
         </Dialog>
       </DropdownMenuContent>
     </DropdownMenu>
-  )
-}
-
-function RenameForm({ device }: { device: Device }) {
-  const rename = useMutation(api.devices.renameDevice)
-  return (
-    <form
-      className="mt-4 flex w-full gap-2"
-      onSubmit={(e) => {
-        e.preventDefault()
-        const formData = new FormData(e.target as HTMLFormElement)
-        const name = formData.get('name') as string
-        rename({ deviceId: device._id, name })
-      }}
-    >
-      <Input name="name" defaultValue={device.name} placeholder="Enter new device name" />
-      <Button type="submit">Rename</Button>
-    </form>
   )
 }

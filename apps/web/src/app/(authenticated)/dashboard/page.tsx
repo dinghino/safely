@@ -2,8 +2,7 @@
 // import DeviceInfoComponent from './device-info'
 import { DashboardHero } from './dashboard.hero'
 import { Card, CardContent, CardHeader } from '@workspace/ui/components/card'
-import { DeviceManager } from '@/features/device-manager'
-import { DevicesTable } from '@/features/device-manager/components'
+import { DeviceManager, DevicesTable } from '@/features/device-manager'
 
 export default function Dashboard() {
   return (

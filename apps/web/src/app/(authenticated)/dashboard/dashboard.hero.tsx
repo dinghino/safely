@@ -1,7 +1,7 @@
 'use client'
 
 import { useUser } from '@clerk/nextjs'
-import { api } from '@workspace/backend/convex/_generated/api'
+import { api } from '@workspace/backend/api'
 import { useQuery } from 'convex/react'
 
 export function DashboardHero() {

@@ -1,5 +1,5 @@
 'use client'
-import { api } from '@workspace/backend/convex/_generated/api'
+import { api } from '@workspace/backend/api'
 import { useQuery } from 'convex/react'
 
 const TITLE_TEXT = `

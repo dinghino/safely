@@ -1,7 +1,7 @@
 'use client'
 
-import { api } from '@workspace/backend/convex/_generated/api'
-import type { Id } from '@workspace/backend/convex/_generated/dataModel'
+import { api } from '@workspace/backend/api'
+import type { Id } from '@workspace/backend/dataModel'
 import { useMutation, useQuery } from 'convex/react'
 import { Loader2, Trash2 } from 'lucide-react'
 import { useState } from 'react'

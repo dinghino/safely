@@ -24,13 +24,12 @@
     "@dnd-kit/modifiers": "^9.0.0",
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
-    "@workspace/react-utils": "workspace:*",
-    "@workspace/nuqs": "workspace:*",
-    "@workspace/ui": "workspace:*",
     "@tanstack/react-table": "^8.21.3",
+    "@workspace/nuqs": "workspace:*",
+    "@workspace/react-utils": "workspace:*",
+    "@workspace/ui": "workspace:*",
     "cmdk": "^1.1.1",
     "lucide-react": "^0.544.0"
-
   },
   "peerDependencies": {
     "react": "^18.0.0 || ^19.0.0",
@@ -39,10 +38,10 @@
   },
   "devDependencies": {
     "@types/bun": "latest",
-    "@types/react": "^19.0.0",
-    "@types/react-dom": "^19.0.0",
-    "tsup": "^8.5.0",
+    "@types/react": "^19.1.13",
+    "@types/react-dom": "^19.1.9",
     "@workspace/eslint-config": "workspace:^",
-    "@workspace/typescript-config": "workspace:*"
+    "@workspace/typescript-config": "workspace:*",
+    "tsup": "^8.5.0"
   }
 }

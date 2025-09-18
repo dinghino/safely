@@ -5,11 +5,11 @@
     "typescript": "^5.9.2"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.2.4",
     "@workspace/eslint-config": "workspace:*",
     "@workspace/typescript-config": "workspace:*",
-    "@biomejs/biome": "^2.2.4",
-    "turbo": "^2.5.6",
-    "tsup": "^8.5.0"
+    "tsup": "^8.5.0",
+    "turbo": "^2.5.6"
   },
   "packageManager": "bun@1.2.22",
   "private": true,
@@ -25,5 +25,8 @@
     "dev:bump": "bunx taze -r"
   },
   "type": "module",
-  "workspaces": ["apps/*", "packages/*"]
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ]
 }

@@ -1,3 +1,5 @@
+'use client'
+
 import { useDeviceLocation } from "@/shared/hooks/use-device-location"
 import { api } from "@workspace/backend/api"
 import { Button } from "@workspace/ui/components/button"

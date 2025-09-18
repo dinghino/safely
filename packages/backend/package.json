@@ -5,6 +5,13 @@
     "dev": "convex dev",
     "dev:setup": "convex dev --configure --until-success"
   },
+  "exports": {
+    "./types": "./convex/types.ts",
+    "./schemas": "./convex/schemas/index.ts",
+    "./server": "./convex/_generated/server.js",
+    "./api": "./convex/_generated/api.js",
+    "./dataModel": "./convex/_generated/dataModel.js"
+  },
   "author": "",
   "license": "ISC",
   "description": "",

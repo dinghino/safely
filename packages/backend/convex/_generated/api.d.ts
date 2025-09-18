@@ -10,11 +10,13 @@
 
 import type * as auth_index from "../auth/index.js";
 import type * as devices from "../devices.js";
+import type * as geospatial from "../geospatial.js";
 import type * as healthCheck from "../healthCheck.js";
 import type * as http from "../http.js";
 import type * as privateData from "../privateData.js";
 import type * as schemas_index from "../schemas/index.js";
 import type * as todos from "../todos.js";
+import type * as types from "../types.js";
 import type * as users from "../users.js";
 
 import type {
@@ -34,11 +36,13 @@ import type {
 declare const fullApi: ApiFromModules<{
   "auth/index": typeof auth_index;
   devices: typeof devices;
+  geospatial: typeof geospatial;
   healthCheck: typeof healthCheck;
   http: typeof http;
   privateData: typeof privateData;
   "schemas/index": typeof schemas_index;
   todos: typeof todos;
+  types: typeof types;
   users: typeof users;
 }>;
 declare const fullApiWithMounts: typeof fullApi;

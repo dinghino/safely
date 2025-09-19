@@ -118,7 +118,6 @@ function LoadingRows() {
   const rowCount = table.getState().pagination.pageSize || 5 // default to 5 rows if pageSize is not set
 
   const skeletons = Array.from({ length: rowCount }).map((_, index) => (
-    // biome-ignore lint/suspicious/noArrayIndexKey: we don't know what else to use for now
     <TableRow key={index}>
       {columns.map((column) => (
         <TableCell key={column.id} className="p-0.5">

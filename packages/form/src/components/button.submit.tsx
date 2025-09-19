@@ -6,9 +6,9 @@ import { Loader2 } from 'lucide-react'
 export namespace SubmitButton {
   export type Props = {
     children: React.ReactNode
-  }
+  } & Omit<React.ComponentProps<typeof Button>, 'type'>
 }
-export const SubmitButton = ({ children }: SubmitButton.Props) => {
+export const SubmitButton = ({ children, ...props }: SubmitButton.Props) => {
   const form = useFormContext()
 
   const [isSubmitting, canSubmit] = useStore(form.store, (state) => [
@@ -17,7 +17,7 @@ export const SubmitButton = ({ children }: SubmitButton.Props) => {
   ])
 
   return (
-    <Button type="submit" disabled={isSubmitting || !canSubmit}>
+    <Button type="submit" disabled={isSubmitting || !canSubmit} {...props}>
       {isSubmitting ? <Loader2 className="animate-spin" /> : children}
     </Button>
   )

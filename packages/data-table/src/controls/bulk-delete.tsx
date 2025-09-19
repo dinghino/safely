@@ -15,7 +15,7 @@ import {
 } from '@workspace/ui/components/alert-dialog'
 import { Button } from '@workspace/ui/components/button'
 import { Badge } from '@workspace/ui/components/badge'
-import { useDataTable } from '../data-table.context'
+import { useDataTable } from '../core'
 import { useTransition } from 'react'
 
 type WithId = { id: string | number }

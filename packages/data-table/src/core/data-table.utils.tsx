@@ -1,8 +1,8 @@
 import type { UniqueIdentifier } from '@dnd-kit/core/dist/types'
 import type { ColumnDef } from '@tanstack/react-table'
 
-import { DragHandle } from './components/sortable/drag-handle'
-import { Checkbox } from './components/ui/checkbox'
+import { DragHandle } from '../components/sortable/drag-handle'
+import { Checkbox } from '@workspace/ui/components/checkbox'
 
 export function dragHandleColumn<T extends { id: UniqueIdentifier }>() {
   return [

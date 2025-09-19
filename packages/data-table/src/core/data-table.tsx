@@ -11,9 +11,9 @@ import {
   TableRow,
 } from '@workspace/ui/components/table'
 import { cn } from '@/lib/utils'
-import { DataTableColumnHeader } from './components/column-header'
-import { EmptyTableError } from './components/empty-table'
-import { SimpleRow } from './components/simple-table-row'
+import { DataTableColumnHeader } from '../components/column-header'
+import { EmptyTableError } from '../components/empty-table'
+import { SimpleRow } from '../components/simple-table-row'
 import { useDataTable } from './data-table.context'
 
 export namespace DataTable {

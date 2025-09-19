@@ -1,22 +1,15 @@
 {
   "name": "@workspace/data-table",
-  "version": "1.0.0",
+  "version": "0.0.0",
   "type": "module",
-  "main": "dist/index.js",
-  "module": "dist/index.js",
-  "types": "dist/index.d.ts",
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    }
+    "./components/*": "./src/components/**/*.tsx",
+    "./controls/*": "./src/controls/**/*.tsx",
+    "./hooks/*": "./src/hooks/**/*.tsx",
+    "./lib/*": "./src/lib/**/*.tsx",
+    ".": "./src/index.ts"
   },
-  "files": [
-    "dist"
-  ],
   "scripts": {
-    "build": "tsup",
-    "dev": "tsup --watch",
     "check-types": "tsup --noEmit"
   },
   "dependencies": {

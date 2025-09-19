@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '@workspace/ui/components/dropdown-menu'
 
-import { useDataTable } from '../data-table.context'
+import { useDataTable } from '../core'
 
 export namespace DataTableColumnToggle {
   export type Props = {

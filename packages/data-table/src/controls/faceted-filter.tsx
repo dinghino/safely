@@ -1,5 +1,5 @@
 import type { Column } from '@tanstack/react-table'
-import { FacetedFilter } from '@/components/faceted-filter'
+import { FacetedFilter } from '../components/faceted-filter'
 
 export namespace DataTableFacetedFilter {
   export type Props<TData, TValue> = Omit<

@@ -10,7 +10,8 @@
     "./schemas": "./convex/schemas/index.ts",
     "./server": "./convex/_generated/server.js",
     "./api": "./convex/_generated/api.js",
-    "./dataModel": "./convex/_generated/dataModel.js"
+    "./dataModel": "./convex/_generated/dataModel.js",
+    "./react": "./react/index.ts"
   },
   "author": "",
   "license": "ISC",
@@ -22,6 +23,7 @@
   "dependencies": {
     "@clerk/backend": "^2.14.0",
     "@convex-dev/geospatial": "^0.1.9",
+    "@convex-dev/presence": "^0.1.5",
     "convex": "^1.27.0",
     "svix": "^1.76.1"
   }

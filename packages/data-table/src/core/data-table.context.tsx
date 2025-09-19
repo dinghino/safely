@@ -16,8 +16,8 @@ import {
   type VisibilityState,
 } from '@tanstack/react-table'
 import { useEffect, useMemo, useState } from 'react'
-import type { DragEndEventHandler } from '@/components/sortable/types'
-import { usePaginationSearchParams } from '@/hooks'
+import type { DragEndEventHandler } from '../components/sortable/types'
+import { usePaginationSearchParams } from '../hooks'
 
 type UniqueIdentifier = string | number
 

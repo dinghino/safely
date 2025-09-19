@@ -6,17 +6,14 @@
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    }
+    "./hooks/*": "./src/hooks/*",
+    "./lib/*": "./src/lib/*",
+    ".": "./src/index.ts"
   },
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "tsup",
-    "dev": "tsup --watch",
     "check-types": "tsup --noEmit"
   },
   "dependencies": {

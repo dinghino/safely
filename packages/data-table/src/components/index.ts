@@ -1,3 +1,5 @@
 export * from './column-header'
 export * from './simple-table-row'
 export * from './draggable-row'
+export * from './faceted-filter'
+export * from './sortable'

@@ -1,3 +1,5 @@
-export { default as devices } from './devices.schema'
-export { default as todos } from './todos.schema'
-export { default as users } from './users.schema'
+export { devices, deviceSessions, deviceSessionTimeouts, deviceSessionTokens } from './devices.schema'
+export { appSettings, deviceSettings } from './settings.schema'
+export { todos } from './todos.schema'
+export { trackLocation, trackSession } from './tracker.schema'
+export { users } from './users.schema'

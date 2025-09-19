@@ -13,10 +13,17 @@ import type * as devices from "../devices.js";
 import type * as geospatial from "../geospatial.js";
 import type * as healthCheck from "../healthCheck.js";
 import type * as http from "../http.js";
+import type * as lib_constants from "../lib/constants.js";
+import type * as lib_devices_get from "../lib/devices/get.js";
+import type * as lib_devices_heartbeat from "../lib/devices/heartbeat.js";
+import type * as lib_devices_index from "../lib/devices/index.js";
+import type * as presence from "../presence.js";
 import type * as privateData from "../privateData.js";
+import type * as schemas_enums from "../schemas/enums.js";
 import type * as schemas_index from "../schemas/index.js";
+import type * as settings from "../settings.js";
 import type * as todos from "../todos.js";
-import type * as types from "../types.js";
+import type * as tracking from "../tracking.js";
 import type * as users from "../users.js";
 
 import type {
@@ -39,10 +46,17 @@ declare const fullApi: ApiFromModules<{
   geospatial: typeof geospatial;
   healthCheck: typeof healthCheck;
   http: typeof http;
+  "lib/constants": typeof lib_constants;
+  "lib/devices/get": typeof lib_devices_get;
+  "lib/devices/heartbeat": typeof lib_devices_heartbeat;
+  "lib/devices/index": typeof lib_devices_index;
+  presence: typeof presence;
   privateData: typeof privateData;
+  "schemas/enums": typeof schemas_enums;
   "schemas/index": typeof schemas_index;
+  settings: typeof settings;
   todos: typeof todos;
-  types: typeof types;
+  tracking: typeof tracking;
   users: typeof users;
 }>;
 declare const fullApiWithMounts: typeof fullApi;
@@ -191,6 +205,57 @@ export declare const components: {
           distance: number;
           key: string;
         }>
+      >;
+    };
+  };
+  presence: {
+    public: {
+      disconnect: FunctionReference<
+        "mutation",
+        "internal",
+        { sessionToken: string },
+        null
+      >;
+      heartbeat: FunctionReference<
+        "mutation",
+        "internal",
+        {
+          interval?: number;
+          roomId: string;
+          sessionId: string;
+          userId: string;
+        },
+        { roomToken: string; sessionToken: string }
+      >;
+      list: FunctionReference<
+        "query",
+        "internal",
+        { limit?: number; roomToken: string },
+        Array<{ lastDisconnected: number; online: boolean; userId: string }>
+      >;
+      listRoom: FunctionReference<
+        "query",
+        "internal",
+        { limit?: number; onlineOnly?: boolean; roomId: string },
+        Array<{ lastDisconnected: number; online: boolean; userId: string }>
+      >;
+      listUser: FunctionReference<
+        "query",
+        "internal",
+        { limit?: number; onlineOnly?: boolean; userId: string },
+        Array<{ lastDisconnected: number; online: boolean; roomId: string }>
+      >;
+      removeRoom: FunctionReference<
+        "mutation",
+        "internal",
+        { roomId: string },
+        null
+      >;
+      removeRoomUser: FunctionReference<
+        "mutation",
+        "internal",
+        { roomId: string; userId: string },
+        null
       >;
     };
   };

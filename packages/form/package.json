@@ -7,7 +7,7 @@
     "lint": "eslint . --max-warnings 0"
   },
   "dependencies": {
-    "@tanstack/react-form": "^1.21.1",
+    "@tanstack/react-form": "^1.23.0",
     "@workspace/ui": "workspace:*",
     "lucide-react": "^0.544.0",
     "react": "^19.1.1",

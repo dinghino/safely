@@ -6,7 +6,7 @@
     "dev:setup": "convex dev --configure --until-success"
   },
   "exports": {
-    "./types": "./convex/types.ts",
+    "./types": "./types/index.ts",
     "./schemas": "./convex/schemas/index.ts",
     "./server": "./convex/_generated/server.js",
     "./api": "./convex/_generated/api.js",
@@ -24,7 +24,7 @@
     "@clerk/backend": "^2.14.0",
     "@convex-dev/geospatial": "^0.1.9",
     "@convex-dev/presence": "^0.1.5",
-    "convex": "^1.27.0",
+    "convex": "^1.27.1",
     "svix": "^1.76.1"
   }
 }

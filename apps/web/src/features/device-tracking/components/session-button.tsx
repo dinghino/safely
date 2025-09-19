@@ -11,7 +11,7 @@ export namespace SessionButton {
 }
 
 export const SessionButton = (props: SessionButton.Props) => {
-  const { deviceId } = props
+  const { deviceId, ...rest } = props
   const activeSession = useActiveSession(deviceId)
   const startSession = useStartSession()
   const endSession = useStopSession()
@@ -27,7 +27,7 @@ export const SessionButton = (props: SessionButton.Props) => {
   }
 
   return (
-    <Button {...props} onClick={handleClick}>
+    <Button {...rest} onClick={handleClick}>
       {text}
     </Button>
   )

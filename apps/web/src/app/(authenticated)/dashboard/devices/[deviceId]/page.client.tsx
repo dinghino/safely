@@ -35,7 +35,8 @@ function isSessionClosed(session?: { endedAt?: number }) {
 }
 
 export function DevicePageClient({ deviceId }: { deviceId: string }) {
-  const device = useQuery(api.devices.get, { deviceId })
+  // fixme: this is ugly but need for a quick deployment test. this whole page is going to go anyway
+  const device = useQuery(api.devices.get, { deviceId }) ?? undefined
   const isDevice = useIsCurrent({ device })
 
   const session = useQuery(api.tracking.getActiveSession, { deviceId: device?._id })

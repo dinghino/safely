@@ -15,7 +15,7 @@ type LocationState = (
       error: null
     } // initial loading state
   | {
-      location: DeviceLocation
+      location: GeolocationPosition
       isLoading: boolean
       error: null
       previous: LocationState
@@ -29,7 +29,7 @@ type LocationState = (
 
 type LocationAction =
   | { type: 'REQUEST_START' }
-  | { type: 'REQUEST_SUCCESS'; payload: DeviceLocation }
+  | { type: 'REQUEST_SUCCESS'; payload: GeolocationPosition }
   | { type: 'REQUEST_ERROR'; payload: string }
   | { type: 'START_WATCHING' }
   | { type: 'STOP_WATCHING' }
@@ -40,6 +40,7 @@ interface UseDeviceLocationOptions {
   timeout?: number
   maximumAge?: number
   watch?: boolean
+  onSuccess?: (location: GeolocationPosition) => void
 }
 
 const initialLocationState: LocationState = {
@@ -51,7 +52,6 @@ const initialLocationState: LocationState = {
 }
 
 function locationReducer(state: LocationState, action: LocationAction): LocationState {
-  console.log('Location action:', action)
   const timestamp = Date.now()
   switch (action.type) {
     case 'REQUEST_START':
@@ -71,10 +71,6 @@ function locationReducer(state: LocationState, action: LocationAction): Location
         previous: state,
       }
     case 'REQUEST_ERROR':
-      toast.error(action.payload, {
-        dismissible: true,
-        closeButton: true,
-      })
       return {
         ...state,
         location: null,
@@ -83,10 +79,6 @@ function locationReducer(state: LocationState, action: LocationAction): Location
         timestamp,
       }
     case 'START_WATCHING':
-      toast.message('Started watching location', {
-        dismissible: true,
-        closeButton: true,
-      })
       return {
         ...state,
         isWatching: true,
@@ -120,10 +112,13 @@ export function useDeviceLocation(options: UseDeviceLocationOptions = {}) {
 
   const watchIdRef = useRef<number | null>(null)
 
-  const handleSuccess = useCallback((position: GeolocationPosition) => {
-    const { latitude, longitude } = position.coords
-    dispatch({ type: 'REQUEST_SUCCESS', payload: { latitude, longitude } })
-  }, [])
+  const handleSuccess = useCallback(
+    (position: GeolocationPosition) => {
+      dispatch({ type: 'REQUEST_SUCCESS', payload: position })
+      options.onSuccess?.(position)
+    },
+    [options.onSuccess],
+  )
 
   const handleError = useCallback((error: GeolocationPositionError) => {
     let payload = 'Failed to get location'
@@ -159,7 +154,6 @@ export function useDeviceLocation(options: UseDeviceLocationOptions = {}) {
       return
     }
 
-    console.log('Getting current location...')
     dispatch({ type: 'REQUEST_START' })
     navigator.geolocation.getCurrentPosition(handleSuccess, handleError, positionOptions)
   }, [handleSuccess, handleError, positionOptions])
@@ -174,7 +168,6 @@ export function useDeviceLocation(options: UseDeviceLocationOptions = {}) {
       navigator.geolocation.clearWatch(watchIdRef.current)
     }
 
-    console.log('Starting location watcher...')
     dispatch({ type: 'START_WATCHING' })
 
     watchIdRef.current = navigator.geolocation.watchPosition(
@@ -186,7 +179,6 @@ export function useDeviceLocation(options: UseDeviceLocationOptions = {}) {
 
   const stopWatching = useCallback(() => {
     if (watchIdRef.current !== null) {
-      console.log('Stopping location watcher...')
       navigator.geolocation.clearWatch(watchIdRef.current)
       watchIdRef.current = null
     }
@@ -200,9 +192,10 @@ export function useDeviceLocation(options: UseDeviceLocationOptions = {}) {
   // Handle initial watch option
   useEffect(() => {
     if (!watch) return
-
-    if (!watch) startWatching()
-    else if (watch) stopWatching()
+    startWatching()
+    // if (!watch) startWatching()
+    // else if (watch) stopWatching()
+    return () => stopWatching()
   }, [watch, startWatching, stopWatching])
 
   // Cleanup on unmount

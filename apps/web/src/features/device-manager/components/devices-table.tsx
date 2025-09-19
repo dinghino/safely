@@ -107,9 +107,8 @@ export namespace DevicesTable {
 export function DevicesTable(props: DevicesTable.Props) {
   const { deviceBaseUrl = '/dashboard/devices' } = props
   const devices = useQuery(api.devices.getAll)
-  const _unregister = useMutation(api.devices.deleteDevice)
-
   const columns = useDeviceColumns({ deviceBaseUrl })
+
   // data-table expects an 'id' field for now
   const data = useMemo(() => devices?.map((d) => ({ ...d, id: d._id })) ?? [], [devices])
 

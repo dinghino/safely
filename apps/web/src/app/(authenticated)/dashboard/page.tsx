@@ -23,14 +23,16 @@ export default function Dashboard() {
 function AuthContent() {
   return (
     <main className="py-4 content-grid">
-      <DashboardHero />
+      {/* <DashboardHero /> */}
       {/* <div><DeviceInfoComponent /></div> */}
-      <Card>
-        <CardHeader>Device Manager</CardHeader>
-        <CardContent>
-          <DevicesTable />
-        </CardContent>
-      </Card>
+      <section>
+        <Card>
+          <CardHeader>Device Manager</CardHeader>
+          <CardContent>
+            <DevicesTable />
+          </CardContent>
+        </Card>
+      </section>
     </main>
   )
 }

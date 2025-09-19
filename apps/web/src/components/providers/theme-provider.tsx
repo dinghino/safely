@@ -2,7 +2,7 @@
 
 'use client'
 
-import { ThemeProvider as NextThemesProvider } from 'next-themes'
+import { ThemeProvider as NextThemesProvider } from '@workspace/ui/providers/theme-provider'
 import type * as React from 'react'
 
 export namespace ThemeProvider {
@@ -12,16 +12,5 @@ export namespace ThemeProvider {
 }
 
 export function ThemeProvider({ children, ...props }: ThemeProvider.Props) {
-  return (
-    <NextThemesProvider
-      attribute="class"
-      defaultTheme="system"
-      enableSystem
-      disableTransitionOnChange
-      enableColorScheme
-      {...props}
-    >
-      {children}
-    </NextThemesProvider>
-  )
+  return <NextThemesProvider {...props}>{children}</NextThemesProvider>
 }

@@ -77,8 +77,13 @@ export function useHeartbeat(options: HeartbeatOptions) {
         intervalRef.current = null
       }
       if (hasMounted.current && sessionTokenRef.current) {
+        console.log('cleanup - disconnecting')
         void disconnect({ sessionToken: sessionTokenRef.current })
       }
     }
   }, [disconnect, interval, location, sendHeartbeat])
+
+  useEffect(() => {
+    hasMounted.current = true
+  }, [])
 }

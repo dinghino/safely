@@ -35,7 +35,7 @@ function isSessionClosed(session?: { endedAt?: number }) {
 }
 
 export function DevicePageClient({ deviceId }: { deviceId: string }) {
-  const device = useQuery(api.devices.getDevice, { deviceId })
+  const device = useQuery(api.devices.get, { deviceId })
   const isDevice = useIsCurrent({ device })
 
   const session = useQuery(api.tracking.getActiveSession, { deviceId: device?._id })

@@ -37,6 +37,7 @@ import { DeviceName, DevicePlatform, DeviceStatusBadge } from '@/entities/device
 import { DeviceForm } from './device-form'
 import { DevicePositionManager } from './position-manager'
 import Link from 'next/link'
+import { SessionButton } from '@/features/device-tracking/components/session-button'
 
 type DeviceWithId = Device & { id: string }
 
@@ -64,6 +65,20 @@ const useDeviceColumns = ({ deviceBaseUrl }: { deviceBaseUrl: string }) => {
               </Link>
             )
           },
+        }),
+        c.accessor('settings.trackingMode', {
+          id: 'trackingMode',
+          header: 'Tracking',
+          cell: ({ cell }) => (
+            <div className="inline-flex w-full justify-center">
+              <Badge variant="secondary">{cell.getValue()}</Badge>
+            </div>
+          ),
+        }),
+        c.accessor('settings.updateIntervalMs', {
+          id: 'updateInterval',
+          header: 'Update Interval',
+          cell: ({ cell }) => <span>{dayjs.duration(cell.getValue(), 'ms').humanize(false)}</span>,
         }),
         c.accessor('deviceId', {
           id: 'deviceId',
@@ -134,11 +149,12 @@ const Toolbar = () => {
 }
 
 function ActionsCell({ device }: { device: Device }) {
-  const isCurrent = useIsCurrent({ device })
+  // const isCurrent = useIsCurrent({ device })
 
   return (
     <div className="inline-flex w-full justify-end gap-1">
-      {isCurrent && <DevicePositionManager device={device} />}
+      {/* {isCurrent && <DevicePositionManager device={device} />} */}
+      <SessionButton size="sm" deviceId={device._id} />
       <DeviceRowActions device={device} />
     </div>
   )

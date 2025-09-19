@@ -1,3 +1,3 @@
 import type { Doc } from "@workspace/backend/dataModel";
 
-export type Device = Doc<'devices'>
+export type Device = Doc<'devices'> & { settings: Doc<'deviceSettings'> };

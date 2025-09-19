@@ -1,12 +1,6 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useReducer, useRef } from 'react'
-import { toast } from 'sonner'
-
-interface DeviceLocation {
-  latitude: number
-  longitude: number
-}
 
 type LocationState = (
   | {
@@ -51,10 +45,18 @@ const initialLocationState: LocationState = {
   timestamp: 0,
 }
 
+const _log = (...args: any[]) => {
+  if (process.env.NODE_ENV !== 'production') {
+    // eslint-disable-next-line no-console
+    console.log('[useDeviceLocation]', ...args)
+  }
+}
+
 function locationReducer(state: LocationState, action: LocationAction): LocationState {
   const timestamp = Date.now()
   switch (action.type) {
     case 'REQUEST_START':
+      _log('Starting location request')
       return {
         ...state,
         location: null,
@@ -62,6 +64,7 @@ function locationReducer(state: LocationState, action: LocationAction): Location
         timestamp,
       }
     case 'REQUEST_SUCCESS':
+      _log('Location request successful', action.payload)
       return {
         ...state,
         location: action.payload,
@@ -71,6 +74,7 @@ function locationReducer(state: LocationState, action: LocationAction): Location
         previous: state,
       }
     case 'REQUEST_ERROR':
+      _log('Location request error', action.payload)
       return {
         ...state,
         location: null,
@@ -79,18 +83,21 @@ function locationReducer(state: LocationState, action: LocationAction): Location
         timestamp,
       }
     case 'START_WATCHING':
+      _log('Starting location watch')
       return {
         ...state,
         isWatching: true,
         timestamp,
       }
     case 'STOP_WATCHING':
+      _log('Stopping location watch')
       return {
         ...state,
         isWatching: false,
         timestamp,
       }
     case 'RESET':
+      _log('Resetting location state')
       return { ...initialLocationState, timestamp }
     default:
       return state

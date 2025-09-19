@@ -1,0 +1,92 @@
+'use client'
+
+import { useMemo } from 'react'
+import Link from 'next/link'
+import dayjs from '@/lib/dayjs'
+
+import { Badge } from '@workspace/ui/components/badge'
+import { type ColumnDef, createColumnHelper } from '@workspace/data-table'
+
+import type { Device } from '@/entities/device/types'
+import { DeviceName, DevicePlatform, DeviceStatusBadge } from '@/entities/device/components'
+
+import { DeviceActionsMenu } from '@/features/device-manager/components'
+import { SessionButton } from '@/features/device-tracking/components'
+
+type DeviceWithId = Device & { id: string }
+
+const c = createColumnHelper<DeviceWithId>()
+
+export const useDeviceColumns = ({ deviceBaseUrl }: { deviceBaseUrl: string }) => {
+  return useMemo(
+    () =>
+      [
+        c.display({
+          id: 'active',
+          header: 'Status',
+          cell: ({ row }) => <DeviceStatusBadge device={row.original} />,
+          enableSorting: false,
+        }),
+        c.accessor('name', {
+          id: 'name',
+          header: 'Device',
+          cell: ({ row }) => {
+            const href = `${deviceBaseUrl}/${row.original.deviceId}`
+            return (
+              <Link href={{ pathname: href }}>
+                <DeviceName device={row.original} />
+              </Link>
+            )
+          },
+        }),
+        c.accessor('settings.trackingMode', {
+          id: 'trackingMode',
+          header: 'Tracking',
+          cell: ({ cell }) => (
+            <div className="inline-flex w-full justify-center">
+              <Badge variant="secondary">{cell.getValue()}</Badge>
+            </div>
+          ),
+        }),
+        c.accessor('settings.updateIntervalMs', {
+          id: 'updateInterval',
+          header: 'Update Interval',
+          cell: ({ cell }) => <span>{dayjs.duration(cell.getValue(), 'ms').humanize(false)}</span>,
+        }),
+        c.accessor('deviceId', {
+          id: 'deviceId',
+          header: 'Device ID',
+          enableHiding: true,
+          maxSize: 120,
+          size: 120,
+          minSize: 120,
+          cell: (info) => (
+            <Badge variant="secondary" className="font-mono">
+              {info.getValue()}
+            </Badge>
+          ),
+        }),
+        c.accessor('platform', {
+          id: 'platform',
+          header: 'Platform',
+          cell: ({ row }) => <DevicePlatform device={row.original} />,
+        }),
+        c.accessor('last_seen', {
+          id: 'last_seen',
+          header: 'Last Seen',
+          cell: ({ cell }) => dayjs(cell.getValue())?.fromNow(),
+        }),
+        c.display({
+          id: 'actions',
+          enableSorting: false,
+          cell: ({ row }) => (
+            <div className="inline-flex w-full justify-end gap-1">
+              <SessionButton size="sm" deviceId={row.original._id} />
+              <DeviceActionsMenu device={row.original} />
+            </div>
+          ),
+        }),
+      ] as ColumnDef<DeviceWithId>[],
+    [deviceBaseUrl],
+  )
+}

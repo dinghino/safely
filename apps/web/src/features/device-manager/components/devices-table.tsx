@@ -35,7 +35,7 @@ import { useIsCurrent } from '../hooks/use-is-current'
 import type { Device } from '@/entities/device/types'
 import { DeviceName, DevicePlatform, DeviceStatusBadge } from '@/entities/device/components'
 import { DeviceForm } from './device-form'
-import { DevicePositionManager } from './position-manager'
+// import { DevicePositionManager } from './position-manager'
 import Link from 'next/link'
 import { SessionButton } from '@/features/device-tracking/components/session-button'
 

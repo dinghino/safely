@@ -1,1 +1,1 @@
-export { DeviceManager, DevicesTable } from './components'
+export { DevicesTable } from './components'

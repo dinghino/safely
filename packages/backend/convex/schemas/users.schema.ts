@@ -1,7 +1,7 @@
 import { defineTable } from 'convex/server'
 import { v } from 'convex/values'
 
-export default defineTable({
+export const users = defineTable({
   name: v.string(),
   external_id: v.string(),
   // todo: make required later

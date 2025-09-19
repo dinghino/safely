@@ -19,45 +19,6 @@ const geospatial = new GeospatialIndex<
 // Session management
 
 /**
- * Start a new tracking session for a device
- * - verifies the device belongs to the current user
- * - creates a new trackSession entry
- * - (optionally) creates the first trackLocation entry for the given session
- * @throws if device does not exist or does not belong to the current user
- * @throws if there's already an open session for this device
- */
-export const startSession = mutation({
-  args: { deviceId: v.id('devices') },
-  handler: async (ctx, args) => {
-    const user = await getCurrentUserOrThrow(ctx)
-    const device = await ctx.db.get(args.deviceId)
-    if (!device || device.owner !== user._id) {
-      throw new Error('Device not found')
-    }
-
-    // retrieve the last created session for this device
-    const existing = await _getActiveSession({ ctx, deviceId: device._id })
-
-    if (existing && isSessionOpen(existing)) {
-      // throw new Error('There is already an open session for this device')
-      return existing
-    }
-
-    const newSession = await ctx.db.insert('trackSession', {
-      device: device._id,
-      owner: user._id,
-      timestamp: Date.now(),
-      startedAt: Date.now(),
-      pointsCount: 0,
-    })
-
-    // todo: create first trackLocation entry for the given session
-
-    return newSession
-  },
-})
-
-/**
  * Get a tracking session by its ID
  * @throws if no session or not owned by current user
  */
@@ -103,6 +64,44 @@ export const getDeviceSessions = query({
 })
 
 /**
+ * Start a new tracking session for a device
+ * - verifies the device belongs to the current user
+ * - creates a new trackSession entry
+ * - (optionally) creates the first trackLocation entry for the given session
+ * @throws if device does not exist or does not belong to the current user
+ * @throws if there's already an open session for this device
+ */
+export const startSession = mutation({
+  args: { deviceId: v.id('devices') },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUserOrThrow(ctx)
+    const device = await ctx.db.get(args.deviceId)
+    if (!device || device.owner !== user._id) {
+      throw new Error('Device not found')
+    }
+
+    // retrieve the last created session for this device
+    const existing = await _getActiveSession({ ctx, deviceId: device._id })
+
+    if (existing && isSessionOpen(existing)) {
+      // throw new Error('There is already an open session for this device')
+      return existing
+    }
+
+    const newSession = await ctx.db.insert('trackSession', {
+      device: device._id,
+      owner: user._id,
+      timestamp: Date.now(),
+      startedAt: Date.now(),
+      pointsCount: 0,
+    })
+
+    await ctx.runMutation(api.devices.setTrackingMode, { deviceId: device._id, mode: 'active' })
+    return newSession
+  },
+})
+
+/**
  * Stop (close) a tracking session
  * - verifies the session belongs to the current user and is still open
  * - updates the endedAt timestamp to close the session
@@ -112,10 +111,14 @@ export const stopSession = mutation({
   handler: async (ctx, args) => {
     const { sessionId } = args
     const session = await _getSession({ ctx, sessionId })
-    // const session = await ctx.runQuery(api.tracking.getSession, { sessionId })
 
     if (!session) throw new Error('Session not found')
     if (!isSessionOpen(session)) throw new Error('Session already closed')
+
+    await ctx.runMutation(api.devices.setTrackingMode, {
+      deviceId: session.device,
+      mode: 'passive',
+    })
 
     return ctx.db.patch(session._id, { endedAt: Date.now() })
   },

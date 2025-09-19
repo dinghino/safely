@@ -3,7 +3,7 @@
 import { defineTable } from 'convex/server'
 import { v } from 'convex/values'
 
-export default defineTable({
+export const todos = defineTable({
   completed: v.boolean(),
   text: v.string(),
   created_by: v.id('users'),

@@ -1,13 +1,12 @@
 'use client'
 
 import Link from 'next/link'
-
 import { BellIcon, MapPinIcon, Monitor } from 'lucide-react'
 
 import dayjs from '@/lib/dayjs'
 
 import { Badge } from '@workspace/ui/components/badge'
-import { type ColumnDef, createColumnHelper } from '@workspace/data-table'
+import { createColumnHelper } from '@workspace/data-table'
 import { createColumnConfigHelper } from '@workspace/data-filter'
 
 import type { Device } from '@/entities/device/types'
@@ -23,7 +22,7 @@ const dtf = createColumnConfigHelper<DeviceWithId>()
 
 export const getColumns = ({ deviceBaseUrl }: { deviceBaseUrl: string }) => {
   return [
-    c.accessor('status', {
+    c.accessor((r) => r.status, {
       id: 'status',
       header: 'Status',
       cell: ({ row }) => <DeviceStatusBadge device={row.original} />,
@@ -88,7 +87,7 @@ export const getColumns = ({ deviceBaseUrl }: { deviceBaseUrl: string }) => {
         </div>
       ),
     }),
-  ] as ColumnDef<DeviceWithId>[]
+  ]
 }
 
 export type DeviceTableColumns = ReturnType<typeof getColumns>

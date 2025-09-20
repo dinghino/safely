@@ -19,7 +19,6 @@ import {
   createTSTColumns,
   createTSTFilters,
   DataFilter,
-  DataTableFilter,
   FilterActions,
   FilterSelector,
   useDataTableFilters,
@@ -35,17 +34,13 @@ export namespace DevicesTable {
 
 export function DevicesTable(props: DevicesTable.Props) {
   const { deviceBaseUrl = '/dashboard/devices' } = props
-  const [filterState, _setFilterState] = useFilterSearchParams({
-    key: 'devices',
-  })
-  const setFilterState = useDebounceCallback(_setFilterState, 300)
-  // pass filters down
-  const devices = useQuery(api.devices.getAll)
+  const [filterState, setFilterState] = useQueryFilters()
+
+  // todo: pass filters (and pagination) down when we allow filtering on backend
+  const data = useDevicesData()
 
   const columns = useMemo(() => getColumns({ deviceBaseUrl }), [deviceBaseUrl])
   const columnsConfig = useMemo(() => getDeviceFilters(), [])
-  // data-table expects an 'id' field for now
-  const data = useMemo(() => devices?.map((d) => ({ ...d, id: d._id })) ?? [], [devices])
 
   const filter = useDataTableFilters({
     data,
@@ -79,7 +74,7 @@ export function DevicesTable(props: DevicesTable.Props) {
       columns={tstColumns}
       data={data}
       filters={filters}
-      initialState={{ columnVisibility: { deviceId: false } }}
+      initialState={{ columnVisibility: { deviceId: false, platform: false } }}
     >
       <div className="space-y-2">
         <DataFilter {...filter}>
@@ -96,4 +91,19 @@ export function DevicesTable(props: DevicesTable.Props) {
       </div>
     </DataTableProvider>
   )
+}
+
+function useDevicesData() {
+  const devices = useQuery(api.devices.getAll)
+  // data-table expects an 'id' field for now, so we map it here
+  // todo: refactor data-table to allow custom id field
+  return useMemo(() => devices?.map((d) => ({ ...d, id: d._id as string })) ?? [], [devices])
+}
+
+function useQueryFilters() {
+  const [filterState, _setFilterState] = useFilterSearchParams({
+    key: 'devices',
+  })
+  const setFilterState = useDebounceCallback(_setFilterState, 300)
+  return [filterState, setFilterState] as const
 }

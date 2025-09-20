@@ -4,7 +4,7 @@
  * This is a prototype client page for managing a device's sessions and logging
  * a tracking sessions and data. it needs to be split into proper components
  * spanning features and other layers.
- * 
+ *
  * Most of it is going to be removed completely once we have mapping, probably.
  */
 
@@ -25,6 +25,8 @@ import dayjs from '@/lib/dayjs'
 import { useDeviceLocation } from '@/shared/hooks/use-device-location'
 import { ChevronDown, Trash2Icon } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { SessionLocationsTable } from '@/widgets/geospatial-table'
+import { Badge } from '@workspace/ui/components/badge'
 
 function isSessionOpen(session?: { endedAt?: number }) {
   return session && !session.endedAt
@@ -107,7 +109,10 @@ function SessionItem({ session }: { session: Doc<'trackSession'> }) {
         >
           {/* <Button variant="secondary" className="w-full justify-between"> */}
           <h3 className="text-start font-bold">Session {session._id}</h3>
-          <ChevronDown data-role="chevron" className="h-4 w-4 transition-transform duration-200 ease-in-out" />
+          <ChevronDown
+            data-role="chevron"
+            className="h-4 w-4 transition-transform duration-200 ease-in-out"
+          />
           {/* </Button> */}
         </CollapsibleTrigger>
         <Button
@@ -120,16 +125,21 @@ function SessionItem({ session }: { session: Doc<'trackSession'> }) {
           <Trash2Icon />
         </Button>
       </div>
-      <CollapsibleContent className="rounded-b-lg border border-t-0 p-2">
-        <p>Started at {dayjs(session.startedAt).format('YYYY-MM-DD HH:mm:ss')}</p>
-        {session.endedAt && <p>Ended at {dayjs(session.endedAt).format('YYYY-MM-DD HH:mm:ss')}</p>}
-        <p>
-          Duration: <Duration session={session} />
-        </p>
-        <pre>{JSON.stringify(session, null, 2)}</pre>
-        <div className="p-2">
-          <SessionData sessionId={session._id} />
-        </div>
+      <CollapsibleContent className="space-y-4 rounded-b-lg border border-t-0 p-2">
+        <header className='space-y-1 rounded-lg bg-card p-2'>
+          <p>Started at {dayjs(session.startedAt).format('YYYY-MM-DD HH:mm:ss')}</p>
+          {session.endedAt && (
+            <p>Ended at {dayjs(session.endedAt).format('YYYY-MM-DD HH:mm:ss')}</p>
+          )}
+          <div className="inline-flex items-center gap-2">
+            <Badge>
+              Duration <Duration session={session} />
+            </Badge>
+            <Badge>Points {session.pointsCount}</Badge>
+          </div>
+        </header>
+        {/* <pre>{JSON.stringify(session, null, 2)}</pre> */}
+        <SessionData sessionId={session._id} />
       </CollapsibleContent>
     </Collapsible>
   )
@@ -139,7 +149,8 @@ function SessionData({ sessionId }: { sessionId: Id<'trackSession'> }) {
   const data = useQuery(api.tracking.getSessionLocations, { sessionId })
   if (!data) return <div>Loading session data...</div>
   if (data.length === 0) return <div>No location data for this session</div>
-  return <pre>{JSON.stringify(data, null, 2)}</pre>
+  return <SessionLocationsTable locations={data} />
+  // return <pre>{JSON.stringify(data, null, 2)}</pre>
 }
 
 /**

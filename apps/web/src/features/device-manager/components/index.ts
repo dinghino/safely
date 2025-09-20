@@ -1,5 +1,3 @@
-export * from './devices-table'
-export * from './device-form'
-export * from './position-manager'
-
 export * from '@/entities/device/components'
+export * from './device-form'
+export * from './device-actions-menu'

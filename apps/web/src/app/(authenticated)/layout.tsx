@@ -1,6 +1,6 @@
 'use client'
 
-import { ClerkLoaded, ClerkLoading } from '@clerk/nextjs'
+import { ClerkLoaded, ClerkLoading, RedirectToSignIn } from '@clerk/nextjs'
 import { Authenticated, AuthLoading, Unauthenticated } from 'convex/react'
 import Loader from '@/components/loader'
 // import { UserPresenceProvider } from '@/features/presence/contexts'
@@ -20,7 +20,8 @@ export default function AuthenticatedLayout({ children }: { children: React.Reac
           {/* </UserPresenceProvider> */}
         </Authenticated>
         <Unauthenticated>
-          <Loader />
+          {/* <Loader /> */}
+          <RedirectToSignIn />
         </Unauthenticated>
         <AuthLoading>
           <Loader />

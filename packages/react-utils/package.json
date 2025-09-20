@@ -6,6 +6,9 @@
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
+    "./components": "./src/components/index.ts",
+    "./components/*": "./src/components/*",
+    "./hooks": "./src/hooks/index.ts",
     "./hooks/*": "./src/hooks/*",
     "./lib/*": "./src/lib/*",
     ".": "./src/index.ts"

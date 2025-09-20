@@ -12,7 +12,7 @@ import type { Device } from '@/entities/device/types'
  * @note This will be expanded with more fields to edit the device properties when
  * we add them
  */
-export function DeviceForm({ device }: { device: Device }) {
+export function DeviceForm({ device, onSubmitted }: { device: Device; onSubmitted?: () => void }) {
   const rename = useMutation(api.devices.renameDevice)
 
   const form = useAppForm({
@@ -21,7 +21,11 @@ export function DeviceForm({ device }: { device: Device }) {
       onChange: z.object({ name: z.string() }),
     },
     onSubmit: async ({ value }) => {
-      toast.promise(rename({ deviceId: device._id, name: value.name }), {
+      toast.promise(
+        async () => {
+          await rename({ deviceId: device._id, name: value.name })
+          onSubmitted?.()
+        }, {
         loading: 'Renaming device...',
         success: 'Device renamed',
         error: 'Failed to rename device',

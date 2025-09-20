@@ -263,7 +263,8 @@ async function _getActiveSession({ ctx, deviceId }: { ctx: QueryCtx; deviceId: I
 
   const session = await ctx.db
     .query('trackSession')
-    .withIndex('by_device', (q) => q.eq('device', device._id))
+    // .withIndex('by_device', (q) => q.eq('device', device._id))
+    .withIndex('active', (q) => q.eq('device', device._id).eq('endedAt', undefined))
     .order('desc')
     .first()
   return session

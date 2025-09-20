@@ -87,7 +87,7 @@ export function DataTableProvider<T extends { id: UniqueIdentifier }>(
     columns: userColumns,
     filters,
     children,
-    // initialState: init = {},
+    initialState: init = {},
     loading,
   } = props
 
@@ -102,7 +102,9 @@ export function DataTableProvider<T extends { id: UniqueIdentifier }>(
   // used only if we are not using external filters, but needed otherwise
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
 
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>(
+    init.columnVisibility ?? {},
+  )
   const [rowSelection, setRowSelection] = useState({})
 
   const [pagination, setPagination] = usePaginationSearchParams({ base: props.tableName })
@@ -110,7 +112,7 @@ export function DataTableProvider<T extends { id: UniqueIdentifier }>(
   const table = useReactTable<T>({
     data,
     columns,
-    initialState: {},
+    initialState: init,
     state: {
       sorting,
       columnFilters: filters ?? columnFilters,

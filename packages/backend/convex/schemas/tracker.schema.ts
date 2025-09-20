@@ -22,6 +22,7 @@ export const trackSession = defineTable({
   // these are used to query on time range and derived status (open/closed session)
   .index('by_startedAt', ['startedAt'])
   .index('by_endedAt', ['endedAt'])
+  .index('active', ['device', 'endedAt'])
 
 export const trackLocationMetadata = v.object({
   accuracy: v.optional(v.number()),

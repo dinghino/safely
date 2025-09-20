@@ -26,6 +26,7 @@ import type { Device } from '@/entities/device/types'
 import { DeviceForm } from './device-form'
 import { SessionButton } from '@/features/device-tracking/components/session-button'
 import { useState } from 'react'
+import { DeleteDialogButton } from '@workspace/ui/components/delete-dialog-button'
 
 export function ActionsCell({ device }: { device: Device }) {
   // const isCurrent = useIsCurrent({ device })
@@ -52,11 +53,21 @@ export function DeviceActionsMenu({ device }: { device: Device }) {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem disabled={isCurrent} onClick={() => unregister({ id: device._id })}>
-          Unregister
-        </DropdownMenuItem>
+        <DeleteDialogButton
+          modal
+          onClick={async () => {
+            await unregister({ id: device._id })
+          }}
+          title="Unregister Device"
+          description="Are you sure you want to unregister this device? This action cannot be undone."
+          confirmText="Unregister"
+        >
+          <DropdownMenuItem disabled={isCurrent} onSelect={(e) => e.preventDefault()}>
+            Unregister
+          </DropdownMenuItem>
+        </DeleteDialogButton>
         <DialogForm
-          trigger={<DropdownMenuItem onSelect={(e) => e.preventDefault()}>Rename</DropdownMenuItem>}
+          trigger={<DropdownMenuItem onSelect={(e) => e.preventDefault()}>Edit</DropdownMenuItem>}
           device={device}
         />
       </DropdownMenuContent>

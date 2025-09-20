@@ -26,7 +26,6 @@ export const getColumns = ({ deviceBaseUrl }: { deviceBaseUrl: string }) => {
       id: 'status',
       header: 'Status',
       cell: ({ row }) => <DeviceStatusBadge device={row.original} />,
-      enableSorting: false,
     }),
     c.accessor('name', {
       id: 'name',
@@ -44,7 +43,7 @@ export const getColumns = ({ deviceBaseUrl }: { deviceBaseUrl: string }) => {
       id: 'trackingMode',
       header: 'Tracking',
       cell: ({ cell }) => (
-        <div className="inline-flex w-full justify-center">
+        <div className="inline-flex w-full justify-start">
           <Badge variant="secondary">{cell.getValue()}</Badge>
         </div>
       ),

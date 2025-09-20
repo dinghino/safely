@@ -7,6 +7,7 @@ import '@workspace/data-filter/styles.css'
 import Header from '@/components/header'
 import Providers from '@/components/providers'
 import { Toaster } from '@workspace/ui/components/sonner'
+import { cn } from '@/lib/utils'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -30,10 +31,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body className={cn(geistSans.variable, geistMono.variable, 'relative antialiased')}>
         <Providers>
           <div className="grid h-svh grid-rows-[auto_1fr]">
-            <Header />
+            <div className="sticky top-0 z-50 bg-background">
+              <Header />
+            </div>
             {children}
           </div>
           <Toaster richColors />

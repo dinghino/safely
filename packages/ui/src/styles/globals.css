@@ -5,6 +5,7 @@
 
 @import "tw-animate-css";
 
+@import "./content-grid.css";
 @import "./theme.css";
 
 @custom-variant dark (&:is(.dark *));

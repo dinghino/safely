@@ -1,1 +1,2 @@
-export { DevicesTable } from './components'
+export * from './components'
+export * from './hooks'

@@ -27,8 +27,9 @@ type UpdateTodoData = Omit<Todo, '_id' | 'completed' | '_creationTime' | 'create
 export function useUpdateTodo() {
   const editTodo = useMutation(api.todos.edit)
   return async (id: Id<'todos'>, data: UpdateTodoData, onSuccess?: () => void) => {
-    if (!data.text.trim()) return
-    await editTodo({ id, ...data })
+    const text = data.text.trim()
+    if (!text) return
+    await editTodo({ id, text })
     onSuccess?.()
   }
 }

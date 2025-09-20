@@ -12,11 +12,17 @@ import {
 } from '@workspace/ui/components/dialog'
 import { Checkbox } from '@workspace/ui/components/checkbox'
 import { Button } from '@workspace/ui/components/button'
+import { ButtonGroup } from '@workspace/ui/components/button-group'
+import { DeleteDialogButton } from '@workspace/ui/components/delete-dialog-button'
+
+import { Conditional } from '@workspace/react-utils/components'
+
 import Loader from '@/components/loader'
 
 import { useDeleteTodo, useTodos, useToggleTodo } from '../hooks'
 import type { Todo } from '../types'
 import { EditTodoForm } from './todo-form'
+import { cn } from '@/lib/utils'
 
 export function TodosList() {
   const todos = useTodos()
@@ -46,14 +52,18 @@ function TodoItem({ todo }: { todo: Todo }) {
         <ToggleTodo todo={todo} />
         <label
           htmlFor={`todo-${todo._id}`}
-          className={`${todo.completed ? 'text-muted-foreground line-through' : ''}`}
+          className={cn('text-sm', todo.completed && 'text-muted-foreground line-through')}
         >
           {todo.text}
         </label>
       </div>
       <div className="inline-flex gap-2">
-        {!todo.completed && <EditTodoDialog todo={todo} />}
-        <DeleteTodoButton todo={todo} />
+        <ButtonGroup>
+          <Conditional if={!todo.completed}>
+            <EditTodoDialog todo={todo} />
+          </Conditional>
+          <DeleteTodoButton todo={todo} />
+        </ButtonGroup>
       </div>
     </li>
   )
@@ -73,15 +83,23 @@ function ToggleTodo({ todo }: { todo: Todo }) {
 function DeleteTodoButton({ todo }: { todo: Todo }) {
   const deleteTodo = useDeleteTodo()
   return (
-    <Button
-      variant="ghost"
-      size="icon"
-      onClick={() => deleteTodo(todo._id)}
+    <DeleteDialogButton
+      onClick={async () => {
+        await deleteTodo(todo._id)
+      }}
+      title="Delete todo"
+      description={
+        <>
+          Are you sure you want to delete this todo? <br />
+          This action cannot be undone.
+        </>
+      }
       aria-label="Delete todo"
-      className="cursor-pointer"
     >
-      <Trash2 className="h-4 w-4" />
-    </Button>
+      <Button variant="ghost" size="icon" aria-label="Delete todo" className="cursor-pointer">
+        <Trash2 />
+      </Button>
+    </DeleteDialogButton>
   )
 }
 
@@ -90,7 +108,13 @@ function EditTodoDialog({ todo }: { todo: Todo }) {
   return (
     <Dialog open={open} onOpenChange={SetOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" disabled={todo.completed} onClick={() => SetOpen(true)}>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="cursor-pointer"
+          disabled={todo.completed}
+          onClick={() => SetOpen(true)}
+        >
           <PencilIcon />
         </Button>
       </DialogTrigger>

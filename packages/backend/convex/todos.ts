@@ -31,6 +31,18 @@ export const create = mutation({
   },
 })
 
+export const edit = mutation({
+  args: {
+    id: v.id('todos'),
+    text: v.string(),
+  },
+  handler: async (ctx, args) => {
+    await getCurrentUserOrThrow(ctx)
+    await ctx.db.patch(args.id, { text: args.text })
+    return { success: true }
+  },
+})
+
 export const toggle = mutation({
   args: {
     id: v.id('todos'),

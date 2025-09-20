@@ -6,7 +6,7 @@ import {
   CardDescription,
   CardContent,
 } from '@workspace/ui/components/card'
-import { TodoForm } from './todo-form'
+import { CreateTodoForm } from './todo-form'
 import { TodosList } from './todos-list'
 import { Authenticated, Unauthenticated } from 'convex/react'
 
@@ -19,7 +19,7 @@ export function TodosCard() {
       </CardHeader>
       <CardContent>
         <Authenticated>
-          <TodoForm />
+          <CreateTodoForm />
           <TodosList />
         </Authenticated>
         <Unauthenticated>

@@ -1,11 +1,22 @@
 'use client'
 
-import Loader from '@/components/loader'
-import { useDeleteTodo, useTodos, useToggleTodo } from '../hooks'
+import { useState } from 'react'
+import { PencilIcon, Trash2 } from 'lucide-react'
+
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@workspace/ui/components/dialog'
 import { Checkbox } from '@workspace/ui/components/checkbox'
 import { Button } from '@workspace/ui/components/button'
-import { Trash2 } from 'lucide-react'
+import Loader from '@/components/loader'
+
+import { useDeleteTodo, useTodos, useToggleTodo } from '../hooks'
 import type { Todo } from '../types'
+import { EditTodoForm } from './todo-form'
 
 export function TodosList() {
   const todos = useTodos()
@@ -29,16 +40,10 @@ export function TodosList() {
 }
 
 function TodoItem({ todo }: { todo: Todo }) {
-  const toggleTodo = useToggleTodo()
-  const deleteTodo = useDeleteTodo()
   return (
     <li className="flex items-center justify-between rounded-md border p-2">
       <div className="flex items-center space-x-2">
-        <Checkbox
-          checked={todo.completed}
-          onCheckedChange={() => toggleTodo(todo._id, todo.completed)}
-          id={`todo-${todo._id}`}
-        />
+        <ToggleTodo todo={todo} />
         <label
           htmlFor={`todo-${todo._id}`}
           className={`${todo.completed ? 'text-muted-foreground line-through' : ''}`}
@@ -46,15 +51,55 @@ function TodoItem({ todo }: { todo: Todo }) {
           {todo.text}
         </label>
       </div>
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={() => deleteTodo(todo._id)}
-        aria-label="Delete todo"
-        className="cursor-pointer"
-      >
-        <Trash2 className="h-4 w-4" />
-      </Button>
+      <div className="inline-flex gap-2">
+        {!todo.completed && <EditTodoDialog todo={todo} />}
+        <DeleteTodoButton todo={todo} />
+      </div>
     </li>
+  )
+}
+
+function ToggleTodo({ todo }: { todo: Todo }) {
+  const toggleTodo = useToggleTodo()
+  return (
+    <Checkbox
+      checked={todo.completed}
+      onCheckedChange={() => toggleTodo(todo._id, todo.completed)}
+      id={`todo-${todo._id}`}
+    />
+  )
+}
+
+function DeleteTodoButton({ todo }: { todo: Todo }) {
+  const deleteTodo = useDeleteTodo()
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={() => deleteTodo(todo._id)}
+      aria-label="Delete todo"
+      className="cursor-pointer"
+    >
+      <Trash2 className="h-4 w-4" />
+    </Button>
+  )
+}
+
+function EditTodoDialog({ todo }: { todo: Todo }) {
+  const [open, SetOpen] = useState(false)
+  return (
+    <Dialog open={open} onOpenChange={SetOpen}>
+      <DialogTrigger asChild>
+        <Button variant="ghost" size="icon" disabled={todo.completed} onClick={() => SetOpen(true)}>
+          <PencilIcon />
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Edit Todo</DialogTitle>
+        </DialogHeader>
+        <EditTodoForm todo={todo} onSuccess={() => SetOpen(false)} />
+      </DialogContent>
+    </Dialog>
   )
 }

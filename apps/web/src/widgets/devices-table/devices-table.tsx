@@ -5,9 +5,27 @@ import { useQuery } from 'convex/react'
 
 import { api } from '@workspace/backend/api'
 
-import { DataTable, DataTableProvider, DataTableToolbar } from '@workspace/data-table'
+import {
+  DataTable,
+  DataTableColumnToggle,
+  DataTableProvider,
+  DataTableToolbar,
+} from '@workspace/data-table'
 
-import { useDeviceColumns } from './devices-table.config'
+import { getDeviceFilters, getColumns } from './devices-table.config'
+import {
+  ActiveFilters,
+  ActiveFiltersMobileContainer,
+  createTSTColumns,
+  createTSTFilters,
+  DataFilter,
+  DataTableFilter,
+  FilterActions,
+  FilterSelector,
+  useDataTableFilters,
+  useFilterSearchParams,
+} from '@workspace/data-filter'
+import { useDebounceCallback } from '@workspace/data-filter/hooks'
 
 export namespace DevicesTable {
   export type Props = {
@@ -17,29 +35,65 @@ export namespace DevicesTable {
 
 export function DevicesTable(props: DevicesTable.Props) {
   const { deviceBaseUrl = '/dashboard/devices' } = props
+  const [filterState, _setFilterState] = useFilterSearchParams({
+    key: 'devices',
+  })
+  const setFilterState = useDebounceCallback(_setFilterState, 300)
+  // pass filters down
   const devices = useQuery(api.devices.getAll)
-  const columns = useDeviceColumns({ deviceBaseUrl })
 
+  const columns = useMemo(() => getColumns({ deviceBaseUrl }), [deviceBaseUrl])
+  const columnsConfig = useMemo(() => getDeviceFilters(), [])
   // data-table expects an 'id' field for now
   const data = useMemo(() => devices?.map((d) => ({ ...d, id: d._id })) ?? [], [devices])
 
+  const filter = useDataTableFilters({
+    data,
+    columnsConfig,
+    strategy: 'client',
+    filters: filterState,
+    onFiltersChange: setFilterState,
+    options: {
+      status: [
+        { label: 'Offline', value: 'offline' },
+        { label: 'Online', value: 'online' },
+      ],
+      trackingMode: [
+        { label: 'Off', value: 'off' },
+        { label: 'Passive', value: 'passive' },
+        { label: 'Active', value: 'active' },
+        { label: 'Aggressive', value: 'aggressive' },
+      ],
+    },
+  })
+
+  const tstColumns = useMemo(
+    () => createTSTColumns({ columns, configs: filter.columns }),
+    [columns, filter.columns],
+  )
+
+  const filters = useMemo(() => createTSTFilters(filter.filters), [filter.filters])
+
   return (
     <DataTableProvider
-      columns={columns}
+      columns={tstColumns}
       data={data}
+      filters={filters}
       initialState={{ columnVisibility: { deviceId: false } }}
     >
       <div className="space-y-2">
-        <DataTableToolbar>
-          <Toolbar />
-        </DataTableToolbar>
+        <DataFilter {...filter}>
+          <DataTableToolbar actions={<DataTableColumnToggle />}>
+            <FilterSelector />
+            <FilterActions />
+            {/* <DataTableFilter {...filter} /> */}
+          </DataTableToolbar>
+          <ActiveFiltersMobileContainer>
+            <ActiveFilters />
+          </ActiveFiltersMobileContainer>
+        </DataFilter>
         <DataTable />
       </div>
     </DataTableProvider>
   )
-}
-
-const Toolbar = () => {
-  // const { table } = useDataTable()
-  return <span className="w-full rounded border bg-background px-2 py-1">Toolbar goes here</span>
 }

@@ -11,6 +11,7 @@ const nextConfig: NextConfig = {
   transpilePackages: [
     "@workspace/ui",
     "@workspace/react-utils",
+    "@workspace/data-filter",
     "@workspace/data-table",
     "@workspace/backend",
     "@workspace/nuqs",

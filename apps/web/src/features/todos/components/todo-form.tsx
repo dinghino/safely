@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils'
 import { useAddTodo } from '../hooks'
 import { useAppForm } from '@workspace/form'
 import z from 'zod/v4'
+import { PlusIcon } from 'lucide-react'
 
 export function TodoForm({ className }: { className?: string }) {
   const addTodo = useAddTodo()
@@ -29,7 +30,7 @@ export function TodoForm({ className }: { className?: string }) {
         children={(field) => <field.TextField className="flex-1" placeholder="Add a new task..." />}
       />
       <form.AppForm>
-        <form.SubmitButton>Add</form.SubmitButton>
+        <form.SubmitButton size="icon"><PlusIcon /></form.SubmitButton>
       </form.AppForm>
     </form>
   )

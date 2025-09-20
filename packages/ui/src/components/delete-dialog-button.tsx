@@ -22,6 +22,7 @@ export namespace DeleteDialogButton {
     /** if children is provided it will be used as trigger */
     children?: React.ReactNode
     modal?: boolean
+    confirmText?: string
     /**
      * Override the default button with custom content
      */
@@ -33,6 +34,7 @@ export const DeleteDialogButton: React.FC<DeleteDialogButton.Props> = (props) =>
     onClick,
     title = 'Delete item',
     description = 'Are you sure you want to delete this item?',
+    confirmText = 'Delete',
     children,
     modal = false,
     ...rest
@@ -70,7 +72,7 @@ export const DeleteDialogButton: React.FC<DeleteDialogButton.Props> = (props) =>
             <Button variant="outline">Cancel</Button>
           </DialogClose>
           <Button variant="destructive" onClick={handleDelete} disabled={deleting}>
-            {deleting ? <Loader className="animate-spin" /> : 'Delete'}
+            {deleting ? <Loader className="animate-spin" /> : confirmText}
           </Button>
         </DialogFooter>
       </DialogContent>

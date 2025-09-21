@@ -35,4 +35,5 @@ export const deviceSettings = defineTable({
   deviceId: v.id('devices'),
   trackingMode,
   updateIntervalMs: v.number(),
+  heartbeatIntervalMs: v.optional(v.number()),
 }).index('by_deviceId', ['deviceId'])

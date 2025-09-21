@@ -104,7 +104,8 @@ export const register = mutation({
       await ctx.db.insert('deviceSettings', {
         deviceId: id,
         trackingMode: 'off',
-        updateIntervalMs: DEFAULT_HEARTBEAT_INTERVAL_MS, // default to 24h to have a high value
+        updateIntervalMs: DEFAULT_HEARTBEAT_INTERVAL_MS,
+        heartbeatIntervalMs: DEFAULT_HEARTBEAT_INTERVAL_MS,
       })
     }
 
@@ -205,15 +206,20 @@ export const heartbeat = mutation({
     // todo: move to /lib as helper to encapsulate all logic and flatten it
     if (location) {
       await geospatial.insert(ctx, deviceId, location.point, { deviceId: device.deviceId })
-      // update tracking session if location data provided and session is open
-      const activeSession = await ctx.runQuery(api.tracking.getActiveSession, { deviceId })
-      if (activeSession) {
-        await ctx.runMutation(api.tracking.addLocationPoint, {
-          sessionId: activeSession._id,
-          ...location,
-        })
-      }
+      // fixme: we are deciding if we want heartbeat to also handle tracking sessions
+      // for now this is disabled here. we'll see
+      // // update tracking session if location data provided and session is open
+      // const activeSession = await ctx.runQuery(api.tracking.getActiveSession, { deviceId })
+      // if (activeSession) {
+      //   await ctx.runMutation(api.tracking.addLocationPoint, {
+      //     sessionId: activeSession._id,
+      //     ...location,
+      //   })
+      // }
     }
+
+    ///
+    ///
 
     // Get or generate token to disconnect session.
     const sessionToken = await helpers.heartbeat.getSessionToken(ctx, { sessionId })

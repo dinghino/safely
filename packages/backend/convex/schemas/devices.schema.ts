@@ -1,15 +1,16 @@
 import { defineTable } from 'convex/server'
 import { v } from 'convex/values'
+import { deviceStatus } from './enums'
 
 /**
  * General status of a device
  */
-export const deviceStatus = v.union(
-  v.literal('online'),
-  v.literal('idle'),
-  v.literal('offline'),
-  v.literal('unknown'),
-)
+// export const deviceStatus = v.union(
+//   v.literal('online'),
+//   v.literal('idle'),
+//   v.literal('offline'),
+//   v.literal('unknown'),
+// )
 
 export const devices = defineTable({
   owner: v.id('users'),

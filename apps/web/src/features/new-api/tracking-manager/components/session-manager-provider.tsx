@@ -1,12 +1,14 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { useQuery, useMutation } from 'convex/react'
 import { api } from '@workspace/backend/api'
+import type { Device } from '@/entities/device/types'
+
 import { useDeviceLocation } from '../../location-manager'
 import { useDeviceContext } from '../../device-manager'
+import type { LocationData } from '../../location-manager/types'
+
 import { SessionManagerContext } from '../contexts'
 import type { SessionManagerProvider, SessionState, ActiveSession } from '../types'
-import type { Device } from '../../device-manager/types'
-import type { LocationData } from '../../location-manager/types'
 
 // @copilot: This component has complex useEffect dependencies and state management
 // todo: Consider using useReducer for state management and splitting complex effects

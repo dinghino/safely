@@ -1,8 +1,4 @@
-import type { Doc } from '@workspace/backend/dataModel'
-
-export type DeviceSettings = Doc<'deviceSettings'>
-export type DeviceDoc = Doc<'devices'>
-export type Device = DeviceDoc & { settings: DeviceSettings }
+import type { Device } from '@/entities/device/types'
 
 export interface DeviceContextValue {
   registerDevice: () => Promise<void>

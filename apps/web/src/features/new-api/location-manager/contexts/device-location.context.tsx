@@ -1,6 +1,28 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
-import { DeviceLocationContext, useDeviceLocation } from '../contexts'
 import type { DeviceLocationManager, LocationState, LocationData } from '../types'
+
+import { createContext } from '@workspace/react-utils'
+import type { DeviceLocationContextValue } from '../types'
+
+const [DeviceLocationContext, useDeviceLocation] =
+  createContext<DeviceLocationContextValue>('DeviceLocationContext')
+
+
+const transformPosition = (position: GeolocationPosition): LocationData => {
+  return {
+    point: {
+      latitude: position.coords.latitude,
+      longitude: position.coords.longitude,
+    },
+    metadata: {
+      accuracy: position.coords.accuracy,
+      altitude: position.coords.altitude || undefined,
+      altitudeAccuracy: position.coords.altitudeAccuracy || undefined,
+      heading: position.coords.heading || undefined,
+      speed: position.coords.speed || undefined,
+    },
+  }
+}
 
 export const DeviceLocationProvider: React.FC<DeviceLocationManager.Props> = (props) => {
   const { children } = props
@@ -15,34 +37,15 @@ export const DeviceLocationProvider: React.FC<DeviceLocationManager.Props> = (pr
   const watchIdRef = useRef<number | null>(null)
   const highAccuracyRef = useRef(false)
 
-  const transformPosition = useCallback((position: GeolocationPosition): LocationData => {
-    return {
-      point: {
-        latitude: position.coords.latitude,
-        longitude: position.coords.longitude,
-      },
-      metadata: {
-        accuracy: position.coords.accuracy,
-        altitude: position.coords.altitude || undefined,
-        altitudeAccuracy: position.coords.altitudeAccuracy || undefined,
-        heading: position.coords.heading || undefined,
-        speed: position.coords.speed || undefined,
-      },
-    }
+  const handleSuccess = useCallback((position: GeolocationPosition) => {
+    const locationData = transformPosition(position)
+    setState((prev) => ({
+      ...prev,
+      currentLocation: locationData,
+      error: null,
+      lastUpdate: Date.now(),
+    }))
   }, [])
-
-  const handleSuccess = useCallback(
-    (position: GeolocationPosition) => {
-      const locationData = transformPosition(position)
-      setState((prev) => ({
-        ...prev,
-        currentLocation: locationData,
-        error: null,
-        lastUpdate: Date.now(),
-      }))
-    },
-    [transformPosition],
-  )
 
   const handleError = useCallback((error: GeolocationPositionError) => {
     setState((prev) => ({
@@ -78,7 +81,7 @@ export const DeviceLocationProvider: React.FC<DeviceLocationManager.Props> = (pr
         )
       })
     },
-    [transformPosition],
+    [],
   )
 
   const startWatching = useCallback(

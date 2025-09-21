@@ -1,12 +1,19 @@
 import { useEffect } from 'react'
 import { useQuery } from 'convex/react'
 import { api } from '@workspace/backend/api'
+
+import { createContext } from '@workspace/react-utils'
+
 import { useDeviceId } from '@/shared/hooks/use-device-id'
 import { useRegisterDevice } from '@/features/device-tracking'
 import { useDeviceLocation } from '../../location-manager'
-import { DeviceContext } from '../contexts'
-import { useHeartbeat } from '../hooks'
-import type { DeviceContextProvider } from '../types'
+
+import type { DeviceContextValue, DeviceContextProvider } from '../types'
+import { HeartbeatManager } from './heartbeat-manager'
+
+const [DeviceContext, useDeviceContext] = createContext<DeviceContextValue>('DeviceContext')
+
+export { useDeviceContext }
 
 // @copilot: This component manages device registration and location watching
 // todo: Consider extracting location watching logic to a separate hook
@@ -15,14 +22,7 @@ export const DeviceProvider: React.FC<DeviceContextProvider.Props> = ({ children
   const [deviceId] = useDeviceId()
   const device = useQuery(api.devices.get, { deviceId })
 
-  const { currentLocation, startWatching, stopWatching } = useDeviceLocation()
-
-  useHeartbeat({
-    device,
-    enabled: !!device,
-    location: currentLocation,
-    intervalMs: device?.settings.heartbeatIntervalMs || 60_000,
-  })
+  const { startWatching, stopWatching } = useDeviceLocation()
 
   useEffect(() => {
     if (!device) {
@@ -46,5 +46,12 @@ export const DeviceProvider: React.FC<DeviceContextProvider.Props> = ({ children
     canRegister: !device,
   }
 
-  return <DeviceContext value={value}>{children}</DeviceContext>
+  return (
+    <DeviceContext value={value}>
+      <HeartbeatManager />
+      {children}
+    </DeviceContext>
+  )
 }
+
+export default DeviceProvider

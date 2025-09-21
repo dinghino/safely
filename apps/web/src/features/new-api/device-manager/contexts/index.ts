@@ -1,1 +1,2 @@
-export { DeviceContext, useDeviceContext } from './device.context'
+export { DeviceProvider, useDeviceContext } from './device.context'
+export * from './heartbeat-manager'

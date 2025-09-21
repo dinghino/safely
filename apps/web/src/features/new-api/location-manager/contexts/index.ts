@@ -1,1 +1,1 @@
-export { DeviceLocationContext, useDeviceLocation } from './device-location.context'
+export * from './device-location.context'

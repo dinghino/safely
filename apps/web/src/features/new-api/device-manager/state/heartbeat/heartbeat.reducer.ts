@@ -1,7 +1,6 @@
 import type { HeartbeatReducer } from './types'
 
 export const heartbeatReducer: HeartbeatReducer = (state, { type, payload }) => {
-
   log('[useHeartbeat reducer]', { type, payload })
 
   switch (type) {
@@ -14,6 +13,21 @@ export const heartbeatReducer: HeartbeatReducer = (state, { type, payload }) => 
         intervalMs: payload.intervalMs,
         error: null,
       }
+    case 'SENDING_HEARTBEAT': {
+      log(`[useHeartbeat reducer] [${type}] Sending heartbeat...`)
+      return {
+        ...state,
+        state: 'SENDING',
+        isRunning: true,
+      }
+    }
+    case 'HEARTBEAT_SENT':
+      return {
+        ...state,
+        state: 'RUNNING',
+        isRunning: true,
+        lastSentAt: Date.now(),
+      }
     case 'STOP_HEARTBEAT':
       log(`[useHeartbeat reducer] [${type}] Stopping heartbeat`)
       return {
@@ -22,12 +36,7 @@ export const heartbeatReducer: HeartbeatReducer = (state, { type, payload }) => 
         isRunning: false,
         error: null,
       }
-    case 'HEARTBEAT_SENT':
-      return {
-        ...state,
-        state: 'RUNNING',
-        lastSentAt: Date.now(),
-      }
+    // token management
     case 'SET_SESSION_TOKEN':
       log(`[useHeartbeat reducer] [${type}] Updating new session token`)
       return {
@@ -48,7 +57,9 @@ export const heartbeatReducer: HeartbeatReducer = (state, { type, payload }) => 
         error: payload.error,
       }
     case 'UPDATE_INTERVAL':
-      log(`[useHeartbeat reducer] [${type}] Updating heartbeat interval to: ${payload.intervalMs}ms`)
+      log(
+        `[useHeartbeat reducer] [${type}] Updating heartbeat interval to: ${payload.intervalMs}ms`,
+      )
       return {
         ...state,
         intervalMs: payload.intervalMs,

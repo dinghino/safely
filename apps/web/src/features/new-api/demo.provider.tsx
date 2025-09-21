@@ -11,19 +11,19 @@ interface DemoProviderProps {
 /**
  * Demo provider that composes all the new API providers in the correct order.
  * This replaces the FullProvider from derp.tsx and demonstrates the new modular structure.
- * 
+ *
  * Provider hierarchy:
  * 1. DeviceLocationProvider - Manages geolocation API and location state
- * 2. DeviceProvider - Manages device registration and heartbeat functionality  
+ * 2. DeviceProvider - Manages device registration and heartbeat functionality
  * 3. SessionProvider - Manages tracking sessions and location data collection
  */
 const DemoProvider: React.FC<DemoProviderProps> = ({ children }) => {
   return (
     <DeviceLocationProvider>
       <DeviceProvider>
-        <SessionProvider>
-          {children}
-        </SessionProvider>
+        {/* <SessionProvider> */}
+        {children}
+        {/* </SessionProvider> */}
       </DeviceProvider>
     </DeviceLocationProvider>
   )

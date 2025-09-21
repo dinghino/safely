@@ -13,7 +13,7 @@ import type { Device } from '@/entities/device/types'
 import { DeviceName, DevicePlatform, DeviceStatusBadge } from '@/entities/device/components'
 
 import { DeviceActionsMenu } from '@/features/device-manager/components'
-import { SessionButton } from '@/features/device-tracking/components'
+import { SessionButton } from '@/features/new-api/tracking-manager/components'
 
 export type DeviceWithId = Device & { id: string }
 
@@ -50,8 +50,15 @@ export const getColumns = ({ deviceBaseUrl }: { deviceBaseUrl: string }) => {
     }),
     c.accessor('settings.updateIntervalMs', {
       id: 'updateInterval',
-      header: 'Update Interval',
+      header: 'Tracking Interval',
       cell: ({ cell }) => <span>{dayjs.duration(cell.getValue(), 'ms').humanize(false)}</span>,
+    }),
+    c.accessor('settings.heartbeatIntervalMs', {
+      id: 'heartbeatInterval',
+      header: 'Heartbeat Interval',
+      cell: ({ cell }) => (
+        <span>{dayjs.duration(cell.getValue() ?? 60_000, 'ms').humanize(false)}</span>
+      ),
     }),
     c.accessor('deviceId', {
       id: 'deviceId',

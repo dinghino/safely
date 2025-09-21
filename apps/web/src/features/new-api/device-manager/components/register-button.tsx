@@ -7,9 +7,6 @@ export namespace RegisterButton {
   export type Props = Omit<React.ComponentProps<typeof Button>, 'children' | 'onClick'>
 }
 
-/**
- * @deprecated Use `RegisterDeviceButton` from `@/features/new-api/device-manager/components` instead.
- */
 export const RegisterDeviceButton = (props: RegisterButton.Props) => {
   const { registerDevice, canRegister } = useDeviceContext()
 

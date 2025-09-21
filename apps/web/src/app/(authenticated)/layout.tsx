@@ -4,7 +4,8 @@ import { ClerkLoaded, ClerkLoading, RedirectToSignIn } from '@clerk/nextjs'
 import { Authenticated, AuthLoading, Unauthenticated } from 'convex/react'
 import Loader from '@/components/loader'
 // import { UserPresenceProvider } from '@/features/presence/contexts'
-import { DeviceContextProvider } from '@/features/device-tracking'
+// import { DeviceContextProvider } from '@/features/device-tracking'
+import { DemoProvider } from '@/features/new-api'
 
 export default function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -16,7 +17,11 @@ export default function AuthenticatedLayout({ children }: { children: React.Reac
         <Authenticated>
           {/* disabled due to crypto package for localhost */}
           {/* <UserPresenceProvider> */}
-          <DeviceContextProvider>{children}</DeviceContextProvider>
+          {/* <DeviceContextProvider> */}
+
+          <DemoProvider>{children}</DemoProvider>
+
+          {/* </DeviceContextProvider> */}
           {/* </UserPresenceProvider> */}
         </Authenticated>
         <Unauthenticated>

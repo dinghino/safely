@@ -24,6 +24,7 @@ export function useHeartbeat(options: HeartbeatOptions) {
   const [sessionToken, setSessionToken] = useState<string | null>(null)
   const sessionTokenRef = useRef<string | null>(null)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const locationRef = useRef<HeartbeatLocation | undefined>(location)
 
   const heartbeat = useMutation(api.devices.heartbeat)
   const disconnect = useMutation(api.devices.disconnect)
@@ -39,6 +40,11 @@ export function useHeartbeat(options: HeartbeatOptions) {
     }
     setSessionToken(null)
   }, [disconnect])
+
+  // store latest location in ref to avoid re-creating interval
+  useEffect(() => {
+    locationRef.current = location
+  }, [location])
 
   // Update refs whenever tokens change.
   useEffect(() => {
@@ -65,10 +71,10 @@ export function useHeartbeat(options: HeartbeatOptions) {
   // periodic heartbeats
   useEffect(() => {
     // send initial heartbeat
-    void sendHeartbeat(location)
+    void sendHeartbeat(locationRef.current)
     // Clear any existing interval before setting a new one
     if (intervalRef.current) clearInterval(intervalRef.current)
-    intervalRef.current = setInterval(() => sendHeartbeat(location), interval)
+    intervalRef.current = setInterval(() => sendHeartbeat(locationRef.current), interval)
 
     // cleanup
     return () => {
@@ -81,7 +87,7 @@ export function useHeartbeat(options: HeartbeatOptions) {
         void disconnect({ sessionToken: sessionTokenRef.current })
       }
     }
-  }, [disconnect, interval, location, sendHeartbeat])
+  }, [disconnect, interval, sendHeartbeat])
 
   useEffect(() => {
     hasMounted.current = true

@@ -4,20 +4,10 @@ import { api } from '@workspace/backend/api'
 
 import { useWindowEvent } from '@/shared/hooks/use-window-event'
 
-import { useDeviceLocation } from '@/features/new-api/location-manager'
+import type { Device } from '@/entities/device/types'
 import type { LocationData } from '@/features/new-api/location-manager/types'
 
-import type { UseHeartbeatOptions, Device } from './types'
 import { heartbeatReducer } from './heartbeat.reducer'
-
-// Heartbeat state management with useReducer
-export type HeartbeatState = {
-  sessionToken: string | null
-  isRunning: boolean
-  intervalMs: number
-  lastSentAt: number | null
-  error: string | null
-}
 
 // flag to override internal systems. if this is false, if tracking mode is off
 // the heartbeat won't set location
@@ -28,6 +18,13 @@ function shouldSendLocation(trackingMode: string) {
   return SEND_LOCATION_ALWAYS || trackingMode !== 'off'
 }
 
+export interface UseHeartbeatOptions {
+  device: Device | null | undefined
+  enabled?: boolean
+  location?: LocationData | null
+  intervalMs: number
+}
+
 /**
  * Manages device heartbeat functionality with automatic session management.
  *
@@ -35,28 +32,17 @@ function shouldSendLocation(trackingMode: string) {
  * and optionally include location data. The heartbeat system is separate from tracking
  * sessions - heartbeats update a single row per device without creating history.
  *
- * Features:
- * - Automatic heartbeat at configurable intervals (from device settings)
+ * - Automatic heartbeat at configurable intervals
  * - Session token management with automatic cleanup on device changes
- * - Location data inclusion (configurable via SEND_LOCATION_ALWAYS flag)
+ * - Location data inclusion if provided (configurable via SEND_LOCATION_ALWAYS flag)
  * - Graceful cleanup on unmount and beforeunload events
  * - Uses refs to avoid stale closures and minimize effect dependencies
- *
- * Dependencies:
- * - Requires DeviceLocationProvider context for location data
- * - Uses Convex mutations for heartbeat and disconnect operations
- * - Device settings must include heartbeatIntervalMs property
- *
- * The hook uses a two-effect pattern:
- * 1. Effect 1: Syncs device.settings.heartbeatIntervalMs to reducer state
- * 2. Effect 2: Manages heartbeat interval based on state (avoids Convex object deps)
- *
- * State management is handled via useReducer with Redux-style actions for predictable
- * state transitions and better debugging.
  */
 
-export const useHeartbeat = ({ device, enabled = true }: UseHeartbeatOptions) => {
-  const { currentLocation } = useDeviceLocation()
+export const useHeartbeat = (options: UseHeartbeatOptions) => {
+  const { device, enabled = true, location, intervalMs } = options
+  // const { currentLocation } = useDeviceLocation()
+  const currentLocation = location
 
   // ping server for presence heartbeat
   const heartbeat = useMutation(api.devices.heartbeat)
@@ -68,15 +54,15 @@ export const useHeartbeat = ({ device, enabled = true }: UseHeartbeatOptions) =>
     state: 'IDLE',
     sessionToken: null,
     isRunning: false,
-    intervalMs: 60_000,
-    error: null,
     lastSentAt: null,
+    error: null,
+    intervalMs,
   })
 
   // Core refs for stable access
   const intervalRef = useRef<NodeJS.Timeout | null>(null)
   const deviceRef = useRef<Device | null | undefined>(null)
-  const locationRef = useRef<LocationData | null>(null)
+  const locationRef = useRef<LocationData | null | undefined>(null)
   // Keep sessionTokenRef only for beforeunload event (needs immediate access)
   const sessionTokenRef = useRef<string | null>(null)
 
@@ -96,12 +82,18 @@ export const useHeartbeat = ({ device, enabled = true }: UseHeartbeatOptions) =>
     sessionTokenRef.current = state.sessionToken
   }, [state.sessionToken])
 
+  // update interval in state if options change
+  useEffect(() => {
+    if (intervalMs !== state.intervalMs) {
+      dispatch({ type: 'UPDATE_INTERVAL', payload: { intervalMs } })
+    }
+  }, [intervalMs, state.intervalMs])
+
   // Handle device changes (reset session)
   // biome-ignore lint/correctness/useExhaustiveDependencies: device._id is THE trigger for the effect
   useEffect(() => {
-    if (sessionTokenRef.current) {
-      void disconnect({ sessionToken: sessionTokenRef.current })
-    }
+    const { current: sessionToken } = sessionTokenRef
+    if (sessionToken) void disconnect({ sessionToken })
     dispatch({ type: 'REMOVE_SESSION_TOKEN' })
   }, [device?._id, disconnect])
 
@@ -111,10 +103,7 @@ export const useHeartbeat = ({ device, enabled = true }: UseHeartbeatOptions) =>
   const sendHeartbeatDirect = async () => {
     const currentDevice = deviceRef.current
     if (!currentDevice) return
-    console.log('sending heartbeat...', {
-      deviceId: currentDevice._id,
-      interval: currentDevice.settings.heartbeatIntervalMs,
-    })
+
     const currentLocationData = locationRef.current
     const { trackingMode } = currentDevice.settings
 
@@ -126,30 +115,16 @@ export const useHeartbeat = ({ device, enabled = true }: UseHeartbeatOptions) =>
         location: shouldIncludeLocation ? currentLocationData : undefined,
       })
       dispatch({ type: 'HEARTBEAT_SENT' })
+      const { sessionToken } = result
 
       // Update session token if returned from server
-      if (result?.sessionToken && result.sessionToken !== state.sessionToken) {
-        dispatch({ type: 'SET_SESSION_TOKEN', payload: { token: result.sessionToken } })
+      if (sessionToken && sessionToken !== state.sessionToken) {
+        dispatch({ type: 'SET_SESSION_TOKEN', payload: { token: sessionToken } })
       }
-
-      console.log(`Heartbeat sent at ${Date.now()}`, {
-        trackingMode,
-        withLocation: !!shouldIncludeLocation,
-        location: currentLocationData,
-      })
     } catch (error) {
       console.error('Heartbeat failed:', error)
     }
   }
-
-  // Effect 1: Sync device settings to state
-  useEffect(() => {
-    if (device?.settings.heartbeatIntervalMs) {
-      const intervalMs = device.settings.heartbeatIntervalMs
-      console.log(`Device interval settings changed: ${intervalMs}ms`)
-      dispatch({ type: 'UPDATE_INTERVAL', payload: { intervalMs } })
-    }
-  }, [device?.settings.heartbeatIntervalMs])
 
   // Effect 2: Manage heartbeat based on state only
   // @copilot: Separated interval sync from heartbeat management for cleaner dependencies
@@ -224,7 +199,8 @@ export const useHeartbeat = ({ device, enabled = true }: UseHeartbeatOptions) =>
   const restart = () => {
     if (device && enabled) {
       stop()
-      const intervalMs = device.settings.heartbeatIntervalMs ?? 60_000
+      // const intervalMs = device.settings.heartbeatIntervalMs ?? 60_000
+
       dispatch({ type: 'START_HEARTBEAT', payload: { intervalMs } })
       sendHeartbeatDirect()
       intervalRef.current = setInterval(sendHeartbeatDirect, intervalMs)

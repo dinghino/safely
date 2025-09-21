@@ -15,8 +15,14 @@ export const DeviceProvider: React.FC<DeviceContextProvider.Props> = ({ children
   const [deviceId] = useDeviceId()
   const device = useQuery(api.devices.get, { deviceId })
 
-  const { startWatching, stopWatching } = useDeviceLocation()
-  useHeartbeat({ device, enabled: !!device })
+  const { currentLocation, startWatching, stopWatching } = useDeviceLocation()
+
+  useHeartbeat({
+    device,
+    enabled: !!device,
+    location: currentLocation,
+    intervalMs: device?.settings.heartbeatIntervalMs || 60_000,
+  })
 
   useEffect(() => {
     if (!device) {

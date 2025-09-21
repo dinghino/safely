@@ -258,7 +258,8 @@ async function _getActiveSession({ ctx, deviceId }: { ctx: QueryCtx; deviceId: I
   const device = await ctx.db.get(deviceId)
 
   if (!device || device.owner !== user._id) {
-    throw new Error('Device not found')
+    // throw new Error('Device not found')
+    return null
   }
 
   const session = await ctx.db

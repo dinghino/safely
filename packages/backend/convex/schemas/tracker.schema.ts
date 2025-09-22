@@ -16,6 +16,7 @@ export const trackSession = defineTable({
   startedAt: v.number(),
   endedAt: v.optional(v.number()),
   pointsCount: v.number(),
+  lastUpdatedAt: v.optional(v.number()),
 })
   .index('by_device', ['device']) // get all sessions for a device
   .index('by_owner', ['owner']) // get all sessions for a user

@@ -2,6 +2,8 @@
   "extends": "@workspace/typescript-config/nextjs.json",
   "compilerOptions": {
     "verbatimModuleSyntax": true,
+    "skipLibCheck": true,
+    "strictNullChecks": true,
     "types": ["bun-types"],
     "baseUrl": "./src",
     "paths": {

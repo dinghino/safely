@@ -1,7 +1,4 @@
-import type { LocationMetadata } from '@workspace/backend/types'
-
-export type Point = { latitude: number; longitude: number }
-export type LocationData = { point: Point; metadata: LocationMetadata }
+import type { LocationData } from '@/entities/session/types'
 
 export interface LocationState {
   currentLocation: LocationData | null

@@ -1,28 +1,14 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
-import type { DeviceLocationManager, LocationState, LocationData } from '../types'
+import type { DeviceLocationManager, LocationState } from '../types'
 
 import { createContext } from '@workspace/react-utils'
+import { transformPosition } from '@/entities/session/lib'
+import type { LocationData } from '@/entities/session/types'
+
 import type { DeviceLocationContextValue } from '../types'
 
 const [DeviceLocationContext, useDeviceLocation] =
   createContext<DeviceLocationContextValue>('DeviceLocationContext')
-
-
-const transformPosition = (position: GeolocationPosition): LocationData => {
-  return {
-    point: {
-      latitude: position.coords.latitude,
-      longitude: position.coords.longitude,
-    },
-    metadata: {
-      accuracy: position.coords.accuracy,
-      altitude: position.coords.altitude || undefined,
-      altitudeAccuracy: position.coords.altitudeAccuracy || undefined,
-      heading: position.coords.heading || undefined,
-      speed: position.coords.speed || undefined,
-    },
-  }
-}
 
 export const DeviceLocationProvider: React.FC<DeviceLocationManager.Props> = (props) => {
   const { children } = props

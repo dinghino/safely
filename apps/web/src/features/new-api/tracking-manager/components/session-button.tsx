@@ -30,7 +30,7 @@ export const SessionButton = (props: SessionButton.Props) => {
   }
 
   return (
-    <Button {...rest} onClick={handleClick}>
+    <Button variant={activeSession ? 'destructive' : 'default'} {...rest} onClick={handleClick}>
       {text}
     </Button>
   )

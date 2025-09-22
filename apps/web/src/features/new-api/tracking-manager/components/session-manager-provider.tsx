@@ -1,14 +1,16 @@
-import { useState, useRef, useCallback, useEffect } from 'react'
-import { useQuery, useMutation } from 'convex/react'
-import { api } from '@workspace/backend/api'
-import type { Device } from '@/entities/device/types'
+'use client'
 
-import { useDeviceLocation } from '../../location-manager'
+import { useEffect, useMemo } from 'react'
+import { useQuery, useMutation } from 'convex/react'
+import { useMachine } from '@xstate/react'
+import { api } from '@workspace/backend/api'
+
 import { useDeviceContext } from '../../device-manager'
-import type { LocationData } from '../../location-manager/types'
 
 import { SessionManagerContext } from '../contexts'
-import type { SessionManagerProvider, SessionState, ActiveSession } from '../types'
+import type { SessionManagerProvider } from '../types'
+import { activeSessionManager } from '../lib/state'
+import type { Id } from '@workspace/backend/dataModel'
 
 // @copilot: This component has complex useEffect dependencies and state management
 // todo: Consider using useReducer for state management and splitting complex effects
@@ -16,139 +18,77 @@ export const SessionProvider: React.FC<SessionManagerProvider.Props> = (props) =
   const { children } = props
   const { device } = useDeviceContext()
 
-  const [state, setState] = useState<SessionState>({
-    activeSession: null,
-    isTracking: false,
-    error: null,
-  })
-
-  const { currentLocation, startWatching, stopWatching } = useDeviceLocation()
-  const addLocationPoint = useMutation(api.tracking.addLocationPoint)
-
-  // Query for active session when device is available
   const activeSession = useQuery(api.tracking.getActiveSession, { deviceId: device?._id })
 
-  const intervalRef = useRef<NodeJS.Timeout | null>(null)
-  const deviceRef = useRef<Device | null | undefined>(null)
-  const locationRef = useRef<LocationData | null>(null)
-  const sessionRef = useRef<ActiveSession | null>(null)
+  const sendPosition = useMutation(api.tracking.addLocationPoint)
+  // const [_, stopSession] = useSessionControls()
+  const stopSession = useMutation(api.tracking.stopSession)
+  const closeSession = async (opts: { sessionId: Id<'trackSession'> }) => stopSession(opts)
 
-  // Keep refs updated
+  const [state, send] = useMachine(activeSessionManager, {
+    input: {
+      sessionId: activeSession?._id,
+      updateTimeout: device?.settings.updateIntervalMs,
+      sendPosition,
+      closeSession,
+    },
+    // // temporary debugger
+    // inspect: (data) => {
+    //   const events: Array<(typeof data)['type']> = ['@xstate.action', '@xstate.event']
+    //   if (!events.includes(data.type)) return
+    //   console.log('👷‍♂️ inspector', data)
+    // },
+  })
+
   useEffect(() => {
-    deviceRef.current = device
-  }, [device])
+    console.log('🍍 [session xstate] state changed to', state.value)
+  }, [state.value])
 
+  // stop the session if device is removed
   useEffect(() => {
-    locationRef.current = currentLocation
-  }, [currentLocation])
+    // stop if no device (unregistered) and we are actively tracking
+    if (!device && state.matches('active')) send({ type: 'STOP_SESSION' })
+  }, [device, state, send])
 
+  /// update state machine settings when device settings change
   useEffect(() => {
-    sessionRef.current = activeSession ?? null
-    setState((prev) => ({ ...prev, activeSession: activeSession ?? null }))
-  }, [activeSession])
+    const interval = device?.settings.updateIntervalMs
+    if (!interval) return
+    send({ type: 'UPDATE_SETTINGS', payload: { interval } })
+  }, [device?.settings.updateIntervalMs, send])
 
-  const sendLocationPoint = useCallback(async () => {
-    const currentDevice = deviceRef.current
-    const currentLocationData = locationRef.current
-    const currentSession = sessionRef.current
-
-    if (!currentDevice || !currentLocationData || !currentSession) {
-      return
-    }
-
-    try {
-      await addLocationPoint({
-        sessionId: currentSession._id,
-        point: currentLocationData.point,
-        metadata: currentLocationData.metadata,
-      })
-
-      console.log('Location point added to session', currentSession._id)
-    } catch (error) {
-      console.error('Failed to add location point:', error)
-      setState((prev) => ({ ...prev, error: (error as Error).message }))
-    }
-  }, [addLocationPoint])
-
-  const startLocationTracking = useCallback(() => {
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current)
-    }
-
-    const currentDevice = deviceRef.current
-    if (!currentDevice) return
-
-    const intervalMs = currentDevice.settings.updateIntervalMs
-
-    // Send initial location point
-    sendLocationPoint()
-
-    // Set up interval for tracking
-    intervalRef.current = setInterval(sendLocationPoint, intervalMs)
-
-    console.log(`Session tracking started with interval: ${intervalMs}ms`)
-  }, [sendLocationPoint])
-
-  const stopLocationTracking = useCallback(() => {
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current)
-      intervalRef.current = null
-      console.log('Session tracking stopped')
-    }
-  }, [])
-
-  const startTracking = useCallback(() => {
-    setState((prev) => ({ ...prev, isTracking: true, error: null }))
-    // Request high accuracy for session tracking
-    startWatching({ highAccuracy: true })
-    startLocationTracking()
-  }, [startWatching, startLocationTracking])
-
-  const stopTracking = useCallback(() => {
-    setState((prev) => ({ ...prev, isTracking: false }))
-    stopLocationTracking()
-    // Switch back to normal accuracy (or stop if not needed for heartbeat)
-    startWatching({ highAccuracy: false })
-  }, [stopLocationTracking, startWatching])
-
-  // Auto start/stop tracking based on device trackingMode and active session
-  // @copilot: This effect has complex logic that could benefit from being split
-  // todo: Consider using a state machine or splitting into multiple focused effects
+  // update the active session when it changes
+  // if no session available, stop the state machine
   useEffect(() => {
-    if (!device || !activeSession) {
-      if (state.isTracking) {
-        stopTracking()
-      }
-      return
-    }
+    if (!activeSession?._id) return send({ type: 'STOP_SESSION' })
+    send({ type: 'SET_SESSION', payload: { sessionId: activeSession._id } })
+  }, [activeSession?._id, send])
 
-    const { trackingMode } = device.settings
-    const shouldTrack = trackingMode !== 'off'
+  const isTracking = useMemo(() => state?.matches?.('active'), [state])
 
-    if (shouldTrack && !state.isTracking) {
-      startTracking()
-    } else if (!shouldTrack && state.isTracking) {
-      stopTracking()
-    }
-  }, [device?.settings.trackingMode, activeSession, state.isTracking, startTracking, stopTracking])
-
-  // Restart tracking when updateIntervalMs changes
-  useEffect(() => {
-    if (state.isTracking && device) {
-      startLocationTracking()
-    }
-  }, [device?.settings.updateIntervalMs, state.isTracking, startLocationTracking])
-
-  // Cleanup on unmount
-  useEffect(() => {
-    return stopLocationTracking
-  }, [stopLocationTracking])
-
-  const value = {
-    ...state,
-    startTracking,
-    stopTracking,
+  const value: SessionManagerProvider.Value = {
+    activeSession: activeSession ?? null,
+    isTracking,
+    error: null,
+    startSession: () => send({ type: 'START_SESSION' }),
+    stopSession: () => send({ type: 'STOP_SESSION' }),
   }
 
   return <SessionManagerContext value={value}>{children}</SessionManagerContext>
 }
+
+// function useSessionControls() {
+//   const { device } = useDeviceContext()
+
+//   const startSessionMutation = useMutation(api.tracking.startSession)
+//   const closeSession = useMutation(api.tracking.stopSession)
+
+//   const startSession = async () => {
+//     if (!device?._id) return false // cant start a session on a non-registered device
+//     const sessionId = await startSessionMutation({ deviceId: device._id })
+//     if (!sessionId) return false
+//     return sessionId
+//   }
+//   const stopSession = async (opts: { sessionId: Id<'trackSession'> }) =>  closeSession(opts)
+//   return [startSession, stopSession] as const
+// }

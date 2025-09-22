@@ -21,9 +21,7 @@ const DemoProvider: React.FC<DemoProviderProps> = ({ children }) => {
   return (
     <DeviceLocationProvider>
       <DeviceProvider>
-        {/* <SessionProvider> */}
-        {children}
-        {/* </SessionProvider> */}
+        <SessionProvider>{children}</SessionProvider>
       </DeviceProvider>
     </DeviceLocationProvider>
   )

@@ -39,6 +39,15 @@ export const getColumns = ({ deviceBaseUrl }: { deviceBaseUrl: string }) => {
         )
       },
     }),
+    // c.accessor('_id', {
+    //   id: 'convex_id',
+    //   header: 'Convex ID',
+    //   cell: ({ cell }) => (
+    //     <div className="inline-flex w-full justify-start">
+    //       <Badge variant="secondary">{cell.getValue()}</Badge>
+    //     </div>
+    //   ),
+    // }),
     c.accessor('settings.trackingMode', {
       id: 'trackingMode',
       header: 'Tracking',

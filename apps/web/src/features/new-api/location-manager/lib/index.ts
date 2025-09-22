@@ -1,4 +1,4 @@
-import type { LocationData } from '../types'
+import type { LocationData } from '@/entities/location/types'
 
 /** IGNORE THIS CLASS FOR NOW */
 export class LocationManager {

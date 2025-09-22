@@ -2,7 +2,7 @@
 // this should be its own state machine provided as actor to the session manager
 // so we can have one source of thruth for location data and manage watchPosition etc.
 
-import { transformPosition } from '@/entities/session/lib'
+import { transformPosition } from '@/entities/location/lib'
 import type { LocationMetadata } from '@workspace/backend/types'
 
 type PositionData = {

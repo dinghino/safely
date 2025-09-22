@@ -1,4 +1,4 @@
-import type { LocationData } from '@/entities/session/types'
+import type { LocationData } from '@/entities/location/types'
 
 export interface LocationState {
   currentLocation: LocationData | null

@@ -6,10 +6,10 @@ import { api } from '@workspace/backend/api'
 // import { createContext } from '@workspace/react-utils'
 
 import type { Device } from '@/entities/device/types'
+import type { LocationData } from '@/entities/location/types'
 import { useWindowEvent } from '@/shared/hooks/use-window-event'
 import { useConditionalInterval } from '@/shared/hooks/use-conditional-interval'
 
-import type { LocationData } from '../../location-manager/types'
 import { useDeviceLocation } from '../../location-manager'
 
 import useHeartbeatState, { type HeartbeatAction, type HeartbeatState } from '../state/heartbeat'

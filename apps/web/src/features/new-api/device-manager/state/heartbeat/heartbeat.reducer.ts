@@ -70,8 +70,9 @@ export const heartbeatReducer: HeartbeatReducer = (state, { type, payload }) => 
   }
 }
 
+const LOG_ENABLED = false
 function log(...args: any[]) {
-  if (process.env.NODE_ENV === 'development') {
-    console.log(...args)
-  }
+  if (!LOG_ENABLED) return
+  if (process.env.NODE_ENV !== 'development') return
+  console.log(...args)
 }

@@ -2,8 +2,8 @@ import { useState, useRef, useCallback, useEffect } from 'react'
 import type { DeviceLocationManager, LocationState } from '../types'
 
 import { createContext } from '@workspace/react-utils'
-import { transformPosition } from '@/entities/session/lib'
-import type { LocationData } from '@/entities/session/types'
+import { transformPosition } from '@/entities/location/lib'
+import type { LocationData } from '@/entities/location/types'
 
 import type { DeviceLocationContextValue } from '../types'
 

@@ -9,11 +9,12 @@ export interface SessionState {
 }
 
 export interface SessionManagerContextValue extends SessionState {
-  startTracking: () => void
-  stopTracking: () => void
+  startSession: () => void
+  stopSession: () => void
 }
 
 export namespace SessionManagerProvider {
+  export type Value = SessionManagerContextValue
   export type Props = {
     children: React.ReactNode
   }

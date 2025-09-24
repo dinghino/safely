@@ -1,5 +1,5 @@
 import { transformPosition } from '@/entities/location/lib'
-import { Locator } from '../types'
+import { Locator } from '@/lib/geolocation/types'
 
 export interface Options extends Locator.Options {
   timeout?: number

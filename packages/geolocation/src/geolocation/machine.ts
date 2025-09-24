@@ -1,7 +1,7 @@
 import { assertEvent, assign, emit, log, setup } from 'xstate'
 // biome-ignore lint/correctness/noUnusedImports: cannot infer machine type without this
 import type { Guard } from 'xstate/guards'
-import { Locator } from '../types'
+import { Locator } from '../lib/locator.types'
 
 import type { LocationMachine } from './types'
 import * as actor from './actors'

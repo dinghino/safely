@@ -1,5 +1,5 @@
 import { fromPromise, fromCallback } from 'xstate'
-import { Locator } from '../types'
+import { Locator } from '../lib/locator.types'
 import type { LocationMachine } from './types'
 
 type WithService = { service: Locator.Provider }

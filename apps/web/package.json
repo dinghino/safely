@@ -15,6 +15,7 @@
     "@workspace/data-filter": "workspace:*",
     "@workspace/data-table": "workspace:*",
     "@workspace/form": "workspace:*",
+    "@workspace/geolocation": "workspace:*",
     "@workspace/nuqs": "workspace:*",
     "@workspace/react-utils": "workspace:*",
     "@workspace/ui": "workspace:*",

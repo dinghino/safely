@@ -1,5 +1,5 @@
 export type { LocationMachine } from './types'
-import { machine } from './location.machine'
+import { machine } from './machine'
 export { machine }
 
 export default machine

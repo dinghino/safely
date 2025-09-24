@@ -1,6 +1,6 @@
 import type { ActorRefFrom, ActorLogicFrom } from 'xstate'
-import type { Locator } from '../types'
-import type { machine } from './location.machine'
+import type { Locator } from '../lib/locator.types'
+import type { machine } from './machine'
 
 export namespace LocationMachine {
   export type Actor = ActorRefFrom<typeof machine>

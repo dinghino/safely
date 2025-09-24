@@ -48,6 +48,7 @@
         "@workspace/data-filter": "workspace:*",
         "@workspace/data-table": "workspace:*",
         "@workspace/form": "workspace:*",
+        "@workspace/geolocation": "workspace:*",
         "@workspace/nuqs": "workspace:*",
         "@workspace/react-utils": "workspace:*",
         "@workspace/ui": "workspace:*",
@@ -184,6 +185,21 @@
         "@workspace/eslint-config": "workspace:*",
         "@workspace/typescript-config": "workspace:*",
         "typescript": "^5.9.2",
+      },
+    },
+    "packages/geolocation": {
+      "name": "@workspace/geolocation",
+      "dependencies": {
+        "xstate": "^5.22.0",
+      },
+      "devDependencies": {
+        "@types/bun": "latest",
+        "@workspace/backend": "workspace:*",
+        "@workspace/eslint-config": "workspace:*",
+        "@workspace/typescript-config": "workspace:*",
+      },
+      "peerDependencies": {
+        "typescript": "^5",
       },
     },
     "packages/nuqs": {
@@ -865,6 +881,8 @@
     "@workspace/eslint-config": ["@workspace/eslint-config@workspace:packages/eslint-config"],
 
     "@workspace/form": ["@workspace/form@workspace:packages/form"],
+
+    "@workspace/geolocation": ["@workspace/geolocation@workspace:packages/geolocation"],
 
     "@workspace/nuqs": ["@workspace/nuqs@workspace:packages/nuqs"],
 

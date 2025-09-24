@@ -3,7 +3,9 @@
 import { useMachine, useSelector } from '@xstate/react'
 import { createContext } from '@workspace/react-utils'
 
-import geolocation, { type Locator, type LocationMachine } from '@/lib/geolocation'
+// import geolocation, { type Locator, type LocationMachine } from '@/lib/geolocation'
+import geolocation from '@workspace/geolocation'
+import type { Locator, LocationMachine } from '@workspace/geolocation/types'
 import { BrowserGeolocationProvider } from '../services'
 
 export namespace GeolocationProvider {

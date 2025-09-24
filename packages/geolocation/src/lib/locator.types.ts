@@ -1,5 +1,7 @@
-import type { LocationData } from '@/entities/location/types'
-export type { LocationMachine } from './state/types'
+import type { LocationMetadata } from '@workspace/backend/types'
+
+export type Point = { latitude: number; longitude: number }
+export type LocationData = { point: Point; metadata: LocationMetadata }
 
 export namespace Locator {
   export interface Options {

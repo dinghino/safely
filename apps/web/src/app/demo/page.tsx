@@ -15,11 +15,11 @@ export default function DemoPage() {
   const { state, send, actor } = useGeolocationContext()
 
   // todo optimize selectors - move outside of component
-  const lastLocation = useSelector(actor, (state) => state.context.data)
-  const permission = useSelector(actor, (state) => state.context.permissionStatus)
-  const hasLastTimestamp = useSelector(actor, (state) => state.context.timestamp > 0)
-  const lastTimestamp = useSelector(actor, (state) => state.context.timestamp)
-  const error = useSelector(actor, (state) => state.context.error)
+  const lastLocation = useSelector(actor, (state) => state.context?.data)
+  const permission = useSelector(actor, (state) => state.context?.permissionStatus)
+  const hasLastTimestamp = useSelector(actor, (state) => state.context?.timestamp > 0)
+  const lastTimestamp = useSelector(actor, (state) => state.context?.timestamp)
+  const error = useSelector(actor, (state) => state.context?.error)
 
   // states
   const isStarting = useSelector(actor, (s) => s.matches('bootstrap'))

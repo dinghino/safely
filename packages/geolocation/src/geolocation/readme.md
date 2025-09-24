@@ -1,6 +1,6 @@
 # Geolocation API
 
-This module should expose a simple functional API to handle geolocation on the
+This module exposes a simple functional API to handle geolocation on the
 browser and PWA implementation of the app.
 
 This solution is not production ready for the app needs due to hardware and

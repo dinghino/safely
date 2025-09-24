@@ -24,6 +24,12 @@ export const metadata: Metadata = {
   description: 'safely',
 }
 
+const links = [
+  { href: '/', label: 'Home' },
+  { href: '/dashboard', label: 'Dashboard' },
+  { href: '/todos', label: 'Todos' },
+] satisfies Header.Props['links']
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -35,7 +41,7 @@ export default function RootLayout({
         <Providers>
           <div className="grid h-svh grid-rows-[auto_1fr]">
             <div className="sticky top-0 z-50 bg-background">
-              <Header />
+              <Header links={links} />
             </div>
             {children}
           </div>

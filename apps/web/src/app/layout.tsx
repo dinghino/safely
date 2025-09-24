@@ -28,6 +28,7 @@ const links = [
   { href: '/', label: 'Home' },
   { href: '/dashboard', label: 'Dashboard' },
   { href: '/todos', label: 'Todos' },
+  { href: '/demo', label: 'Demo' },
 ] satisfies Header.Props['links']
 
 export default function RootLayout({

@@ -10,8 +10,24 @@ import { Button } from '@workspace/ui/components/button'
 import Loader from '@/components/loader'
 import { cn } from '@/lib/utils'
 import { useGeolocationContext } from '@/features/geolocation'
+import { useDeviceId } from '@/shared/hooks/use-device-id'
+import { useQuery } from 'convex/react'
+import { api } from '@workspace/backend/api'
+import { Heartbeat } from '@/features/heartbeat/components/heartbeat'
+import { ButtonGroup } from '@workspace/ui/components/button-group'
 
 export default function DemoPage() {
+  const [deviceId] = useDeviceId()
+  const device = useQuery(api.devices.get, { deviceId })
+  return (
+    <div className="py-8 content-grid">
+      <GeolocationDemo />
+      {device && <Heartbeat deviceId={deviceId} />}
+    </div>
+  )
+}
+
+function GeolocationDemo() {
   const { state, send, actor } = useGeolocationContext()
 
   // todo optimize selectors - move outside of component
@@ -36,23 +52,25 @@ export default function DemoPage() {
 
   const badges = (
     <div className="inline-flex items-center gap-2">
-      <Badge variant="secondary" className="aspect-square h-full p-0">
-        <div
-          className={cn('aspect-square h-2 w-2 rounded bg-foreground', {
-            'bg-green-500': isReady,
-            'bg-yellow-500': isRequestingPermission,
-            'bg-blue-500': isWorking || isStarting,
-            'bg-red-500': !!error,
-          })}
-        />
-      </Badge>
-      <Badge variant={stateBadgeVariant}>State: {JSON.stringify(state.value)}</Badge>
-      {error && <Badge variant="destructive">{error}</Badge>}
-      <Badge>{lastLocation ? 'Location obtained' : 'No location obtained'}</Badge>
-      <Badge>Access: {permission}</Badge>
-      <Badge>
-        Last update: {hasLastTimestamp ? dayjs(lastTimestamp).format('HH:mm:ss') : 'never'}
-      </Badge>
+      <ButtonGroup>
+        <Badge variant="secondary" className="aspect-square">
+          <div
+            className={cn('aspect-square h-2 w-2 rounded bg-foreground', {
+              'bg-green-500': isReady,
+              'bg-yellow-500': isRequestingPermission,
+              'bg-blue-500': isWorking || isStarting,
+              'bg-red-500': !!error,
+            })}
+          />
+        </Badge>
+        <Badge variant={stateBadgeVariant}>State: {JSON.stringify(state.value)}</Badge>
+        {error && <Badge variant="destructive">{error}</Badge>}
+        <Badge variant="outline">{lastLocation ? 'Location obtained' : 'No location obtained'}</Badge>
+        <Badge variant="outline">Access: {permission}</Badge>
+        <Badge variant="outline">
+          Last update: {hasLastTimestamp ? dayjs(lastTimestamp).format('HH:mm:ss') : 'never'}
+        </Badge>
+      </ButtonGroup>
     </div>
   )
 
@@ -106,7 +124,7 @@ export default function DemoPage() {
   )
 
   return (
-    <div className="py-8 content-grid">
+    <div>
       {/* <header className="max-h-fit">
         <div className="p-4">Demo Page</div>
       </header> */}

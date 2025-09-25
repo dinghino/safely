@@ -3,6 +3,7 @@
 import type { Id } from '@workspace/backend/dataModel'
 import { Button } from '@workspace/ui/components/button'
 import { useActiveSession, useStartSession, useStopSession } from '../hooks'
+import { PauseIcon, PlayIcon } from 'lucide-react'
 
 export namespace SessionButton {
   export type Props = React.ComponentProps<typeof Button> & {
@@ -29,9 +30,15 @@ export const SessionButton = (props: SessionButton.Props) => {
     }
   }
 
+  const Icon = activeSession ? PauseIcon : PlayIcon
+
   return (
     <Button variant={activeSession ? 'destructive' : 'default'} {...rest} onClick={handleClick}>
-      {text}
+      {props.children ?? (
+        <>
+          <span className="max-md:sr-only">{text}</span> <Icon />
+        </>
+      )}
     </Button>
   )
 }

@@ -1,2 +1,2 @@
-export { SessionProvider } from './session-manager-provider'
+export { SessionManager } from './session-manager'
 export { SessionButton } from './session-button'

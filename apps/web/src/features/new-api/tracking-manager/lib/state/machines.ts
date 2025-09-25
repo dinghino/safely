@@ -8,16 +8,23 @@ import type { Context, Events, Inputs, SendPositionPayload } from './types'
 /**
  * Placeholder locator actor to be replaced with state machine later on
  */
-// type ParentActor = ActorRef<Snapshot<unknown>, Extract<Events, { type: 'SEND_POSITION' }>>
-const getPositionActor = fromPromise(
-  // async ({ input }: { input: PositionOptions & { parent: ParentActor } }) => {
-  async ({ input }: { input: PositionOptions }) => {
-    console.log('[xstate] getPosition actor called with', input)
-    const result = await getPosition(input)
-    const timestamp = Date.now()
-    return { ...result, timestamp } satisfies SendPositionPayload
-  },
-)
+const getPositionActor = fromPromise(async ({ input }: { input: PositionOptions }) => {
+  console.log('[xstate] getPosition actor called with', input)
+  const result = await getPosition(input)
+  const timestamp = Date.now()
+  return { ...result, timestamp } satisfies SendPositionPayload
+})
+// // type ParentActor = ActorRef<Snapshot<unknown>, Extract<Events, { type: 'SEND_POSITION' }>>
+// const getPositionActor = fromPromise(
+//   async ({ input }: { input: PositionOptions & { service: Context['locationActor'] } }) => {
+//     console.log('[xstate] getPosition actor called with', input)
+//     const { service, ...options } = input
+//     service.send({ type: 'GET_POSITION' })
+//     const result = await getPosition(options)
+//     const timestamp = Date.now()
+//     return { ...result, timestamp } satisfies SendPositionPayload
+//   },
+// )
 
 /// main machine --------------------------------------------------------------
 
@@ -29,6 +36,8 @@ const config = setup({
   },
   actors: {
     getLocation: getPositionActor,
+  } as {
+    getLocation: typeof getPositionActor
   },
   delays: {
     interval: ({ context }) => context.settings.interval ?? 10 * 60 * 1_000, // DO NOT DELETE JESUS CHRIST
@@ -147,9 +156,10 @@ const active = config.createStateConfig({
       invoke: {
         id: 'getLocation',
         src: 'getLocation',
-        input: ({ context: { settings } }) => ({
+        input: ({ context: { settings, locationActor } }) => ({
           enableHighAccuracy: true,
           maximumAge: settings.interval,
+          service: locationActor,
         }),
         onDone: {
           actions: raise(({ event }) => ({ type: 'SEND_POSITION', payload: event.output })),

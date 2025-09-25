@@ -48,7 +48,7 @@ export const DeviceProvider: React.FC<DeviceContextProvider.Props> = ({ children
 
   return (
     <DeviceContext value={value}>
-      <HeartbeatManager />
+      {/* <HeartbeatManager /> */}
       {children}
     </DeviceContext>
   )

@@ -1,6 +1,8 @@
 import type { Id } from '@workspace/backend/dataModel'
 import type { LocationMetadata } from '@workspace/backend/types'
 
+import type { LocationMachine } from '@/lib/geolocation/types'
+
 /**
  * this should match the api.tracking.addLocationPoint (or renamed) signature.
  * for type safety we will likely derive the type from the api directly later
@@ -23,6 +25,7 @@ export type Inputs = {
    */
   updateTimeout?: number
   sendPosition: SendPosition
+  locationActor: LocationMachine.Actor
   /** callback to create a new active session for this device */
   //  startSession: () => Promise<Id<'trackSession'> | false>
   closeSession: (options: { sessionId: Id<'trackSession'> }) => Promise<any>
@@ -41,6 +44,7 @@ export type Context = Omit<Inputs, 'updateTimeout'> & {
   settings: Settings
   /** timestamp of the last sent position update to avoid duplicated */
   lastSent?: number
+  // locationActor: LocationMachine.Actor
 }
 
 export type SendPositionPayload = Omit<AddOptions, 'sessionId'> & { timestamp: number }
@@ -52,5 +56,5 @@ export type Events =
   | { type: 'SET_SESSION'; payload: { sessionId: Id<'trackSession'> } }
   | { type: 'UPDATE_SETTINGS'; payload: Partial<Settings> }
   | { type: 'STOP_SESSION' }
-  | { type: 'POSITION_SENT', payload: { timestamp: number } }
+  | { type: 'POSITION_SENT'; payload: { timestamp: number } }
   | { type: 'FAILED_TO_SEND'; error: string }

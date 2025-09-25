@@ -8,6 +8,10 @@
  * Most of it is going to be removed completely once we have mapping, probably.
  */
 
+import { useEffect, useMemo, useState } from 'react'
+import { useMutation, useQuery } from 'convex/react'
+import { ChevronDown, Trash2Icon } from 'lucide-react'
+
 import { api } from '@workspace/backend/api'
 import type { Doc, Id } from '@workspace/backend/dataModel'
 import { Button, buttonVariants } from '@workspace/ui/components/button'
@@ -16,16 +20,13 @@ import {
   CollapsibleTrigger,
   CollapsibleContent,
 } from '@workspace/ui/components/collapsible'
-import { useMutation, useQuery } from 'convex/react'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { Badge } from '@workspace/ui/components/badge'
+
+import dayjs from '@/lib/dayjs'
+import { cn } from '@/lib/utils'
 
 import { DeviceName, DeviceStatusBadge } from '@/entities/device/components'
-import dayjs from '@/lib/dayjs'
-import { useDeviceLocation } from '@/shared/hooks/use-device-location'
-import { ChevronDown, Trash2Icon } from 'lucide-react'
-import { cn } from '@/lib/utils'
 import { SessionLocationsTable } from '@/widgets/geospatial-table'
-import { Badge } from '@workspace/ui/components/badge'
 
 function isSessionOpen(
   session: { endedAt?: number } | null | undefined,

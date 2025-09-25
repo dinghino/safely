@@ -1,5 +1,6 @@
 import { DeviceProvider, SessionManager } from '@/features/new-api'
 import { GeolocationProvider } from '@/features/geolocation'
+import { HeartbeatManager } from '@/features/heartbeat/components/heartbeat'
 
 export namespace AuthenticatedProviders {
   export type Props = { children: React.ReactNode }
@@ -15,8 +16,10 @@ export const AuthenticatedProviders = (props: AuthenticatedProviders.Props) => {
   return (
     <DeviceProvider>
       <GeolocationProvider>
-        <SessionManager />
-        {children}
+        <HeartbeatManager>
+          <SessionManager />
+          {children}
+        </HeartbeatManager>
       </GeolocationProvider>
     </DeviceProvider>
   )

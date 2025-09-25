@@ -13,16 +13,23 @@ import { useGeolocationContext } from '@/features/geolocation'
 import { useDeviceId } from '@/shared/hooks/use-device-id'
 import { useQuery } from 'convex/react'
 import { api } from '@workspace/backend/api'
-import { Heartbeat } from '@/features/heartbeat/components/heartbeat'
 import { ButtonGroup } from '@workspace/ui/components/button-group'
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@workspace/ui/components/collapsible'
+import { Loader2, ChevronDown } from 'lucide-react'
+import { Card } from '@workspace/ui/components/card'
+import { HeartbeatDebugger } from '@/features/heartbeat/components/debugger'
 
 export default function DemoPage() {
   const [deviceId] = useDeviceId()
   const device = useQuery(api.devices.get, { deviceId })
   return (
-    <div className="py-8 content-grid">
+    <div className="space-y-4 py-8 content-grid">
       <GeolocationDemo />
-      {device && <Heartbeat deviceId={deviceId} />}
+      {device && <HeartbeatDebugger />}
     </div>
   )
 }
@@ -73,23 +80,17 @@ function GeolocationDemo() {
     </div>
   )
 
-  const status = (
-    <div className="relative isolate">
-      {state.matches('requestingLocation') && (
-        <div className="absolute z-10 h-full w-full bg-background/25">
-          <Loader />
-        </div>
-      )}
-      <pre>{geo.current && JSON.stringify(geo.current, null, 2)}</pre>
-    </div>
-  )
-
   const requestPermissions = () => send({ type: 'REQUEST_PERMISSION' })
   const requestPosition = () => send({ type: 'GET_POSITION', options: { maximumAge: 1000 } })
   const restart = () => send({ type: 'RESTART' })
 
   const actions = (
     <div className="inline-flex items-center gap-2">
+      <CollapsibleTrigger asChild>
+        <Button className="data-[state=open]:[&>_svg]:rotate-180">
+          {!state.matches('ready') ? <Loader2 className="animate-spin" /> : <ChevronDown />}
+        </Button>
+      </CollapsibleTrigger>
       {state.matches('bootstrap') && (
         <Button disabled={isRequestingPermission || !!permission} onClick={requestPermissions}>
           Request Permission
@@ -121,17 +122,32 @@ function GeolocationDemo() {
       )}
     </div>
   )
+  const status = (
+    <Collapsible>
+      {actions}
+      <CollapsibleContent>
+        <div className="relative isolate">
+          {state.matches('requestingLocation') && (
+            <div className="absolute z-10 h-full w-full bg-background/25">
+              <Loader />
+            </div>
+          )}
+          <pre>{JSON.stringify(state.context, null, 2)}</pre>
+          <pre>{geo.current && JSON.stringify(geo.current, null, 2)}</pre>
+        </div>
+      </CollapsibleContent>
+    </Collapsible>
+  )
 
   return (
-    <div>
+    <Card className="p-4">
       {/* <header className="max-h-fit">
         <div className="p-4">Demo Page</div>
       </header> */}
       <section className="flex flex-col gap-4">
         {badges}
         {status}
-        {actions}
       </section>
-    </div>
+    </Card>
   )
 }

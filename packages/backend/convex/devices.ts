@@ -156,6 +156,7 @@ export const heartbeat = mutation({
   args: {
     // deviceId: v.id('devices'),
     deviceId: v.id('devices'),
+    interval: v.optional(v.number()),
     location: v.optional(
       v.object({
         point: point,
@@ -167,7 +168,7 @@ export const heartbeat = mutation({
     sessionToken: v.string(),
   },
   handler: async (ctx, args) => {
-    const { deviceId, location } = args
+    const { deviceId, location, interval } = args
 
     // ownership check -----------------------------------
 
@@ -227,7 +228,7 @@ export const heartbeat = mutation({
     // Schedule timeout to disconnect this session if no heartbeat is received
     // todo: chain scheduled with some `idle` function before full disconnect
     // if we want to implement idle states
-    await helpers.heartbeat.scheduleDisconnect(ctx, { sessionId, sessionToken })
+    await helpers.heartbeat.scheduleDisconnect(ctx, { sessionId, sessionToken, interval })
     return { sessionToken }
   },
 })

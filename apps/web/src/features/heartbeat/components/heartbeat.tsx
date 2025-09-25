@@ -9,8 +9,9 @@ import { api } from '@workspace/backend/api'
 import type { LocationData } from '@workspace/geolocation/types'
 import { useWindowEvent } from '@/shared/hooks/use-window-event'
 
-import machine from '../machine'
-import type { Heartbeat } from '../machine'
+import machine from '../state'
+import type { Heartbeat } from '../state/types'
+
 import { useGeolocationContext } from '@/features/geolocation'
 import { useDeviceId } from '@/shared/hooks/use-device-id'
 import { createContext } from '@workspace/react-utils'

@@ -1,116 +1,12 @@
-import { assign, emit, setup, fromCallback } from 'xstate'
-import type { PromiseActorLogic, CallbackActorLogic, ActorRefFromLogic, StateFrom } from 'xstate'
+import { assign, emit, setup } from 'xstate'
 // biome-ignore lint/correctness/noUnusedImports: cannot infer machine type without this
 import type { Guard } from 'xstate/guards'
-// import type geolocator from '@workspace/geolocation/types'
-import type { LocationMachine, Locator } from '@workspace/geolocation/types'
 
-export namespace Heartbeat {
-  export type Actor = ActorRefFromLogic<typeof machine>
-  export type State = StateFrom<typeof machine>
+import type { Locator } from '@workspace/geolocation/types'
 
-  export type Input = {
-    deviceId: string // todo: Id<'devices'> ?
-    interval?: number // in ms
-    // todo: make the type looser, with only the events we care about
-    //       doing so might break the relationship, but could give us benefit of
-    //       using a different actor if we need to.
-    // todo: completely remove (see below on `linkGeolocator`)
-    geolocatorActor: LocationMachine.Actor
-  }
-  export type Context = Input & {
-    interval: number
-    lastHeartbeat: number | null
-    token: string | null
-    retryCount: number
-    maxRetries: number
-    position: Locator.Data | null
-    canGeolocate: boolean
-  }
-  export type Events =
-    | { type: 'start' }
-    | { type: 'stop' }
-    | { type: 'setDeviceId'; deviceId: string }
-    | { type: 'setInterval'; interval: number }
-    | { type: 'disconnect' }
-    // location values
-    | { type: 'locationUpdate'; location: Locator.Data }
-    | { type: 'canGeolocate' }
-    // develop
-    | { type: 'clear' }
-
-  export type Emitted =
-    | { type: 'started' }
-    | { type: 'stopped' }
-    | { type: 'heartbeat' }
-    | { type: 'disconnected' }
-    | { type: 'retrying'; attempt: number }
-    | { type: 'intervalChanged'; interval: number }
-    | { type: 'error'; message: string }
-
-  export type Actors = {
-    /** sends the heartbeat and returns the session token */
-    dispatcher: PromiseActorLogic<string, Dispatcher.Input>
-    /**
-     * disconnects the device from the heartbeat
-     * @note this should be called on `beforeunload` when possible to a graceful disconnect
-     * and can be called manually by sending the `disconnect` event
-     */
-    disconnect: PromiseActorLogic<void, { token: string }>
-    /**
-     * Used in init to set up the geolocation event listeners
-     */
-    setup: CallbackActorLogic<
-      Internal<'locationUpdate' | 'canGeolocate' | 'locationUpdate'>,
-      { service: LocationMachine.Actor }
-    >
-  }
-
-  export namespace Dispatcher {
-    export type Input = {
-      interval?: number
-      location?: Omit<Locator.Data, 'timestamp'>
-    }
-  }
-}
-type Internal<T extends Heartbeat.Events['type']> = Extract<Heartbeat.Events, { type: T }>
-// biome-ignore lint/correctness/noUnusedVariables: internal type
-type Emitted<T extends Heartbeat.Emitted['type']> = Extract<Heartbeat.Emitted, { type: T }>
-
-/**
- * todo: extract from machine file
- * Since this machine is used in a react component that already has access to the geolocation actor,
- * we can just hook up to it using a callback actor that listens to events and sends them back
- * to the heartbeat machine, or even through a useEffect hook.
- *
- * This would have the benefit to reduce coupling between the actors, leaving only the
- * location data type as weak link (which we could migrate or even have a transformer function),
- * allowing us to move everything in distinct packages.
- *
- * This init actor (or in hook) would be in charge of linking the event systems of
- * both actors and/or telling the heartbeat that it can(not) have the location if
- * we don't want to send it, without having to touch the state machine.
- */
-const linkGeolocator: Heartbeat.Actors['setup'] = fromCallback(({ sendBack, input }) => {
-  const { service } = input
-  const location = service.on('LOCATION_UPDATE', ({ data }) => {
-    sendBack({ type: 'locationUpdate', location: data })
-  })
-  const canGeolocate = service.on('READY', () => sendBack({ type: 'canGeolocate' }))
-  const snapshot = service.getSnapshot()
-  // if the service has permissions, send the event immediately
-  if (snapshot.context.permissionStatus === 'granted') {
-    sendBack({ type: 'canGeolocate' })
-  }
-  // if it already has a location, send it immediately
-  if (snapshot.context.data) {
-    sendBack({ type: 'locationUpdate', location: snapshot.context.data })
-  }
-  return () => {
-    location.unsubscribe()
-    canGeolocate.unsubscribe()
-  }
-})
+import { linkGeolocator } from './actors'
+import type { Heartbeat } from './types'
+import { DEFAULT_INTERVAL, REQUIRED_ACTORS } from './constants'
 
 const config = setup({
   types: {
@@ -131,8 +27,6 @@ const config = setup({
     interval: ({ context }) => context.interval / 2,
   },
 })
-
-const DEFAULT_INTERVAL = 1000 * 60 * 5 // 5 minutes
 
 /**
  * Conditionally request position from geolocator actor if:
@@ -176,8 +70,7 @@ const validateActors = config.createAction(({ self }) => {
   // console.log('🤖 validating heartbeat configuration')
   const machineConfig = self.getSnapshot().machine.implementations
 
-  const requiredActors = ['dispatcher', 'disconnect']
-  const missingActors = requiredActors.filter((actorKey) => {
+  const missingActors = REQUIRED_ACTORS.filter((actorKey) => {
     return !machineConfig.actors?.[actorKey]
   })
   if (missingActors.length) {

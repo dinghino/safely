@@ -1,7 +1,7 @@
 import type { Id } from '@workspace/backend/dataModel'
 import type { LocationMetadata } from '@workspace/backend/types'
 
-import type { LocationMachine } from '@/lib/geolocation/types'
+import type { LocationMachine } from '@workspace/geolocation/types'
 
 /**
  * this should match the api.tracking.addLocationPoint (or renamed) signature.

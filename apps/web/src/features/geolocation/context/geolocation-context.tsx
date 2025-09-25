@@ -18,6 +18,7 @@ export namespace GeolocationProvider {
     getLocation: (options: Locator.Options) => void
     startWatching: () => void
     stopWatching: () => void
+    isActive: boolean
   }
   export type Props = { children: React.ReactNode }
 }
@@ -40,6 +41,10 @@ export const GeolocationProvider: React.FC<GeolocationProvider.Props> = ({ child
   const current = useSelector(actor, (state) => state.context?.data ?? null)
   const timestamp = useSelector(actor, (state) => state.context?.timestamp ?? -1)
 
+  const isActive = useSelector(actor, (state) => {
+    return state.matches('watching') || state.matches('requestingLocation')
+  })
+
   // todo: add options for watch
   const getLocation = (options: Locator.Options) => send({ type: 'GET_POSITION', options })
   const startWatching = () => send({ type: 'START_WATCHING' })
@@ -54,6 +59,7 @@ export const GeolocationProvider: React.FC<GeolocationProvider.Props> = ({ child
     getLocation,
     startWatching,
     stopWatching,
+    isActive,
   } satisfies GeolocationProvider.Context
 
   return <Provider value={value}>{children}</Provider>

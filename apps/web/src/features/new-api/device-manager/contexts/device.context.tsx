@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+'use client'
 import { useQuery } from 'convex/react'
 import { api } from '@workspace/backend/api'
 
@@ -6,10 +6,8 @@ import { createContext } from '@workspace/react-utils'
 
 import { useDeviceId } from '@/shared/hooks/use-device-id'
 import { useRegisterDevice } from '@/features/device-tracking'
-import { useDeviceLocation } from '../../location-manager'
 
 import type { DeviceContextValue, DeviceContextProvider } from '../types'
-import { HeartbeatManager } from './heartbeat-manager'
 
 const [DeviceContext, useDeviceContext] = createContext<DeviceContextValue>('DeviceContext')
 
@@ -22,23 +20,23 @@ export const DeviceProvider: React.FC<DeviceContextProvider.Props> = ({ children
   const [deviceId] = useDeviceId()
   const device = useQuery(api.devices.get, { deviceId })
 
-  const { startWatching, stopWatching } = useDeviceLocation()
+  // const { startWatching, stopWatching } = useDeviceLocation()
 
-  useEffect(() => {
-    if (!device) {
-      stopWatching()
-      return
-    }
+  // useEffect(() => {
+  //   if (!device) {
+  //     stopWatching()
+  //     return
+  //   }
 
-    const { trackingMode } = device.settings
+  //   const { trackingMode } = device.settings
 
-    if (trackingMode === 'off') {
-      stopWatching()
-    } else {
-      // Start with normal accuracy - SessionManager will upgrade when needed
-      startWatching({ highAccuracy: false })
-    }
-  }, [device, startWatching, stopWatching])
+  //   if (trackingMode === 'off') {
+  //     stopWatching()
+  //   } else {
+  //     // Start with normal accuracy - SessionManager will upgrade when needed
+  //     startWatching({ highAccuracy: false })
+  //   }
+  // }, [device, startWatching, stopWatching])
 
   const value = {
     device,
@@ -46,12 +44,7 @@ export const DeviceProvider: React.FC<DeviceContextProvider.Props> = ({ children
     canRegister: !device,
   }
 
-  return (
-    <DeviceContext value={value}>
-      {/* <HeartbeatManager /> */}
-      {children}
-    </DeviceContext>
-  )
+  return <DeviceContext value={value}>{children}</DeviceContext>
 }
 
 export default DeviceProvider

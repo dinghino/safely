@@ -5,7 +5,7 @@ import { Authenticated, AuthLoading, Unauthenticated } from 'convex/react'
 import Loader from '@/components/loader'
 // import { UserPresenceProvider } from '@/features/presence/contexts'
 // import { DeviceContextProvider } from '@/features/device-tracking'
-import { DemoProvider } from '@/features/new-api'
+import { AuthenticatedProviders } from '@/components/providers'
 
 export default function AuthenticatedLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -19,7 +19,7 @@ export default function AuthenticatedLayout({ children }: { children: React.Reac
           {/* <UserPresenceProvider> */}
           {/* <DeviceContextProvider> */}
 
-          <DemoProvider>{children}</DemoProvider>
+          <AuthenticatedProviders>{children}</AuthenticatedProviders>
 
           {/* </DeviceContextProvider> */}
           {/* </UserPresenceProvider> */}

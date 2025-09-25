@@ -7,17 +7,19 @@ import { NuqsAdapter } from '@workspace/nuqs'
 import { AuthProvider } from './auth-provider'
 import { ThemeProvider } from '@workspace/ui/providers/theme-provider'
 
-import { GeolocationProvider } from '@/features/geolocation'
-
 const convex = new ConvexReactClient(process.env.NEXT_PUBLIC_CONVEX_URL!)
 
+/**
+ * Provides root providers for the whole app to function, with authenticated
+ * users or anons.
+ */
 export default function Providers({ children }: { children: React.ReactNode }) {
   return (
     <NuqsAdapter>
       <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
         <AuthProvider>
           <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
-            <GeolocationProvider>{children}</GeolocationProvider>
+            {children}
           </ConvexProviderWithClerk>
         </AuthProvider>
       </ThemeProvider>

@@ -28,13 +28,11 @@ export default function DemoPage() {
 }
 
 function GeolocationDemo() {
-  const { state, send, actor } = useGeolocationContext()
+  const { state, send, actor, ...geo } = useGeolocationContext()
 
   // todo optimize selectors - move outside of component
-  const lastLocation = useSelector(actor, (state) => state.context?.data)
+  // const lastLocation = useSelector(actor, (state) => state.context?.data)
   const permission = useSelector(actor, (state) => state.context?.permissionStatus)
-  const hasLastTimestamp = useSelector(actor, (state) => state.context?.timestamp > 0)
-  const lastTimestamp = useSelector(actor, (state) => state.context?.timestamp)
   const error = useSelector(actor, (state) => state.context?.error)
 
   // states
@@ -45,10 +43,9 @@ function GeolocationDemo() {
   const isReady = useSelector(actor, (s) => s.matches('ready'))
   const isWatching = useSelector(actor, (s) => s.matches('watching'))
   const isRequesting = useSelector(actor, (s) => s.matches('requestingLocation'))
-  const isWorking = isWatching || isRequesting
 
   const stateBadgeVariant =
-    isReady || isWorking ? 'default' : isStarting ? 'secondary' : 'destructive'
+    isReady || geo.isActive ? 'default' : isStarting ? 'secondary' : 'destructive'
 
   const badges = (
     <div className="inline-flex items-center gap-2">
@@ -58,17 +55,19 @@ function GeolocationDemo() {
             className={cn('aspect-square h-2 w-2 rounded bg-foreground', {
               'bg-green-500': isReady,
               'bg-yellow-500': isRequestingPermission,
-              'bg-blue-500': isWorking || isStarting,
+              'bg-blue-500': geo.isActive || isStarting,
               'bg-red-500': !!error,
             })}
           />
         </Badge>
         <Badge variant={stateBadgeVariant}>State: {JSON.stringify(state.value)}</Badge>
         {error && <Badge variant="destructive">{error}</Badge>}
-        <Badge variant="outline">{lastLocation ? 'Location obtained' : 'No location obtained'}</Badge>
+        <Badge variant="outline">
+          {geo.current ? 'Location obtained' : 'No location obtained'}
+        </Badge>
         <Badge variant="outline">Access: {permission}</Badge>
         <Badge variant="outline">
-          Last update: {hasLastTimestamp ? dayjs(lastTimestamp).format('HH:mm:ss') : 'never'}
+          Last update: {geo.timestamp > 0 ? dayjs(geo.timestamp).format('HH:mm:ss') : 'never'}
         </Badge>
       </ButtonGroup>
     </div>
@@ -81,7 +80,7 @@ function GeolocationDemo() {
           <Loader />
         </div>
       )}
-      <pre>{lastLocation && JSON.stringify(lastLocation, null, 2)}</pre>
+      <pre>{geo.current && JSON.stringify(geo.current, null, 2)}</pre>
     </div>
   )
 
@@ -107,7 +106,7 @@ function GeolocationDemo() {
         </Button>
       )}
       {state.can({ type: 'START_WATCHING' }) && (
-        <Button disabled={isWorking} onClick={() => send({ type: 'START_WATCHING' })}>
+        <Button disabled={geo.isActive} onClick={() => send({ type: 'START_WATCHING' })}>
           Start Watching
         </Button>
       )}

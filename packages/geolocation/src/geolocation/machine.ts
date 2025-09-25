@@ -44,7 +44,7 @@ export const machine = config.createMachine({
     data: null,
     error: null,
     watchId: null,
-    timestamp: -1,
+    timestamp: 0,
     maxAge: input.maxAge || 1000 * 60 * 15, // default max age 15 min
     service: input.service,
     retryCount: 0,

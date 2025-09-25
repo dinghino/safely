@@ -5,7 +5,7 @@ import './styles.css'
 import '@workspace/data-filter/styles.css'
 
 import Header from '@/components/header'
-import Providers from '@/components/providers'
+import {RootProviders} from '@/components/providers'
 import { Toaster } from '@workspace/ui/components/sonner'
 import { cn } from '@/lib/utils'
 
@@ -39,7 +39,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={cn(geistSans.variable, geistMono.variable, 'relative antialiased')}>
-        <Providers>
+        <RootProviders>
           <div className="grid h-svh grid-rows-[auto_1fr]">
             <div className="sticky top-0 z-50 bg-background">
               <Header links={links} />
@@ -47,7 +47,7 @@ export default function RootLayout({
             {children}
           </div>
           <Toaster richColors />
-        </Providers>
+        </RootProviders>
       </body>
     </html>
   )

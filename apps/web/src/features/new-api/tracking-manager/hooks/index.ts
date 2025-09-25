@@ -1,3 +1,5 @@
+'use client'
+
 import { api } from '@workspace/backend/api'
 import type { Id } from '@workspace/backend/dataModel'
 import { useMutation, useQuery } from 'convex/react'

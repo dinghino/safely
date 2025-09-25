@@ -11,22 +11,36 @@ export class BrowserGeolocationProvider implements Locator.Provider {
   status: Locator.Status = 'prompt'
   cached: Locator.Data | null = null
   watchId: number | null = null
-  timestamp = -1
+  timestamp: number | null = null
 
   constructor(public options: Options = {}) {}
 
   getPermissionStatus(): Locator.Status {
     return this.status
   }
-  requestPermission(): Promise<Locator.Status> {
+  async requestPermission(): Promise<Locator.Status> {
     /// use permissions API if available to check existing status. some browsers
     // (e.g. iOS Safari) do not support it
     async function checkExisting() {
       if (!navigator || !('permissions' in navigator)) {
-        return undefined
+        throw new Error('Permissions API not supported')
       }
       const permission = await navigator.permissions.query({ name: 'geolocation' })
       return permission.state
+    }
+    try {
+      const existing = await checkExisting()
+      if (existing === 'granted') {
+        this.status = 'granted'
+        return 'granted'
+      }
+      if (existing === 'denied') {
+        this.status = 'denied'
+        throw new Locator.LocatorError('denied', 'Geolocation permission denied')
+      }
+      this.status = existing
+    } catch {
+      this.status = 'prompt'
     }
 
     return new Promise<Locator.Status>((resolve, reject) => {
@@ -34,7 +48,8 @@ export class BrowserGeolocationProvider implements Locator.Provider {
       // status first to avoid unnecessary prompts
       checkExisting()
         .then((permission) => {
-          if (!permission) return
+          // to catch and request below
+          if (!permission) throw new Error('No permission state')
 
           if (permission === 'granted') {
             this.status = 'granted'
@@ -44,8 +59,14 @@ export class BrowserGeolocationProvider implements Locator.Provider {
             this.status = 'denied'
             throw new Locator.LocatorError('denied', 'Geolocation permission denied')
           }
+          return permission
         })
-        .then(() => {
+        .then((perm) => {
+          // so we can catch below and request explicitly
+          if (!perm) throw new Error('No permission state')
+          this.status = perm // 'prompt'
+        })
+        .catch(() => {
           // ping the geolocation api for a position to request permissions
           // i don't think there is a way to just request permissions without
           // actually trying to get a position. we don't care much about the result
@@ -54,10 +75,13 @@ export class BrowserGeolocationProvider implements Locator.Provider {
             timeout: 1000 * 60 * 10,
             enableHighAccuracy: false,
             maximumAge: Number.POSITIVE_INFINITY,
-          }).then(
-            () => resolve('granted'),
-            (err) => reject(err),
-          )
+          })
+        })
+        .then((r) => {
+          if (typeof r === 'string') {
+            r
+          }
+          resolve('granted')
         })
         .catch((error) => {
           if (error instanceof Locator.LocatorError) {
@@ -139,13 +163,15 @@ export class BrowserGeolocationProvider implements Locator.Provider {
   }
 
   private isValidCache(maxAge: number): this is { cached: Locator.Data } {
-    if (!this.cached) return false
+    if (!this.timestamp) return false
     const now = Date.now()
-    return this.cached && now - this.timestamp < maxAge
+    const valid = now - this.timestamp < maxAge
+    console.log('⏱️ checking cache age', now - this.timestamp, '<', maxAge, valid ? 'ok' : 'old')
+    return valid
   }
 
   private transformPosition(data: GeolocationPosition): Locator.Data {
-    return { ...transformPosition(data), timestamp: this.timestamp }
+    return { ...transformPosition(data), timestamp: this.timestamp! }
   }
 
   private mapErrorCode(error: GeolocationPositionError): Locator.Status {

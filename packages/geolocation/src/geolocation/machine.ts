@@ -65,7 +65,7 @@ export const machine = config.createMachine({
         },
 
         requestingPermission: {
-          entry: [log('Requesting geolocation permission')],
+          // entry: [log('Requesting geolocation permission')],
           description: 'Requesting permission to access geolocation',
           invoke: {
             id: 'requestPermissions',
@@ -74,7 +74,7 @@ export const machine = config.createMachine({
             onDone: {
               target: '#location.ready',
               actions: [
-                ({ event }) => log(`Permission result: ${event.output}`),
+                // ({ event }) => log(`Permission result: ${event.output}`),
                 assign({ permissionStatus: ({ event }) => event.output }),
               ],
             },
@@ -104,7 +104,10 @@ export const machine = config.createMachine({
       on: {
         START_WATCHING: { target: 'watching' },
         REQUEST_PERMISSION: 'bootstrap.requestingPermission',
-        GET_POSITION: 'requestingLocation',
+        GET_POSITION: {
+          target: 'requestingLocation',
+          actions: [log('One off location request received', '[geolocator]')],
+        },
       },
     },
     error: {
@@ -170,10 +173,11 @@ export const machine = config.createMachine({
         src: 'watchLocation',
         input: ({ context: { service, watchId } }) => ({ service, watchId }),
       },
+
       on: {
         WATCH_UPDATE: {
           actions: [
-            log('Location update received'),
+            // log('Location update received'),
             assign({ data: ({ event }) => event.data, timestamp: () => Date.now() }),
             emit(({ event }) => ({ type: 'LOCATION_UPDATE', data: event.data })),
           ],
@@ -185,14 +189,18 @@ export const machine = config.createMachine({
           target: 'ready',
           actions: [assign({ watchId: null })], // cancel current watch ?
         },
-        GET_POSITION: {
-          actions: [], // emit current position if available
-        },
+        GET_POSITION: [
+          {
+            guard: ({ context }) => context.data !== null,
+            actions: [emit(({ context }) => ({ type: 'LOCATION_UPDATE', data: context.data! }))],
+          },
+        ],
       },
     },
     requestingLocation: {
       description: 'One off request for current location',
       initial: 'working',
+      entry: [log('requesting location', '[geolocator]')],
       states: {
         working: {
           invoke: {
@@ -200,14 +208,12 @@ export const machine = config.createMachine({
             src: 'requestLocation',
             input: ({ context, event }) => {
               assertEvent(event, 'GET_POSITION')
-              // get position can override the default maxAge of the machine
-              const maxAge = event.options?.maximumAge ?? context.maxAge
-              return { ...context, maxAge, options: event.options }
+              return { ...context, options: event.options }
             },
             onDone: {
               target: '#location.ready',
               actions: [
-                log('Location obtained'),
+                // log('Location obtained'),
                 assign({
                   data: ({ event }) => event.output,
                   timestamp: () => Date.now(),
@@ -218,7 +224,6 @@ export const machine = config.createMachine({
             },
             onError: [
               {
-                // target: '#location.error.timeout',
                 target: 'error.timeout',
                 guard: ({ event }) => isErrorOfType(event.error, 'timeout'),
               },
@@ -227,6 +232,11 @@ export const machine = config.createMachine({
         },
         error: {
           initial: 'default',
+          on: {
+            GET_POSITION: 'working',
+            RESTART: 'working',
+            START_WATCHING: '#location.bootstrap',
+          },
           states: {
             default: {
               description: 'Unknown error requesting location',

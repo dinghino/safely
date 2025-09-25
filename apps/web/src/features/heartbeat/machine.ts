@@ -6,7 +6,6 @@ import type { Guard } from 'xstate/guards'
 import type { LocationMachine, Locator } from '@workspace/geolocation/types'
 
 export namespace Heartbeat {
-
   export type Actor = ActorRefFromLogic<typeof machine>
   export type State = StateFrom<typeof machine>
 
@@ -16,6 +15,7 @@ export namespace Heartbeat {
     // todo: make the type looser, with only the events we care about
     //       doing so might break the relationship, but could give us benefit of
     //       using a different actor if we need to.
+    // todo: completely remove (see below on `linkGeolocator`)
     geolocatorActor: LocationMachine.Actor
   }
   export type Context = Input & {
@@ -77,6 +77,20 @@ type Internal<T extends Heartbeat.Events['type']> = Extract<Heartbeat.Events, { 
 // biome-ignore lint/correctness/noUnusedVariables: internal type
 type Emitted<T extends Heartbeat.Emitted['type']> = Extract<Heartbeat.Emitted, { type: T }>
 
+/**
+ * todo: extract from machine file
+ * Since this machine is used in a react component that already has access to the geolocation actor,
+ * we can just hook up to it using a callback actor that listens to events and sends them back
+ * to the heartbeat machine, or even through a useEffect hook.
+ *
+ * This would have the benefit to reduce coupling between the actors, leaving only the
+ * location data type as weak link (which we could migrate or even have a transformer function),
+ * allowing us to move everything in distinct packages.
+ *
+ * This init actor (or in hook) would be in charge of linking the event systems of
+ * both actors and/or telling the heartbeat that it can(not) have the location if
+ * we don't want to send it, without having to touch the state machine.
+ */
 const linkGeolocator: Heartbeat.Actors['setup'] = fromCallback(({ sendBack, input }) => {
   const { service } = input
   const location = service.on('LOCATION_UPDATE', ({ data }) => {
@@ -151,6 +165,25 @@ const isStalePosition = (context: Heartbeat.Context) => {
 
   return age >= maxAge
 }
+
+/**
+ * Custom action that validates required actor overrides from `machine.provide({})`
+ * that throws at runtime if something is missing.
+ * This is to avoid silent failures if we forget to provide them.
+ * @todo extract, make dynamic and reusable through a factory function
+ */
+const validateActors = config.createAction(({ self }) => {
+  // console.log('🤖 validating heartbeat configuration')
+  const machineConfig = self.getSnapshot().machine.implementations
+
+  const requiredActors = ['dispatcher', 'disconnect']
+  const missingActors = requiredActors.filter((actorKey) => {
+    return !machineConfig.actors?.[actorKey]
+  })
+  if (missingActors.length) {
+    throw new Error(`Missing required actors: ${missingActors.join(', ')}`)
+  }
+})
 
 const working = config.createStateConfig({
   initial: 'init',
@@ -242,12 +275,13 @@ const working = config.createStateConfig({
  * ```tsx
  * // react example
  * const [state, send, actor] = useMachine(machine.provide({
- *   actors: fromPromise(async () => { ... }),
+ *   dispatcher: fromPromise(async () => { ... }),
  *   disconnect: fromPromise(async ({ input }) => { ... }),
+ *   ... // other actors
  * }), { input: { deviceId, interval } })
  * ```
  *
- * Actors are undefined and must be provided when creating the machine
+ * Actors are undefined and **MUST** be provided when creating the machine
  * Success/Error events are emitted from the result of the actor invocation by
  * the state machine, so the actors must return the expected values or throw errors
  * and ignore handling xstate internals.
@@ -287,6 +321,7 @@ const machine = config.createMachine({
     retryCount: 0,
     maxRetries: 3,
   }),
+  entry: [validateActors],
   invoke: {
     src: 'setup',
     id: 'setup-geolocator',
@@ -337,7 +372,7 @@ const machine = config.createMachine({
   },
   states: {
     init: {
-      descrition:
+      description:
         'initial state, waiting for deviceId to start. can run other init process from actors if needed',
       always: [
         {

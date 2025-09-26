@@ -1,55 +1,17 @@
 // import type { LocationMachine } from '@workspace/geolocation'
 // import type { Locator } from '@workspace/geolocation/types'
-import type {
-  ActorRefFromLogic,
-  StateFrom,
-  PromiseActorLogic,
-  CallbackActorLogic,
-  ActorRef,
-} from 'xstate'
+import type { ActorRefFromLogic, StateFrom, PromiseActorLogic, CallbackActorLogic } from 'xstate'
+import type { LocationMachine, Locator } from '@workspace/geolocation/types'
 import type machine from './heartbeat.machine'
-import type { LocationMetadata } from '@workspace/backend/types'
 
-/**
- * This is a minimal interface of the same type exported from the @workspace/geolocation
- * package and contains only the types we need to interact with it.
- * We do this to avoid a hard dependency on that package, allowing
- * this package to be used standalone if needed.
- *
- * @note this might get even lighter if we decide to split the initialization function
- * from being an internally defined service (see `Heartbeat.Actors.setup` with
- * the implementation in the actors.ts file), forcing the user to set up
- * the system when consuming the machine, removing the need to know about
- * the geolocation state machine completely, and only leaving the data type
- * (at most) which comes from the backend anyway.
- */
 export namespace Geolocator {
-  export type Data = {
-    point: { latitude: number; longitude: number }
-    metadata: LocationMetadata
-    timestamp: number
-  }
-  export type Options = Partial<{
-    enableHighAccuracy: boolean
-    maximumAge: number
-    timeout: number
-  }>
+  export type Data = Locator.Data
+  export type Options = Locator.Options
 
-  // state machine minimal interface
-  export type Snapshot = any
-  export type Events = { type: 'GET_POSITION'; options: Options }
-  export type Emitted =
-    | { type: 'READY' }
-    | { type: 'LOCATION_UPDATE'; data: Data }
-    /**
-     * these two we technically don't need but typescript complains if they are missing
-     * @note this might be a typing issue on xstate, since it should be possible to have
-     * a machine ref for only the emitted events we care about
-     */
-    | { type: 'WATCHING' }
-    | { type: 'ERROR'; error: string }
+  export type Events = Extract<LocationMachine.Event, { type: 'GET_POSITION' }>
+  export type Emitted = Extract<LocationMachine.Emitted, { type: 'READY' | 'LOCATION_UPDATE' }>
 
-  export type Actor = ActorRef<Snapshot, Events, Emitted>
+  export type Actor = LocationMachine.Actor
 }
 
 export namespace Heartbeat {

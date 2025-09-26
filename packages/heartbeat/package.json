@@ -12,6 +12,7 @@
   "devDependencies": {
     "@types/bun": "latest",
     "@workspace/backend": "workspace:*",
+    "@workspace/geolocation": "workspace:*",
     "@workspace/eslint-config": "workspace:*",
     "@workspace/typescript-config": "workspace:*"
 

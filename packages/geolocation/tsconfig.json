@@ -5,8 +5,7 @@
     "module": "es2022",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"],
-      "@workspace/ui/*": ["./src/*"]
+      "@/*": ["./src/*"]
     }
   },
   "include": ["."],

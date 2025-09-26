@@ -2,10 +2,10 @@ import { assign, emit, setup } from 'xstate'
 // biome-ignore lint/correctness/noUnusedImports: cannot infer machine type without this
 import type { Guard } from 'xstate/guards'
 
-import type { Locator } from '@workspace/geolocation/types'
+// import type { Locator } from '@workspace/geolocation/types'
 
 import { linkGeolocator } from './actors'
-import type { Heartbeat } from './types'
+import type { Heartbeat, Geolocator } from './types'
 import { DEFAULT_INTERVAL, REQUIRED_ACTORS } from './constants'
 
 const config = setup({
@@ -132,7 +132,7 @@ const working = config.createStateConfig({
         id: 'heartbeat-dispatch',
         input: ({ context }) => {
           const { interval, position } = context
-          let location: Omit<Locator.Data, 'timestamp'> | undefined
+          let location: Omit<Geolocator.Data, 'timestamp'> | undefined
           if (position) {
             const { timestamp, ...loc } = position
             location = loc

@@ -1,1 +1,1 @@
-export {}
+export { HeartbeatManager } from './components'

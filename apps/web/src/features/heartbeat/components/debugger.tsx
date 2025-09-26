@@ -6,7 +6,6 @@ import { useSelector } from '@xstate/react'
 
 import { Conditional } from '@workspace/react-utils'
 
-import { Badge } from '@workspace/ui/components/badge'
 import { Button } from '@workspace/ui/components/button'
 import { Progress } from '@workspace/ui/components/progress'
 import { ButtonGroup } from '@workspace/ui/components/button-group'
@@ -14,6 +13,8 @@ import { Card } from '@workspace/ui/components/card'
 
 import { cn } from '@/lib/utils'
 import dayjs from '@/lib/dayjs'
+
+import { LabeledBadge } from '@/components/labeled-badge'
 
 import { useHeartbeat, type HeartbeatManager } from './heartbeat'
 
@@ -58,39 +59,25 @@ export const HeartbeatDebugger = () => {
       </ButtonGroup>
       <TimeRemaining actor={actor} />
       <div className="inline-flex items-center gap-2">
-        <ButtonGroup>
-          <Badge className="font-mono text-xs" variant="outline">
-            device
-          </Badge>
-          <Badge variant="secondary">
-            <div
-              className={cn('aspect-square h-2 w-2 flex-1 rounded bg-purple-500', {
-                'bg-red-500': status === 'offline',
-                'bg-green-500': status === 'online',
-                'bg-gray-500': status === 'idle',
-              })}
-            />
-          </Badge>
-          <Badge>{status}</Badge>
-        </ButtonGroup>
-        <ButtonGroup>
-          <Badge className="font-mono text-xs" variant="outline">
-            every
-          </Badge>
-          <Badge>{dayjs.duration(interval).humanize()}</Badge>
-        </ButtonGroup>
-        <ButtonGroup>
-          <Badge className="font-mono text-xs" variant="outline">
-            last sent
-          </Badge>
-          <Badge>{lastSent ? dayjs(lastSent).format('HH:mm:ss') : 'never'}</Badge>
-        </ButtonGroup>
-        <ButtonGroup>
-          <Badge className="font-mono text-xs" variant="outline">
-            machine
-          </Badge>
-          <Badge>{JSON.stringify(state.value)}</Badge>
-        </ButtonGroup>
+        <LabeledBadge label="device" variants={{ value: 'secondary' }}>
+          <div
+            className={cn('aspect-square h-2 w-2 flex-1 rounded bg-purple-500', {
+              'bg-red-500': status === 'offline',
+              'bg-green-500': status === 'online',
+              'bg-gray-500': status === 'idle',
+            })}
+          />
+        </LabeledBadge>
+        <LabeledBadge label="every">
+          {interval ? dayjs.duration(interval).humanize() : 'n/a'}
+        </LabeledBadge>
+        <LabeledBadge label="last sent" variants={{ value: 'secondary' }}>
+          {lastSent ? dayjs(lastSent).format('HH:mm:ss') : 'never'}
+        </LabeledBadge>
+
+        <LabeledBadge label="machine" variants={{ value: 'secondary' }}>
+          {JSON.stringify(state.value)}
+        </LabeledBadge>
       </div>
       <div>
         <pre>{JSON.stringify(context, null, 2)}</pre>

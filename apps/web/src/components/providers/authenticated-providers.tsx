@@ -1,6 +1,7 @@
-import { DeviceProvider, SessionManager } from '@/features/new-api'
+import { DeviceProvider } from '@/features/device-manager'
 import { GeolocationProvider } from '@/features/geolocation'
 import { HeartbeatManager } from '@/features/heartbeat'
+import { SessionManager } from '@/features/new-api/tracking-manager'
 
 export namespace AuthenticatedProviders {
   export type Props = { children: React.ReactNode }

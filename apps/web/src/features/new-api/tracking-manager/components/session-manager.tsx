@@ -7,7 +7,7 @@ import { useMachine } from '@xstate/react'
 import { api } from '@workspace/backend/api'
 import type { Id } from '@workspace/backend/dataModel'
 
-import { useDeviceContext } from '../../device-manager'
+import { useDeviceContext } from '@/features/device-manager'
 import { activeSessionManager } from '../lib/state'
 import { useGeolocationContext } from '@/features/geolocation'
 

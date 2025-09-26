@@ -25,7 +25,7 @@ import {
   useFilterSearchParams,
 } from '@workspace/data-filter'
 import { useDebounceCallback } from '@workspace/data-filter/hooks'
-import { RegisterDeviceButton } from '@/features/new-api/device-manager/components'
+import { RegisterDeviceButton } from '@/features/device-manager'
 
 export namespace DevicesTable {
   export type Props = {

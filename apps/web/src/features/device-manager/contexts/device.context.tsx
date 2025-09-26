@@ -6,7 +6,7 @@ import { createContext } from '@workspace/react-utils'
 import { useDeviceId } from '@/shared/hooks/use-device-id'
 
 import type { Device } from '@/entities/device/types'
-import { useRegisterDevice } from '@/features/device-tracking'
+import { useRegisterDevice } from '@/features/device-manager'
 
 export namespace DeviceProvider {
   export type Value = {

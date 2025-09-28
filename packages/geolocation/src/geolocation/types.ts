@@ -22,7 +22,7 @@ export namespace LocationMachine {
     | { type: 'REQUEST_PERMISSION' }
     | { type: 'PERMISSION_GRANTED' }
     | { type: 'PERMISSION_DENIED' }
-    | { type: 'START_WATCHING' }
+    | { type: 'START_WATCHING'; options?: Locator.Options }
     | { type: 'STOP_WATCHING' }
     | { type: 'GET_POSITION'; options?: Locator.Options }
     // for internal use by the watch actor

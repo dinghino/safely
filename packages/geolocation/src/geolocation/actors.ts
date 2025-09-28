@@ -40,7 +40,7 @@ type WatchInput = { service: Locator.Provider; watchId: number | null }
 type WatchEmits = Extract<LocationMachine.Emitted, { type: 'LOCATION_UPDATE' }>
 
 export const watchLocation = fromCallback<WatchEvents, WatchInput, WatchEmits>(
-  ({ input, emit, sendBack, receive }) => {
+  ({ input, sendBack, receive }) => {
     const { service, ...ctx } = input
     if (ctx.watchId) {
       service.clearWatch(ctx.watchId)
@@ -48,7 +48,6 @@ export const watchLocation = fromCallback<WatchEvents, WatchInput, WatchEmits>(
 
     const onUpdate = (data: Locator.Data) => {
       sendBack({ type: 'WATCH_UPDATE', data })
-      emit({ type: 'LOCATION_UPDATE', data })
     }
     const onError = (error: Locator.LocatorError) => {
       sendBack({ type: 'WATCH_ERROR', error: error.type })

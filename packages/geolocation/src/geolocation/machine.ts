@@ -167,7 +167,14 @@ export const machine = config.createMachine({
       description: 'Actively watching position changes, store and emit updates',
       // create a watch on the geolocation provider and store the watchId
       entry: [emit({ type: 'WATCHING' })],
-      exit: [], // clear the watch using the watchId
+      exit: [
+        ({ context }) => {
+          if (context.watchId === null) return
+          context.service.clearWatch(context.watchId)
+        },
+        assign({ watchId: null }),
+        // todo: emit a stop watching event
+      ],
       invoke: {
         id: 'watchLocation',
         src: 'watchLocation',
@@ -185,10 +192,7 @@ export const machine = config.createMachine({
         WATCH_STARTED: {
           actions: [assign({ watchId: ({ event }) => event.watchId })],
         },
-        STOP_WATCHING: {
-          target: 'ready',
-          actions: [assign({ watchId: null })], // cancel current watch ?
-        },
+        STOP_WATCHING: { target: 'ready' },
         GET_POSITION: [
           {
             guard: ({ context }) => context.data !== null,

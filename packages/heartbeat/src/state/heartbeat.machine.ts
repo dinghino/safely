@@ -203,7 +203,6 @@ const machine = config.createMachine({
   id: 'device-heartbeat',
   initial: 'init',
   context: ({ input }) => ({
-    ...input,
     token: null,
     lastHeartbeat: null,
     interval: input.interval ?? DEFAULT_INTERVAL,
@@ -213,6 +212,7 @@ const machine = config.createMachine({
     // retry config
     retryCount: 0,
     maxRetries: 3,
+    ...input,
   }),
   entry: [validateActors],
   invoke: {

@@ -22,14 +22,24 @@ import {
 import { Loader2, ChevronDown } from 'lucide-react'
 import { Card } from '@workspace/ui/components/card'
 import { HeartbeatDebugger } from '@/features/heartbeat/components/debugger'
+import { SessionButton } from '@/features/device-tracking'
+import { SessionLocationsTable } from '@/widgets/geospatial-table'
+import type { Id } from '@workspace/backend/dataModel'
 
 export default function DemoPage() {
-  const [deviceId] = useDeviceId()
-  const device = useQuery(api.devices.get, { deviceId })
+  // const [deviceId] = useDeviceId()
+  // const device = useQuery(api.devices.get, { deviceId })
   return (
     <div className="space-y-4 py-8 content-grid">
       <GeolocationDemo />
-      {device && <HeartbeatDebugger />}
+      <div className="flex flex-row gap-4 max-lg:flex-col">
+        <div className="flex-1">
+          <HeartbeatDebugger />
+        </div>
+        <div className="flex-1">
+          <SessionDebugger />
+        </div>
+      </div>
     </div>
   )
 }
@@ -150,4 +160,23 @@ function GeolocationDemo() {
       </section>
     </Card>
   )
+}
+
+function SessionDebugger() {
+  const [deviceId] = useDeviceId()
+
+  const device = useQuery(api.devices.get, { deviceId })
+  const session = useQuery(api.tracking.getActiveSession, { deviceId: device?._id })
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="rounded bg-card p-2">{device && <SessionButton deviceId={device?._id} />}</div>
+      <div className="overflow-x-auto rounded bg-card p-2">{session ? <SessionData sessionId={session._id} /> : <div>No active session</div>}</div>
+    </div>
+  )
+}
+
+function SessionData({ sessionId }: { sessionId: Id<'trackSession'> }) {
+  const locations = useQuery(api.tracking.getSessionLocations, { sessionId })
+
+  return <SessionLocationsTable locations={locations ?? []} />
 }

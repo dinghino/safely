@@ -22,7 +22,7 @@ import {
 } from '@workspace/ui/components/dropdown-menu'
 import { DeleteDialogButton } from '@workspace/ui/components/delete-dialog-button'
 
-import { SessionButton } from '@/features/new-api/tracking-manager/components'
+import { SessionButton } from '@/features/device-tracking/components'
 import { useIsCurrent } from '../hooks/use-is-current'
 
 import type { Device } from '@/entities/device/types'

@@ -13,7 +13,7 @@ import type { Device } from '@/entities/device/types'
 import { DeviceName, DevicePlatform, DeviceStatusBadge } from '@/entities/device/components'
 
 import { DeviceActionsMenu } from '@/features/device-manager/components'
-import { SessionButton } from '@/features/new-api/tracking-manager/components'
+import { SessionButton } from '@/features/device-tracking/components'
 
 export type DeviceWithId = Device & { id: string }
 

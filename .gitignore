@@ -2,4 +2,9 @@ node_modules
 .turbo
 .alchemy
 .env
-/.vs
+.kiro/specs/data-table-setup/design.md
+.kiro/specs/data-table-setup/requirements.md
+.kiro/specs/data-table-setup/tasks.md
+.kiro/steering/product.md
+.kiro/steering/structure.md
+.kiro/steering/tech.md

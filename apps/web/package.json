@@ -16,6 +16,7 @@
     "@workspace/data-table": "workspace:*",
     "@workspace/form": "workspace:*",
     "@workspace/geolocation": "workspace:*",
+    "@workspace/device-tracking": "workspace:*",
     "@workspace/heartbeat": "workspace:*",
     "@workspace/nuqs": "workspace:*",
     "@workspace/react-utils": "workspace:*",

@@ -1,3 +1,5 @@
+'use client'
+
 import { api } from '@workspace/backend/api'
 import type { Id } from '@workspace/backend/dataModel'
 import { useMutation, useQuery } from 'convex/react'
@@ -15,4 +17,8 @@ export function useStartSession() {
 
 export function useStopSession() {
   return useMutation(api.tracking.stopSession)
+}
+
+export function useSendPosition() {
+  return useMutation(api.tracking.addLocationPoint)
 }

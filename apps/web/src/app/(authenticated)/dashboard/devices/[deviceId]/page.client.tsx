@@ -27,6 +27,7 @@ import { cn } from '@/lib/utils'
 
 import { DeviceName, DeviceStatusBadge } from '@/entities/device/components'
 import { SessionLocationsTable } from '@/widgets/geospatial-table'
+import { SessionButton } from '@/features/device-tracking'
 
 function isSessionOpen(
   session: { endedAt?: number } | null | undefined,
@@ -34,27 +35,16 @@ function isSessionOpen(
   return !!session && !session.endedAt
 }
 
-
 export function DevicePageClient({ deviceId }: { deviceId: string }) {
   // fixme: this is ugly but need for a quick deployment test. this whole page is going to go anyway
   const device = useQuery(api.devices.get, { deviceId }) ?? undefined
 
-  const session = useQuery(api.tracking.getActiveSession, { deviceId: device?._id })
-
+  const active = useQuery(api.tracking.getActiveSession, { deviceId: device?._id })
   const sessions = useQuery(api.tracking.getDeviceSessions, { deviceId: device?._id }) ?? []
-
-  const startSession = useMutation(api.tracking.startSession)
-  const stopSession = useMutation(api.tracking.stopSession)
 
   if (!device) return <div>Device not found</div>
 
-  const handleSession = async () => {
-    if (session && !session.endedAt) return stopSession({ sessionId: session._id })
-    await startSession({ deviceId: device._id })
-  }
-
-  const btnText = isSessionOpen(session) ? 'Stop Session' : 'Start Session'
-  const btnVariant = isSessionOpen(session) ? 'destructive' : 'default'
+  const btnVariant = isSessionOpen(active) ? 'destructive' : 'default'
 
   return (
     <div className="py-4 content-grid">
@@ -64,11 +54,11 @@ export function DevicePageClient({ deviceId }: { deviceId: string }) {
           <DeviceName device={device} />
         </div>
         <div className="flex items-center gap-2">
-          {isSessionOpen(session) && (
+          {isSessionOpen(active) && (
             <div className="flex flex-col items-stretch gap-1 [&>span]:w-full">
-              {session.lastUpdatedAt && (
+              {active.lastUpdatedAt && (
                 <Badge variant={'secondary'}>
-                  updated <UpdatedTimer session={session} />
+                  updated <UpdatedTimer session={active} />
                 </Badge>
               )}
               <Badge variant="secondary">
@@ -76,9 +66,10 @@ export function DevicePageClient({ deviceId }: { deviceId: string }) {
               </Badge>
             </div>
           )}
-          <Button variant={btnVariant} onClick={handleSession}>
+          <SessionButton variant={btnVariant} deviceId={device._id} />
+          {/* <Button variant={btnVariant} onClick={handleSession}>
             {btnText}
-          </Button>
+          </Button> */}
 
           {/* {session && isSessionOpen(session) && <SessionUpdater session={session} />} */}
         </div>

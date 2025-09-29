@@ -24,12 +24,14 @@ export default function AuthenticatedLayout({ children }: { children: React.Reac
           {/* <DeviceContextProvider> */}
 
           <AuthenticatedProviders>
-            <div className="inline-flex max-h-fit gap-4 border-b p-2">
-              <div className="flex-1"/>
-              <LastGeoTime />
-              <LastHeartbeatTime />
+            <div>
+              <div className="inline-flex max-h-fit w-full gap-4 border-b p-2">
+                <div className="flex-1" />
+                <LastGeoTime />
+                <LastHeartbeatTime />
+              </div>
+              {children}
             </div>
-            {children}
           </AuthenticatedProviders>
 
           {/* </DeviceContextProvider> */}

@@ -47,8 +47,10 @@
         "@workspace/backend": "workspace:*",
         "@workspace/data-filter": "workspace:*",
         "@workspace/data-table": "workspace:*",
+        "@workspace/device-tracking": "workspace:*",
         "@workspace/form": "workspace:*",
         "@workspace/geolocation": "workspace:*",
+        "@workspace/heartbeat": "workspace:*",
         "@workspace/nuqs": "workspace:*",
         "@workspace/react-utils": "workspace:*",
         "@workspace/ui": "workspace:*",
@@ -148,6 +150,22 @@
         "typescript": "^5.0.0",
       },
     },
+    "packages/device-tracking": {
+      "name": "@workspace/device-tracking",
+      "dependencies": {
+        "xstate": "^5.22.0",
+      },
+      "devDependencies": {
+        "@types/bun": "latest",
+        "@workspace/backend": "workspace:*",
+        "@workspace/eslint-config": "workspace:*",
+        "@workspace/geolocation": "workspace:*",
+        "@workspace/typescript-config": "workspace:*",
+      },
+      "peerDependencies": {
+        "typescript": "^5",
+      },
+    },
     "packages/eslint-config": {
       "name": "@workspace/eslint-config",
       "version": "0.0.0",
@@ -196,6 +214,22 @@
         "@types/bun": "latest",
         "@workspace/backend": "workspace:*",
         "@workspace/eslint-config": "workspace:*",
+        "@workspace/typescript-config": "workspace:*",
+      },
+      "peerDependencies": {
+        "typescript": "^5",
+      },
+    },
+    "packages/heartbeat": {
+      "name": "@workspace/heartbeat",
+      "dependencies": {
+        "xstate": "^5.22.0",
+      },
+      "devDependencies": {
+        "@types/bun": "latest",
+        "@workspace/backend": "workspace:*",
+        "@workspace/eslint-config": "workspace:*",
+        "@workspace/geolocation": "workspace:*",
         "@workspace/typescript-config": "workspace:*",
       },
       "peerDependencies": {
@@ -878,11 +912,15 @@
 
     "@workspace/data-table": ["@workspace/data-table@workspace:packages/data-table"],
 
+    "@workspace/device-tracking": ["@workspace/device-tracking@workspace:packages/device-tracking"],
+
     "@workspace/eslint-config": ["@workspace/eslint-config@workspace:packages/eslint-config"],
 
     "@workspace/form": ["@workspace/form@workspace:packages/form"],
 
     "@workspace/geolocation": ["@workspace/geolocation@workspace:packages/geolocation"],
+
+    "@workspace/heartbeat": ["@workspace/heartbeat@workspace:packages/heartbeat"],
 
     "@workspace/nuqs": ["@workspace/nuqs@workspace:packages/nuqs"],
 

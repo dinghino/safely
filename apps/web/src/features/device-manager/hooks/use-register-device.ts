@@ -2,7 +2,7 @@
 
 import { api } from '@workspace/backend/api'
 import { useMutation } from 'convex/react'
-import { useDeviceInfo } from '../../device-manager/hooks/use-device-info'
+import { useDeviceInfo } from './use-device-info'
 
 export function useRegisterDevice() {
   const deviceInfo = useDeviceInfo()

@@ -12,7 +12,12 @@ export const getColumns = () => {
     c.accessor((r) => r._creationTime, {
       id: 'timestamp',
       header: 'Timestamp',
-      cell: ({ cell }) => dayjs(cell.getValue()).format('HH:mm:ss.DSSS'),
+      cell: ({ cell }) => (
+        <div>
+          <p className="font-medium">{dayjs(cell.getValue()).format('HH:mm:ss')}</p>
+          <p className="text-muted-foreground text-xs">{dayjs(cell.getValue()).fromNow()}</p>
+        </div>
+      ),
     }),
     c.accessor((r) => r.coordinates?.latitude, {
       id: 'latitude',

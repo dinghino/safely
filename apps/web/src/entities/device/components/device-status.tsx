@@ -9,11 +9,12 @@ export namespace DeviceStatusBadge {
   export type Props = {
     device: Device
     className?: string
+    label?: boolean
   }
 }
 
 export function DeviceStatusBadge(props: DeviceStatusBadge.Props) {
-  const { device, className } = props
+  const { device, className, label = true } = props
   const color = useMemo(() => {
     switch (device.status) {
       case 'online':
@@ -28,9 +29,12 @@ export function DeviceStatusBadge(props: DeviceStatusBadge.Props) {
   }, [device.status])
   device.status
   return (
-    <Badge variant="secondary" className={cn('@max-lg:aspect-square max-md:aspect-square', className)}>
+    <Badge
+      variant="secondary"
+      className={cn('@max-lg:aspect-square max-md:aspect-square', !label && 'p-1.5', className)}
+    >
       <span className={cn('h-2 w-2 rounded-full', color)} />
-      <span className="@max-lg:sr-only max-md:sr-only">{device.status}</span>
+      {label && <span className="@max-lg:sr-only max-md:sr-only">{device.status}</span>}
     </Badge>
   )
 }

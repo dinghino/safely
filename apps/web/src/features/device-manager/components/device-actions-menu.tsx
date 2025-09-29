@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { MoreVertical } from 'lucide-react'
 import { useMutation } from 'convex/react'
 
@@ -19,14 +20,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@workspace/ui/components/dropdown-menu'
+import { DeleteDialogButton } from '@workspace/ui/components/delete-dialog-button'
 
+import { SessionButton } from '@/features/device-tracking/components'
 import { useIsCurrent } from '../hooks/use-is-current'
 
 import type { Device } from '@/entities/device/types'
 import { DeviceForm } from './device-form'
-import { SessionButton } from '@/features/device-tracking/components/session-button'
-import { useState } from 'react'
-import { DeleteDialogButton } from '@workspace/ui/components/delete-dialog-button'
 
 export function ActionsCell({ device }: { device: Device }) {
   // const isCurrent = useIsCurrent({ device })

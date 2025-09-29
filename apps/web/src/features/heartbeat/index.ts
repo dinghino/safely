@@ -1,0 +1,1 @@
+export { HeartbeatManager } from './components'

@@ -1,3 +1,3 @@
-import Providers from './providers'
-
-export default Providers
+import RootProviders from './providers'
+import { AuthenticatedProviders } from './authenticated-providers'
+export { RootProviders, AuthenticatedProviders }

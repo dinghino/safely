@@ -85,7 +85,7 @@ export const startSession = mutation({
 
     if (existing && isSessionOpen(existing)) {
       // throw new Error('There is already an open session for this device')
-      return existing
+      return existing._id
     }
 
     const newSession = await ctx.db.insert('trackSession', {
@@ -195,7 +195,10 @@ export const addLocationPoint = mutation({
         ]
       : []
 
-    const patchSession = ctx.db.patch(session._id, { pointsCount: session.pointsCount + 1 })
+    const patchSession = ctx.db.patch(session._id, {
+      pointsCount: session.pointsCount + 1,
+      lastUpdatedAt: Date.now(),
+    })
     const addPoint = geospatial.insert(ctx, trackLocation, point, {
       session: session._id,
       user: session.owner,
@@ -219,6 +222,7 @@ export const getSessionLocations = query({
     const locations = await ctx.db
       .query('trackLocation')
       .withIndex('by_session', (q) => q.eq('session', session._id))
+      .order('desc')
       // todo: add pagination / limit
       .collect()
 
@@ -258,7 +262,8 @@ async function _getActiveSession({ ctx, deviceId }: { ctx: QueryCtx; deviceId: I
   const device = await ctx.db.get(deviceId)
 
   if (!device || device.owner !== user._id) {
-    throw new Error('Device not found')
+    // throw new Error('Device not found')
+    return null
   }
 
   const session = await ctx.db

@@ -3,9 +3,9 @@
  * device tracking state machine.
  */
 
-import type { Geolocator, Tracking } from '@/types'
-import type { Id } from '@workspace/backend/dataModel'
 import { fromPromise } from 'xstate'
+import type { Id } from '@workspace/backend/dataModel'
+import type { Geolocator, Tracking } from '../types'
 
 type Data = Omit<Geolocator.Data, 'timestamp'>
 // type SenderOptions = Expand<{ sessionId: Id<'trackSession'> } & Omit<Geolocator.Data, 'timestamp'>>

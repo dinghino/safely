@@ -1,4 +1,4 @@
-import type { Geolocator, Tracking } from '@/types'
+import type { Geolocator, Tracking } from '../types'
 
 /**
  * Initial state machine setup function

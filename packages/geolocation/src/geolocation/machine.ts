@@ -168,11 +168,8 @@ export const machine = config.createMachine({
       // create a watch on the geolocation provider and store the watchId
       entry: [emit({ type: 'WATCHING' })],
       exit: [
-        ({ context }) => {
-          if (context.watchId === null) return
-          context.service.clearWatch(context.watchId)
-        },
         assign({ watchId: null }),
+        emit({ type: 'STOPPED_WATCHING' }),
         // todo: emit a stop watching event
       ],
       invoke: {
@@ -196,6 +193,9 @@ export const machine = config.createMachine({
         GET_POSITION: [
           {
             guard: ({ context }) => context.data !== null,
+            // todo: check if the location is still valid, if not go to a watching internal state
+            // to get the latest location (not the one outside), get the location and go back to
+            // watching root.
             actions: [emit(({ context }) => ({ type: 'LOCATION_UPDATE', data: context.data! }))],
           },
         ],

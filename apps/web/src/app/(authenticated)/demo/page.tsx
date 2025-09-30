@@ -22,7 +22,7 @@ import {
 import { Loader2, ChevronDown } from 'lucide-react'
 import { Card } from '@workspace/ui/components/card'
 import { HeartbeatDebugger } from '@/features/heartbeat/components/debugger'
-import { SessionButton } from '@/features/device-tracking'
+import { SessionButton, useSessionManager } from '@/features/device-tracking'
 import { SessionLocationsTable } from '@/widgets/geospatial-table'
 import type { Id } from '@workspace/backend/dataModel'
 
@@ -167,10 +167,18 @@ function SessionDebugger() {
 
   const device = useQuery(api.devices.get, { deviceId })
   const session = useQuery(api.tracking.sessions.getActive, { deviceId: device?._id })
+
+  const { state } = useSessionManager()
+
   return (
     <div className="flex flex-col gap-2">
-      <div className="rounded bg-card p-2">{device && <SessionButton deviceId={device?._id} />}</div>
-      <div className="overflow-x-auto rounded bg-card p-2">{session ? <SessionData sessionId={session._id} /> : <div>No active session</div>}</div>
+      <div className="inline-flex items-center gap-4 rounded bg-card p-2">
+        {device && <SessionButton deviceId={device?._id} />}<Badge variant="secondary">{JSON.stringify(state.value)}</Badge>
+      </div>
+      <div className="overflow-x-auto rounded bg-card p-2">
+        {session ? <SessionData sessionId={session._id} /> : <div>No active session</div>}
+      </div>
+      <pre>{JSON.stringify(state.context, null, 2)}</pre>
     </div>
   )
 }

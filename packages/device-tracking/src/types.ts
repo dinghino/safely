@@ -22,7 +22,7 @@ export namespace Tracking {
   }
 
   export type Context = Inputs & {
-    sessionId: SessionId | null
+    sessionId: SessionId | null | undefined
     interval: number // in ms
     lastLocation: Geolocator.Data | null
     options: Geolocator.Options
@@ -35,7 +35,7 @@ export namespace Tracking {
   export type Events =
     | { type: 'setup_done' }
     // actively start a session
-    | { type: 'start'; sessionId?: SessionId }
+    | { type: 'start'; sessionId: SessionId | undefined }
     // stop and close the active session
     | { type: 'stop' }
     // request a session to be started
@@ -85,19 +85,29 @@ export namespace Tracking {
      * Actor that resolves with a active tracking session id.
      * It should either return an existing active session id or run a mutation
      * to start a new session.
+     * @deprecated we create sessions with requests api from outside
      */
-    createSession: PromiseActorLogic<SessionId, void>
+    // createSession: PromiseActorLogic<void, void>
+    // createSession: PromiseActorLogic<SessionId, void>
     /**
      * Actor that closes the active session on the server.
      * It should resolve once the session is closed.
+     * @todo remove session id from the promise input
+     * @deprecated with requests api. we handle closing from outside
      */
-    closeSession: PromiseActorLogic<void, { sessionId: SessionId }>
+    // closeSession: PromiseActorLogic<void, { sessionId: SessionId }>
     /**
      * This **might** not be even needed, but should be called when we are
      * about to dispatch a new location to the server, to ensure we have latest
      * location data available to send.
+     * 
+     * @todo since we are already able to listen to location updates from the
+     * geolocator actor, we do not need this to return a location (maybe `sendBack`)
+     * but we might want to dispatch a GET_LOCATION event to the actor so that we
+     * can ensure we have the latest location data.
      */
     getLocation: PromiseActorLogic<Geolocator.Data, Geolocator.Options>
+    // getLocation: PromiseActorLogic<void, Geolocator.Options>
     /**
      * promise actor that should call the server to add a location point to
      * the provided session id locations data.

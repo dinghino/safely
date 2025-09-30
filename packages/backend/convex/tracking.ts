@@ -1,7 +1,7 @@
 import { GeospatialIndex, point } from '@convex-dev/geospatial'
 import { v } from 'convex/values'
 import { api, components } from './_generated/api'
-import type { Id } from './_generated/dataModel'
+import type { Doc, Id } from './_generated/dataModel'
 import { mutation, type QueryCtx, query } from './_generated/server'
 
 import { getCurrentUserOrThrow } from './auth'
@@ -65,9 +65,15 @@ export const getDeviceSessions = query({
 
 /**
  * Start a new tracking session for a device
+ * @todo allow only same device to request a new session. if a device wants to
+ * track another device it needs to send a request, that the tracked device will
+ * need to read, acknowledge and start a session for
+ *
+ *
  * - verifies the device belongs to the current user
  * - creates a new trackSession entry
  * - (optionally) creates the first trackLocation entry for the given session
+ *
  * @throws if device does not exist or does not belong to the current user
  * @throws if there's already an open session for this device
  */
@@ -103,6 +109,9 @@ export const startSession = mutation({
 
 /**
  * Stop (close) a tracking session
+ * @todo can any device close a session? or only the device that started it?
+ *   we can add this later and for now allow any device of the user to close.
+ *
  * - verifies the session belongs to the current user and is still open
  * - updates the endedAt timestamp to close the session
  */
@@ -174,6 +183,18 @@ export const addLocationPoint = mutation({
       .withIndex('by_deviceId', (q) => q.eq('deviceId', session.device))
       .first()
 
+    if (!device) {
+      throw new Error(`Device not found for session ${sessionId} session`)
+    }
+
+    if (!isSessionOfDevice(session, device)) {
+      // todo: this can never happen right now since we query the device from session
+      // but we need to have this type of guard. we might have to add some info about
+      // the device in the request later on.
+      // todo: make custom errors with metadata and codes
+      throw new Error(`Session ${sessionId} does not belong to device ${device._id}`)
+    }
+
     // create trackLocation first - need the ID for geospatial
     const trackLocation = await ctx.db.insert('trackLocation', {
       session: session._id,
@@ -242,6 +263,16 @@ export const getSessionLocations = query({
 
 function isSessionOpen(session: { endedAt?: number }) {
   return session.endedAt === undefined
+}
+
+/**
+ * Verify that a session belongs to a given device
+ */
+function isSessionOfDevice(session: Doc<'trackSession'>, device: Doc<'devices'>) {
+  if (!session || !device) return false
+  if (session.owner !== device.owner) return false
+  if (session.device !== device._id) return false
+  return true
 }
 
 /**

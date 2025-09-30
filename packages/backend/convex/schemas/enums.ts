@@ -42,7 +42,9 @@ export const trackingMode = v.union(
 export const trackingRequestStatus = v.union(
   v.literal('pending'),   // request sent, waiting for target device to approve
   v.literal('approved'),  // target device approved, waiting for session to start
-  v.literal('denied'),    // target device denied the request
-  v.literal('expired'),   // request expired without action
-  v.literal('canceled'),  // sender canceled the request before approval
+  v.literal('denied'),    // target device or server denied the request
+  v.literal('expired'),   // request expired without response
+  v.literal('canceled'),  // sender canceled the request before acknowledgment
 )
+
+export const trackingRequestType = v.union(v.literal('start'), v.literal('stop'))

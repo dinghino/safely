@@ -4,7 +4,7 @@
 
 import { defineTable } from 'convex/server'
 import { v } from 'convex/values'
-// import { trackingRequestStatus } from './enums'
+// import { trackingRequestType, trackingRequestStatus } from './enums'
 
 /**
  * Table to store tracking sessions for devices.
@@ -56,11 +56,11 @@ export const trackLocation = defineTable({
  * A request is for now an ephemeral object that is created when a device wants
  * to start tracking another device (or itself) and deleted when the target
  * receives the requests and acknowledges it, by starting a new tracking session.
- * 
+ *
  * @todo use the status and acknowledged fields to manage the request lifecycle.
  * For now there is no logic to disregard a request, so any time one is created
  * and the target sees it, it starts a new session by default.
- * 
+ *
  * In the future we'll want to add the ability to deny or ignore a request for
  * a variety of reasons and keep track of the request status.
  */
@@ -70,12 +70,16 @@ export const trackRequests = defineTable({
   owner: v.id('users'), // user owning the target device
   // status: trackingRequestStatus,
   // // for future use - if the target device has seen the request
-  // acknowledged: v.boolean(),
+  acknowledged: v.boolean(),
   // // set once the session is created from the target
-  // session: v.optional(v.id('trackSession')),
+  session: v.union(v.id('trackSession'), v.null()),
   // // for future use to request start and stop events (which target may disregard)
-  // type: v.union(v.literal('start'), v.literal('stop')),
+  // type: v.optional(trackingRequestType),
 })
-  .index('target', ['target']) // get requests for a target device
-  // .index('status', ['status']) // get requests by status
-  // .index('session', ['session']) // get request by session
+  // get requests for a target device
+  .index('target', ['target'])
+  .index('acknowledged', ['target', 'acknowledged'])
+// index for request type
+// .index('type', ['type'])
+// .index('status', ['status']) // get requests by status
+// .index('session', ['session']) // get request by session

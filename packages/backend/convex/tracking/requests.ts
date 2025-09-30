@@ -129,6 +129,7 @@ export const acknowledge = mutation({
     // ...
     // ...
     // ------------------------------------------------------------------------
+
     try {
       switch (request.type) {
         case 'start': {
@@ -142,7 +143,8 @@ export const acknowledge = mutation({
           throw new Error('Invalid request type')
       }
     } catch (error) {
-      console.error('Error creating session from request:', error)
+      console.warn('Error creating session from request:', { error, request, device })
+
       // todo: handle error, but we can't throw. the request is acknowledged
       // and since the mutation is a transaction it would revert everything.
       // - read docs: do invoking a mutation inside another gets rolled back if the

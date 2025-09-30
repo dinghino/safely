@@ -74,6 +74,7 @@ export const create = internalMutation({
     }
 
     const existing = await _getActiveSession({ ctx, deviceId: device._id })
+    // todo: silently return existing session id
     if (existing) throw new Error('There is already an open session for this device')
 
     const newSession = await ctx.db.insert('trackSession', {

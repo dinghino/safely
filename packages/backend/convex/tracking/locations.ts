@@ -25,10 +25,7 @@ export const add = mutation({
       throw new Error('Session not found or closed')
     }
 
-    const device = await ctx.db
-      .query('devices')
-      .withIndex('by_deviceId', (q) => q.eq('deviceId', session.device))
-      .first()
+    const device = await ctx.db.get(session.device)
 
     if (!device) {
       throw new Error(`Device not found for session ${sessionId} session`)
@@ -59,7 +56,10 @@ export const add = mutation({
     const deviceUpdates = device
       ? [
           ctx.db.patch(device._id, { last_seen: Date.now() }),
-          ctx.runMutation(api.devices.updatePosition, { deviceId: device._id, position: point }),
+          ctx.runMutation(api.devices.updatePosition, {
+            deviceId: device.deviceId,
+            position: point,
+          }),
         ]
       : []
 

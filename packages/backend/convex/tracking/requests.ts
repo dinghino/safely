@@ -1,17 +1,20 @@
 import { v } from 'convex/values'
-import { mutation, query } from '../_generated/server'
-import { getCurrentUserOrThrow } from '../auth'
-import { _getActiveSession } from './lib'
+import { mutation, type MutationCtx, query } from '../_generated/server'
 import { internal } from '../_generated/api'
+
+import { getCurrentUserOrThrow } from '../auth'
+import { trackingRequestType } from '../schemas/enums'
+import type { Id } from '../_generated/dataModel'
 
 /**
  * Returns THE open request for the given target device, if any.
  * We assume there can be only one at a time, but this may change in the future.
  */
 export const getOpen = query({
-  args: { target: v.id('devices') },
+  args: { target: v.optional(v.id('devices')) },
   handler: async (ctx, args) => {
     const { target } = args
+    if (!target) return null
     const user = await getCurrentUserOrThrow(ctx)
 
     const device = await ctx.db.get(target)
@@ -30,9 +33,10 @@ export const create = mutation({
     target: v.id('devices'),
     // the device asking for the request
     from: v.id('devices'),
+    type: trackingRequestType,
   },
   handler: async (ctx, args) => {
-    const { target, from } = args
+    const { target, from, type } = args
     const user = await getCurrentUserOrThrow(ctx)
     const targetDevice = await ctx.db.get(target)
     const fromDevice = await ctx.db.get(from)
@@ -47,11 +51,10 @@ export const create = mutation({
     if (!isSameOwner(targetDevice, fromDevice))
       throw new Error('Cannot request tracking for devices of another users')
 
-    // only one open request for a target device at a time since there can only
-    // be one active session at a time
     /**
      * @note needs refactor when we add request lifecycle management
-     * (acknowledgement, denial, expiration, etc)
+     * (acknowledgement, denial, expiration, etc).
+     * for now we allow only one pending request per target device
      */
     const existingRequest = await ctx.db
       .query('trackRequests')
@@ -62,22 +65,13 @@ export const create = mutation({
       throw new Error('Device already has a pending request')
     }
 
-    // check we don't have an active session for the given target device
-    // todo: remove this when we add request type and lifecycle management
-    // - stop request only work against active sessions
-    // - start only if no active session
-    // we can either ignore the requests or throw
-    const activeSession = await _getActiveSession({ ctx, deviceId: targetDevice._id })
-    if (activeSession) {
-      throw new Error('There is already an active session for this device')
-    }
-
     return ctx.db.insert('trackRequests', {
       sender: fromDevice._id,
       target: targetDevice._id,
       owner: user._id,
       acknowledged: false,
       session: null,
+      type: type,
     })
   },
 })
@@ -117,8 +111,8 @@ export const acknowledge = mutation({
 
     const user = await getCurrentUserOrThrow(ctx)
     const request = await ctx.db.get(requestId)
-    // todo: do we check like this? requests MIGHT come from other users in the future
-    // so this would fail if the target device is owned by another user (which is ctx user)
+    // todo: acknowledgement should be done by the target device
+    // todo: move request ownership above this
     if (!isOwnedByTheUser(request, user)) throw new Error('Request not found')
 
     // ensure that the device in the request exists and the request is for it
@@ -135,14 +129,18 @@ export const acknowledge = mutation({
     // ...
     // ...
     // ------------------------------------------------------------------------
-
     try {
-      // creating a new session -- this can throw errors so if we want to acknowledge
-      // regardless, this should be in a try/catch block
-      const session = await ctx.runMutation(internal.tracking.sessions.create, {
-        deviceId: device._id,
-      })
-      await ctx.db.patch(request._id, { session, acknowledged: true })
+      switch (request.type) {
+        case 'start': {
+          // creating a new session -- this can throw errors so if we want to
+          // acknowledge regardless
+          return await dispatchCreateSession(ctx, device._id, request._id)
+        }
+        case 'stop':
+          return await dispatchCloseSession(ctx, device._id, request._id)
+        default:
+          throw new Error('Invalid request type')
+      }
     } catch (error) {
       console.error('Error creating session from request:', error)
       // todo: handle error, but we can't throw. the request is acknowledged
@@ -157,6 +155,25 @@ export const acknowledge = mutation({
 // ----------------------------------------------------------------------------
 // local helpers
 // ----------------------------------------------------------------------------
+
+async function dispatchCreateSession(
+  ctx: MutationCtx,
+  deviceId: Id<'devices'>,
+  requestId: Id<'trackRequests'>,
+) {
+  const session = await ctx.runMutation(internal.tracking.sessions.create, { deviceId })
+  await ctx.db.patch(requestId, { session, acknowledged: true })
+}
+
+async function dispatchCloseSession(
+  ctx: MutationCtx,
+  deviceId: Id<'devices'>,
+  requestId: Id<'trackRequests'>,
+) {
+  const session = await ctx.runMutation(internal.tracking.sessions.close, { deviceId })
+  await ctx.db.patch(requestId, { session, acknowledged: true })
+}
+
 // todo: move to root `lib`
 /**
  * Type guard to check if a device belongs to a given user

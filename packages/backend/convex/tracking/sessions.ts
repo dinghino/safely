@@ -32,6 +32,8 @@ export const getActive = query({
  * Get all sessions for a given device
  */
 export const getAllOfDevice = query({
+  // todo: make this non optional
+  // todo: make paginated
   args: { deviceId: v.optional(v.id('devices')) },
   handler: async (ctx, args) => {
     const { deviceId } = args
@@ -95,10 +97,25 @@ export const create = internalMutation({
 /**
  * @todo implement closing sessions through internal mutations from requests api
  */
-// export const close = internalMutation({
-//   args: { sessionId: v.id('trackSession') },
-//   handler: async (ctx, args) => {},
-// })
+export const close = internalMutation({
+  args: { deviceId: v.id('devices') },
+  handler: async (ctx, args) => {
+    const { deviceId } = args
+    const user = await getCurrentUserOrThrow(ctx)
+    const device = await ctx.db.get(deviceId)
+    if (!device || device.owner !== user._id) {
+      throw new Error('Device not found')
+    }
+    const session = await _getActiveSession({ ctx, deviceId })
+    if (!session) throw new Error('No active session found for this device')
+    if (!isSessionOpen(session)) throw new Error('Session already closed')
+
+    await Promise.all([
+      ctx.runMutation(api.devices.setTrackingMode, { deviceId: device._id, mode: 'passive' }),
+      ctx.db.patch(session._id, { endedAt: Date.now() }),
+    ])
+  },
+})
 
 /**
  * Start a new tracking session for a device
@@ -155,6 +172,7 @@ export const start = mutation({
  *
  * - verifies the session belongs to the current user and is still open
  * - updates the endedAt timestamp to close the session
+ * @deprecated use the new api through sessions.requests to stop sessions
  */
 export const stop = mutation({
   args: { sessionId: v.id('trackSession') },

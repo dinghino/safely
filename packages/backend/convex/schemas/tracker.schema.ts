@@ -4,7 +4,10 @@
 
 import { defineTable } from 'convex/server'
 import { v } from 'convex/values'
-// import { trackingRequestType, trackingRequestStatus } from './enums'
+import {
+  trackingRequestType,
+  // trackingRequestStatus
+} from './enums'
 
 /**
  * Table to store tracking sessions for devices.
@@ -74,12 +77,12 @@ export const trackRequests = defineTable({
   // // set once the session is created from the target
   session: v.union(v.id('trackSession'), v.null()),
   // // for future use to request start and stop events (which target may disregard)
-  // type: v.optional(trackingRequestType),
+  type: v.optional(trackingRequestType),
 })
   // get requests for a target device
   .index('target', ['target'])
   .index('acknowledged', ['target', 'acknowledged'])
-// index for request type
-// .index('type', ['type'])
+  // index for request type
+  .index('type', ['type'])
 // .index('status', ['status']) // get requests by status
 // .index('session', ['session']) // get request by session

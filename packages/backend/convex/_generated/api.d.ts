@@ -23,7 +23,9 @@ import type * as schemas_enums from "../schemas/enums.js";
 import type * as schemas_index from "../schemas/index.js";
 import type * as settings from "../settings.js";
 import type * as todos from "../todos.js";
-import type * as tracking from "../tracking.js";
+import type * as tracking_lib from "../tracking/lib.js";
+import type * as tracking_locations from "../tracking/locations.js";
+import type * as tracking_sessions from "../tracking/sessions.js";
 import type * as users from "../users.js";
 
 import type {
@@ -56,7 +58,9 @@ declare const fullApi: ApiFromModules<{
   "schemas/index": typeof schemas_index;
   settings: typeof settings;
   todos: typeof todos;
-  tracking: typeof tracking;
+  "tracking/lib": typeof tracking_lib;
+  "tracking/locations": typeof tracking_locations;
+  "tracking/sessions": typeof tracking_sessions;
   users: typeof users;
 }>;
 declare const fullApiWithMounts: typeof fullApi;

@@ -39,8 +39,8 @@ export function DevicePageClient({ deviceId }: { deviceId: string }) {
   // fixme: this is ugly but need for a quick deployment test. this whole page is going to go anyway
   const device = useQuery(api.devices.get, { deviceId }) ?? undefined
 
-  const active = useQuery(api.tracking.getActiveSession, { deviceId: device?._id })
-  const sessions = useQuery(api.tracking.getDeviceSessions, { deviceId: device?._id }) ?? []
+  const active = useQuery(api.tracking.sessions.getActive, { deviceId: device?._id })
+  const sessions = useQuery(api.tracking.sessions.getAllOfDevice, { deviceId: device?._id }) ?? []
 
   if (!device) return <div>Device not found</div>
 
@@ -91,7 +91,7 @@ export function DevicePageClient({ deviceId }: { deviceId: string }) {
 }
 
 function SessionItem({ session }: { session: Doc<'trackSession'> }) {
-  const deleteSession = useMutation(api.tracking.deleteSession)
+  const deleteSession = useMutation(api.tracking.sessions.remove)
   return (
     <Collapsible
       defaultOpen={isSessionOpen(session)}
@@ -155,7 +155,7 @@ function SessionItem({ session }: { session: Doc<'trackSession'> }) {
 }
 
 function SessionData({ sessionId }: { sessionId: Id<'trackSession'> }) {
-  const data = useQuery(api.tracking.getSessionLocations, { sessionId })
+  const data = useQuery(api.tracking.locations.getSession, { sessionId })
   if (!data) return <div>Loading session data...</div>
   if (data.length === 0) return <div>No location data for this session</div>
   return <SessionLocationsTable locations={data} />

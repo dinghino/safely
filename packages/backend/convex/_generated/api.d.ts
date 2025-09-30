@@ -25,6 +25,7 @@ import type * as settings from "../settings.js";
 import type * as todos from "../todos.js";
 import type * as tracking_lib from "../tracking/lib.js";
 import type * as tracking_locations from "../tracking/locations.js";
+import type * as tracking_requests from "../tracking/requests.js";
 import type * as tracking_sessions from "../tracking/sessions.js";
 import type * as users from "../users.js";
 
@@ -60,6 +61,7 @@ declare const fullApi: ApiFromModules<{
   todos: typeof todos;
   "tracking/lib": typeof tracking_lib;
   "tracking/locations": typeof tracking_locations;
+  "tracking/requests": typeof tracking_requests;
   "tracking/sessions": typeof tracking_sessions;
   users: typeof users;
 }>;

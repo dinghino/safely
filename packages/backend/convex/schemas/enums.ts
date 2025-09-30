@@ -4,11 +4,11 @@ import { v } from 'convex/values'
  * General status of a device
  */
 export const deviceStatus = v.union(
-  v.literal('online'),   // inside heartbeat interval
-  v.literal('idle'),     // not used for now
-  v.literal('active'),   // active tracking session - not used for now
-  v.literal('offline'),  // outside heartbeat interval
-  v.literal('unknown'),  // never reported
+  v.literal('online'), // inside heartbeat interval
+  v.literal('idle'), // not used for now
+  v.literal('active'), // active tracking session - not used for now
+  v.literal('offline'), // outside heartbeat interval
+  v.literal('unknown'), // never reported
 )
 
 /**
@@ -32,4 +32,17 @@ export const trackingMode = v.union(
   v.literal('active'),
   // send data aggressively, e.g. every 10 seconds
   v.literal('aggressive'),
+)
+
+/**
+ * Status of a tracking request between devices. used to filter, log history
+ * and manage a request lifecycle.
+ * @todo implement in the tracking requests logic - for now they are ephemeral
+ */
+export const trackingRequestStatus = v.union(
+  v.literal('pending'),   // request sent, waiting for target device to approve
+  v.literal('approved'),  // target device approved, waiting for session to start
+  v.literal('denied'),    // target device denied the request
+  v.literal('expired'),   // request expired without action
+  v.literal('canceled'),  // sender canceled the request before approval
 )

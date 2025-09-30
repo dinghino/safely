@@ -1,8 +1,7 @@
 import type { api } from '@workspace/backend/api'
-import type { Id } from '@workspace/backend/dataModel'
 import type { FunctionReturnType } from 'convex/server'
 
-type QueryFn = typeof api.tracking.getSessionLocations
+type QueryFn = typeof api.tracking.locations.getSession
 
 export type SessionLocation = FunctionReturnType<QueryFn>[number] & {
   id: string

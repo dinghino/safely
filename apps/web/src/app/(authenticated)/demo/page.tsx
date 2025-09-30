@@ -166,7 +166,7 @@ function SessionDebugger() {
   const [deviceId] = useDeviceId()
 
   const device = useQuery(api.devices.get, { deviceId })
-  const session = useQuery(api.tracking.getActiveSession, { deviceId: device?._id })
+  const session = useQuery(api.tracking.sessions.getActive, { deviceId: device?._id })
   return (
     <div className="flex flex-col gap-2">
       <div className="rounded bg-card p-2">{device && <SessionButton deviceId={device?._id} />}</div>
@@ -176,7 +176,7 @@ function SessionDebugger() {
 }
 
 function SessionData({ sessionId }: { sessionId: Id<'trackSession'> }) {
-  const locations = useQuery(api.tracking.getSessionLocations, { sessionId })
+  const locations = useQuery(api.tracking.locations.getSession, { sessionId })
 
   return <SessionLocationsTable locations={locations ?? []} />
 }

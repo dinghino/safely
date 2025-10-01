@@ -5,8 +5,9 @@ import './styles.css'
 import '@workspace/data-filter/styles.css'
 
 import Header from '@/components/header'
-import Providers from '@/components/providers'
+import { RootProviders } from '@/components/providers'
 import { Toaster } from '@workspace/ui/components/sonner'
+import { cn } from '@/lib/utils'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -23,6 +24,13 @@ export const metadata: Metadata = {
   description: 'safely',
 }
 
+const links = [
+  { href: '/', label: 'Home' },
+  { href: '/dashboard', label: 'Dashboard' },
+  { href: '/todos', label: 'Todos' },
+  { href: '/demo', label: 'Demo' },
+] satisfies Header.Props['links']
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -30,14 +38,17 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <Providers>
-          <div className="grid h-svh grid-rows-[auto_1fr]">
-            <Header />
+      <body className={cn(geistSans.variable, geistMono.variable, 'relative antialiased')}>
+        <RootProviders>
+          {/* <div className="grid h-svh grid-rows-[auto_1fr]"> */}
+          <div className="h-svh">
+            <div className="sticky top-0 z-50 bg-background">
+              <Header links={links} />
+            </div>
             {children}
           </div>
           <Toaster richColors />
-        </Providers>
+        </RootProviders>
       </body>
     </html>
   )

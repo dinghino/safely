@@ -9,6 +9,9 @@ export namespace RegisterButton {
 
 export const RegisterDeviceButton = (props: RegisterButton.Props) => {
   const { registerDevice, canRegister } = useDeviceContext()
+
+  if (!canRegister) return null
+
   return (
     <Button {...props} onClick={registerDevice} disabled={!canRegister || props.disabled}>
       Register Device

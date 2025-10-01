@@ -1,23 +1,61 @@
 // device heartbeat functions to keep things tidy
 
 import { api } from '../../_generated/api'
+import type { Id } from '../../_generated/dataModel'
 import type { MutationCtx, QueryCtx } from '../../_generated/server'
+import { DEFAULT_HEARTBEAT_INTERVAL_MS } from '../constants'
 
 // helpers
 
+/**
+ * Schedule a disconnect for the given session with the given token.
+ * the schedule is set to run after 2.5x the device expected heartbeat interval
+ * @note right now the interval is global, but we will make it configurable per
+ * device later. see the todo inside the function and update these docs when done.
+ */
 export async function scheduleDisconnect(
   ctx: MutationCtx,
-  opts: { sessionId: string; sessionToken: string },
+  opts: { sessionId: string; sessionToken: string; interval?: number },
 ) {
   const { sessionId, sessionToken } = opts
-  const appSettings = await ctx.db.query('appSettings').unique()
-  const intervalMs = appSettings?.device.heartbeatIntervalMs ?? 10_000
-  const timeout = await ctx.scheduler.runAfter(intervalMs * 2.5, api.devices.disconnect, {
+  let { interval } = opts
+
+  const entry = await getDeviceSession(ctx, sessionId)
+  // no session to disconnect
+  if (!entry) throw new Error('no session found to schedule disconnect')
+
+  interval = await getHeartbeatInterval(ctx, { interval, deviceId: entry.deviceId })
+
+  const timeout = await ctx.scheduler.runAfter(interval * 2.5, api.devices.disconnect, {
     sessionToken,
   })
   await ctx.db.insert('deviceSessionTimeouts', { sessionId, scheduledFunctionId: timeout })
 }
 
+/**
+ * get the heartbeat interval for the given device, cascading down to available
+ * options, in order to set up automatic disconnects
+ */
+async function getHeartbeatInterval(
+  ctx: QueryCtx,
+  params: { interval?: number; deviceId: Id<'devices'> },
+) {
+  const { interval, deviceId } = params
+  if (interval) return interval
+  const deviceSettings = await ctx.db
+    .query('deviceSettings')
+    .withIndex('by_deviceId', (q) => q.eq('deviceId', deviceId))
+    .unique()
+  if (deviceSettings?.heartbeatIntervalMs) return deviceSettings.heartbeatIntervalMs
+  const appSettings = await ctx.db.query('appSettings').unique()
+  if (appSettings?.device.heartbeatIntervalMs) return appSettings.device.heartbeatIntervalMs
+  return DEFAULT_HEARTBEAT_INTERVAL_MS
+}
+
+/**
+ * Remove any scheduled disconnect for the given session
+ * @note this is called when a heartbeat is received to keep the session alive
+ */
 export async function removeScheduleDisconnect(ctx: MutationCtx, sessionId: string) {
   const existingTimeout = await ctx.db
     .query('deviceSessionTimeouts')

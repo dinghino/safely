@@ -25,6 +25,7 @@ import {
   useFilterSearchParams,
 } from '@workspace/data-filter'
 import { useDebounceCallback } from '@workspace/data-filter/hooks'
+import { RegisterDeviceButton } from '@/features/device-manager'
 
 export namespace DevicesTable {
   export type Props = {
@@ -78,7 +79,14 @@ export function DevicesTable(props: DevicesTable.Props) {
     >
       <div className="space-y-2">
         <DataFilter {...filter}>
-          <DataTableToolbar actions={<DataTableColumnToggle />}>
+          <DataTableToolbar
+            actions={
+              <>
+                <RegisterDeviceButton size="sm" className="" />
+                <DataTableColumnToggle />
+              </>
+            }
+          >
             <FilterSelector />
             <FilterActions />
             {/* <DataTableFilter {...filter} /> */}

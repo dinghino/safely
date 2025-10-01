@@ -26,7 +26,6 @@ export const getColumns = ({ deviceBaseUrl }: { deviceBaseUrl: string }) => {
       id: 'status',
       header: 'Status',
       cell: ({ row }) => <DeviceStatusBadge device={row.original} />,
-      enableSorting: false,
     }),
     c.accessor('name', {
       id: 'name',
@@ -40,19 +39,35 @@ export const getColumns = ({ deviceBaseUrl }: { deviceBaseUrl: string }) => {
         )
       },
     }),
+    // c.accessor('_id', {
+    //   id: 'convex_id',
+    //   header: 'Convex ID',
+    //   cell: ({ cell }) => (
+    //     <div className="inline-flex w-full justify-start">
+    //       <Badge variant="secondary">{cell.getValue()}</Badge>
+    //     </div>
+    //   ),
+    // }),
     c.accessor('settings.trackingMode', {
       id: 'trackingMode',
       header: 'Tracking',
       cell: ({ cell }) => (
-        <div className="inline-flex w-full justify-center">
+        <div className="inline-flex w-full justify-start">
           <Badge variant="secondary">{cell.getValue()}</Badge>
         </div>
       ),
     }),
     c.accessor('settings.updateIntervalMs', {
       id: 'updateInterval',
-      header: 'Update Interval',
+      header: 'Tracking Interval',
       cell: ({ cell }) => <span>{dayjs.duration(cell.getValue(), 'ms').humanize(false)}</span>,
+    }),
+    c.accessor('settings.heartbeatIntervalMs', {
+      id: 'heartbeatInterval',
+      header: 'Heartbeat Interval',
+      cell: ({ cell }) => (
+        <span>{dayjs.duration(cell.getValue() ?? 60_000, 'ms').humanize(false)}</span>
+      ),
     }),
     c.accessor('deviceId', {
       id: 'deviceId',

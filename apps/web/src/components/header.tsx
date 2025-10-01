@@ -5,21 +5,21 @@ import Link from 'next/link'
 import { ModeToggle } from './mode-toggle'
 import { Button } from '@workspace/ui/components/button'
 
-export default function Header() {
-  const links = [
-    { to: '/', label: 'Home' },
-    { to: '/dashboard', label: 'Dashboard' },
-    { to: '/todos', label: 'Todos' },
-  ] as const
+export namespace Header {
+  export type Props = {
+    links?: ReadonlyArray<{ href: string; label: string }>
+  }
+}
 
+export const Header = ({ links = [] }: Header.Props) => {
   return (
     <div>
       <div className="flex flex-row items-center justify-between px-2 py-1">
         <nav className="flex gap-4 text-lg">
-          {links.map(({ to, label }) => {
+          {links.map(({ href, label }) => {
             return (
-              <Button asChild variant="link" key={to}>
-                <Link href={to}>{label}</Link>
+              <Button asChild variant="link" key={href}>
+                <Link href={href as any}>{label}</Link>
               </Button>
             )
           })}
@@ -50,3 +50,5 @@ export default function Header() {
     </div>
   )
 }
+
+export default Header

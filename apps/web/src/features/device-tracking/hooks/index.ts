@@ -1,1 +1,1 @@
-export { useRegisterDevice } from './use-register-device'
+export * from './session'

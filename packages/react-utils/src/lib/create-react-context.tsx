@@ -3,12 +3,12 @@ import {
   useContext as reactUseContext,
   type Context,
   type Provider,
-} from 'react';
+} from 'react'
 
 /**
  * Return type for the createContext helper function
  */
-type CreateContext<T> = [Provider: Provider<T>, useContext: () => T];
+type CreateContext<T> = [Provider: Provider<T>, useContext: () => T]
 
 /**
  * Helper function to create a context and a useContext hook
@@ -19,15 +19,15 @@ type CreateContext<T> = [Provider: Provider<T>, useContext: () => T];
  * @returns [Context, useContext]
  */
 export function createContext<T>(name = 'Custom', defaultValue: T = {} as T): CreateContext<T> {
-  const Context = reactCreateContext<T>(defaultValue);
+  const Context = reactCreateContext<T>(defaultValue)
   const useTContext = () => {
-    const context = reactUseContext(Context);
+    const context = reactUseContext(Context)
     if (context === undefined) {
-      throw new Error(`${useTContext.name} must be used within a ${name}Provider`);
+      throw new Error(`${useTContext.name} must be used within a ${name}Provider`)
     }
-    return context;
-  };
-  return [Context.Provider, useTContext];
+    return context
+  }
+  return [Context.Provider, useTContext]
 }
 
-export type { Context, Provider, CreateContext };
+export type { Context, Provider, CreateContext }

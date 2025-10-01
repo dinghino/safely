@@ -3,7 +3,10 @@ import { useEffect } from 'react'
 
 type EventName = keyof WindowEventMap | (string & {})
 
-type Listener<K extends EventName, CE extends CustomEvent = CustomEvent> = K extends keyof WindowEventMap
+type Listener<
+  K extends EventName,
+  CE extends CustomEvent = CustomEvent,
+> = K extends keyof WindowEventMap
   ? (this: Window, ev: WindowEventMap[K]) => void
   : (this: Window, ev: CE) => void
 

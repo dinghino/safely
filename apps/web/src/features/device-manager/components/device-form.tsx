@@ -25,11 +25,13 @@ export function DeviceForm({ device, onSubmitted }: { device: Device; onSubmitte
         async () => {
           await rename({ deviceId: device._id, name: value.name })
           onSubmitted?.()
-        }, {
-        loading: 'Renaming device...',
-        success: 'Device renamed',
-        error: 'Failed to rename device',
-      })
+        },
+        {
+          loading: 'Renaming device...',
+          success: 'Device renamed',
+          error: 'Failed to rename device',
+        },
+      )
     },
   })
 

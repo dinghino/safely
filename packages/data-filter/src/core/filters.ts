@@ -199,7 +199,8 @@ export function getColumnValues<TData, TType extends ColumnDataType, TVal>(
   const memoizedAccessor = memo(
     () => [data],
     (deps) =>
-      deps[0]!.flatMap(column.accessor)
+      deps[0]!
+        .flatMap(column.accessor)
         .filter((v): v is NonNullable<TVal> => v !== undefined && v !== null) as ElementType<
         NonNullable<TVal>
       >[],

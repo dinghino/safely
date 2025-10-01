@@ -1,3 +1,3 @@
-import type { Doc } from "@workspace/backend/dataModel"
+import type { Doc } from '@workspace/backend/dataModel'
 
-export type Todo = Doc<"todos">
+export type Todo = Doc<'todos'>

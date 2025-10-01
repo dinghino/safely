@@ -55,7 +55,7 @@ export function DataTableSearchFilter<T extends object>(props: DataTableSearchFi
 
   return (
     <div className="relative flex items-center">
-      {showIcon && <Search className="text-muted-foreground absolute left-3 h-4 w-4" />}
+      {showIcon && <Search className="absolute left-3 h-4 w-4 text-muted-foreground" />}
       <Input
         placeholder={placeholder}
         value={value}
@@ -69,7 +69,7 @@ export function DataTableSearchFilter<T extends object>(props: DataTableSearchFi
           onClick={handleClear}
           className="absolute right-1 h-6 w-6 p-0 hover:bg-transparent"
         >
-          <X className="text-muted-foreground hover:text-foreground h-4 w-4" />
+          <X className="h-4 w-4 text-muted-foreground hover:text-foreground" />
         </Button>
       )}
     </div>

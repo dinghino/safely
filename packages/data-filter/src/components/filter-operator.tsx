@@ -51,7 +51,7 @@ export function FilterOperator<TData, TType extends ColumnDataType>(
       <PopoverTrigger asChild>
         <Button
           variant="ghost"
-          className="m-0 h-full w-fit rounded-none p-0 px-2 text-xs whitespace-nowrap"
+          className="m-0 h-full w-fit whitespace-nowrap rounded-none p-0 px-2 text-xs"
         >
           <FilterOperatorDisplay filter={filter} columnType={column.type} />
         </Button>

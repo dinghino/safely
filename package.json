@@ -25,8 +25,5 @@
     "dev:bump": "bunx taze -r"
   },
   "type": "module",
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ]
+  "workspaces": ["apps/*", "packages/*"]
 }

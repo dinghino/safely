@@ -560,7 +560,7 @@ export function FilterValueNumberController<TData>(
   const [sliderMin, sliderMax] = [minMax ? minMax[0] : 0, minMax ? minMax[1] : 0]
 
   // Local state for values
-  const [values, setValues] = useState<number[]>(filter?.values as number[] ?? [0, 0])
+  const [values, setValues] = useState<number[]>((filter?.values as number[]) ?? [0, 0])
 
   // Sync with parent filter changes
   useEffect(() => {

@@ -7,8 +7,8 @@ So many thanks to Kevin Powell for this:
     --padding-inline: 1rem;
     --content-max-width: 180ch;
     --breakout-max-width: 200ch;
-  /* --content-max-width: attr(data-width rem, 120rem); */
-  /* --breakout-max-width: attr(data-breakout rem, 150rem); */
+    /* --content-max-width: attr(data-width rem, 120rem); */
+    /* --breakout-max-width: attr(data-breakout rem, 150rem); */
 
     --breakout-size: calc((var(--breakout-max-width) - var(--content-max-width)) / 2);
 

@@ -16,7 +16,6 @@
     "@workspace/geolocation": "workspace:*",
     "@workspace/eslint-config": "workspace:*",
     "@workspace/typescript-config": "workspace:*"
-
   },
   "peerDependencies": {
     "typescript": "^5"

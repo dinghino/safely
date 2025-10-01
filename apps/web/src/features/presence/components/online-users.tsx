@@ -13,7 +13,7 @@ export function OnlineUsersList({ className }: { className?: string }) {
   const { state } = useUserPresenceContext()
   if (!state) return null
   return (
-    <div className={cn("px-2 py-4", className)}>
+    <div className={cn('px-2 py-4', className)}>
       <FacePile presenceState={state} />
     </div>
   )

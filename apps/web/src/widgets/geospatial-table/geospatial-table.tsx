@@ -22,7 +22,7 @@ export function SessionLocationsTable({ locations }: SessionLocationsTable.Props
           <DataTable />
         </div>
         {/* <div className="rounded-lg bg-card py-2"> */}
-          <DataTablePagination pageSizeOptions={[10, 20, 30, 50, 100, 200]} />
+        <DataTablePagination pageSizeOptions={[10, 20, 30, 50, 100, 200]} />
         {/* </div> */}
       </div>
     </DataTableProvider>

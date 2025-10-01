@@ -1,6 +1,6 @@
 import { v } from 'convex/values'
 import { api } from '../_generated/api'
-import { mutation, query } from '../_generated/server'
+import { internalMutation, mutation, query } from '../_generated/server'
 
 import { getCurrentUserOrThrow } from '../auth'
 import { _getActiveSession, _getSession, geospatial, isSessionOpen } from './lib'
@@ -32,6 +32,8 @@ export const getActive = query({
  * Get all sessions for a given device
  */
 export const getAllOfDevice = query({
+  // todo: make this non optional
+  // todo: make paginated
   args: { deviceId: v.optional(v.id('devices')) },
   handler: async (ctx, args) => {
     const { deviceId } = args
@@ -51,6 +53,72 @@ export const getAllOfDevice = query({
 })
 
 /**
+ * Internal mutation to create a new tracking session for a device.
+ * @note this is called by the requests module to create a session for the
+ * target device when it acknowledges a request.
+ * @todo deprecate `start` and move all logic here, since only the server
+ * should be able to create sessions.
+ * @todo add optional first location point creation
+ */
+export const create = internalMutation({
+  args: { deviceId: v.id('devices') },
+  handler: async (ctx, args) => {
+    const { deviceId } = args
+    const user = await getCurrentUserOrThrow(ctx)
+
+    // allows only the target device to create a session from a request with
+    // the authed user being required to be logged in and owning the device
+    const device = await ctx.db.get(deviceId)
+    if (!device || device.owner !== user._id) {
+      throw new Error('Device not found')
+    }
+
+    const existing = await _getActiveSession({ ctx, deviceId: device._id })
+    // todo: silently return existing session id
+    if (existing) throw new Error('There is already an open session for this device')
+
+    const newSession = await ctx.db.insert('trackSession', {
+      device: device._id,
+      owner: user._id,
+      // fixme: do we need ALL these timestamps? we already have _createdAt
+      timestamp: Date.now(),
+      startedAt: Date.now(),
+      pointsCount: 0,
+    })
+    // todo: the actual mode and other settings should come from somewhere, either
+    // - a general device settings that the user can manage (based on device type, status etc)
+    // - a global settings object with the same conditions
+    // - the request itself (i.e. the sender can request a specific mode)
+    // for now we just use `active` and we'll figure out the rest later
+    await ctx.runMutation(api.devices.setTrackingMode, { deviceId: device._id, mode: 'active' })
+    return newSession
+  },
+})
+
+/**
+ * @todo implement closing sessions through internal mutations from requests api
+ */
+export const close = internalMutation({
+  args: { deviceId: v.id('devices') },
+  handler: async (ctx, args) => {
+    const { deviceId } = args
+    const user = await getCurrentUserOrThrow(ctx)
+    const device = await ctx.db.get(deviceId)
+    if (!device || device.owner !== user._id) {
+      throw new Error('Device not found')
+    }
+    const session = await _getActiveSession({ ctx, deviceId })
+    if (!session) throw new Error('No active session found for this device')
+    if (!isSessionOpen(session)) throw new Error('Session already closed')
+
+    await Promise.all([
+      ctx.runMutation(api.devices.setTrackingMode, { deviceId: device._id, mode: 'passive' }),
+      ctx.db.patch(session._id, { endedAt: Date.now() }),
+    ])
+  },
+})
+
+/**
  * Start a new tracking session for a device
  * @todo allow only same device to request a new session. if a device wants to
  * track another device it needs to send a request, that the tracked device will
@@ -63,6 +131,7 @@ export const getAllOfDevice = query({
  *
  * @throws if device does not exist or does not belong to the current user
  * @throws if there's already an open session for this device
+ * @deprecated use the new api through sessions.requests to create sessions
  */
 export const start = mutation({
   args: { deviceId: v.id('devices') },
@@ -89,7 +158,10 @@ export const start = mutation({
       pointsCount: 0,
     })
 
-    await ctx.runMutation(api.devices.setTrackingMode, { deviceId: device._id, mode: 'active' })
+    await Promise.all([
+      // modify device settings to handle tracking properly
+      ctx.runMutation(api.devices.setTrackingMode, { deviceId: device._id, mode: 'active' }),
+    ])
     return newSession
   },
 })
@@ -101,6 +173,7 @@ export const start = mutation({
  *
  * - verifies the session belongs to the current user and is still open
  * - updates the endedAt timestamp to close the session
+ * @deprecated use the new api through sessions.requests to stop sessions
  */
 export const stop = mutation({
   args: { sessionId: v.id('trackSession') },
@@ -120,6 +193,11 @@ export const stop = mutation({
   },
 })
 
+/**
+ * Remove a session and all associated location points
+ * fixme: this fails if there are too many points as it is now.
+ * @issue #7
+ */
 export const remove = mutation({
   args: { sessionId: v.id('trackSession') },
   handler: async (ctx, args) => {

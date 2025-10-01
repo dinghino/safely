@@ -8,7 +8,7 @@ export namespace LocationMachine {
 
   export type Inputs = { service: Locator.Provider; maxAge?: number }
 
-  export type  Context = {
+  export type Context = {
     service: Locator.Provider
     data: Locator.Data | null
     error: string | null
@@ -36,6 +36,7 @@ export namespace LocationMachine {
     | { type: 'READY' }
     // watching has started, todo: add watchId? we technically don't need to expose it?
     | { type: 'WATCHING' }
+    | { type: 'STOPPED_WATCHING' }
     // send whenever a new location is available to subscribers
     | { type: 'LOCATION_UPDATE'; data: Locator.Data }
     // notify of errors with a message. todo: define error codes? we can use the state value to determine type

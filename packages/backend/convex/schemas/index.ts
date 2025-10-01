@@ -1,5 +1,5 @@
 export { devices, deviceSessions, deviceSessionTimeouts, deviceSessionTokens } from './devices.schema'
 export { appSettings, deviceSettings } from './settings.schema'
 export { todos } from './todos.schema'
-export { trackLocation, trackSession } from './tracker.schema'
+export { trackLocation, trackSession, trackRequests } from './tracker.schema'
 export { users } from './users.schema'

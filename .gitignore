@@ -8,3 +8,6 @@ node_modules
 .kiro/steering/product.md
 .kiro/steering/structure.md
 .kiro/steering/tech.md
+
+# db snapshots for testing and backup
+packages/backend/.snapshots

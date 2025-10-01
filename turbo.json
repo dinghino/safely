@@ -7,6 +7,11 @@
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
       "outputs": ["dist/**"]
     },
+    "web#build": {
+      "dependsOn": [ "^build" ],
+      "env": ["CLERK_SECRET_KEY ","CONVEX_DEPLOYMENT ","CONVEX_URL ","GOOGLE_MAPS_API_KEY"],
+      "outputs": ["dist/**"]
+    },
     "lint": {
       "dependsOn": ["^lint"]
     },

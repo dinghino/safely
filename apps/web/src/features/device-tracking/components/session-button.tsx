@@ -2,10 +2,16 @@
 
 import type { Id } from '@workspace/backend/dataModel'
 import { Button } from '@workspace/ui/components/button'
-import { useActiveSession, useStartSession, useStopSession } from '../hooks/session'
-import { useSessionManager } from '../contexts'
-import { useDeviceContext } from '@/features/device-manager'
-
+import {
+  useActiveRequest,
+  useActiveSession,
+  useCreateRequest,
+  useRemoveRequest,
+} from '../hooks/session'
+import { useTransition } from 'react'
+import { ButtonGroup } from '@workspace/ui/components/button-group'
+import { CircleXIcon } from 'lucide-react'
+import type { TrackingRequestType } from '@workspace/backend/types'
 
 export namespace SessionButton {
   export type Props = React.ComponentProps<typeof Button> & {
@@ -13,59 +19,80 @@ export namespace SessionButton {
   }
 }
 
+/**
+ * A button to start or stop a tracking session on a device through requests.
+ * Shows a cancel action if there is a request pending.
+ */
 export const SessionButton = (props: SessionButton.Props) => {
   const { deviceId, ...rest } = props
   const activeSession = useActiveSession(deviceId)
 
-  if (activeSession) {
-    return <StopSessionButton deviceId={deviceId} {...rest} />
-  }
-  return <StartSessionButton deviceId={deviceId} {...rest} />
+  return (
+    <ButtonGroup>
+      <MakeRequestButton
+        deviceId={deviceId}
+        requestType={activeSession ? 'stop' : 'start'}
+        {...rest}
+      >
+        {activeSession ? 'Stop session' : 'Start session'}
+      </MakeRequestButton>
+      <CancelRequestButton deviceId={deviceId} {...rest} />
+    </ButtonGroup>
+  )
 }
 
-const StartSessionButton = (props: SessionButton.Props) => {
-  const { deviceId, ...rest } = props
-  const { device: thisDevice } = useDeviceContext()
-  const { start } = useSessionManager()
-  const requestStart = useStartSession()
+type MakeRequestButtonProps = {
+  deviceId: Id<'devices'>
+  requestType: TrackingRequestType
+} & Omit<React.ComponentProps<typeof Button>, 'onClick'>
 
-  const handleClick = async () => {
-    if (thisDevice?._id === deviceId) {
-      console.log('starting session for this device')
-      // starting for this device - just notify context
-      return start()
-    }
-    await requestStart({ deviceId })
+const MakeRequestButton = (props: MakeRequestButtonProps) => {
+  const { deviceId, requestType, children = 'Request', ...rest } = props
+  const createRequest = useCreateRequest()
+  const currentRequest = useActiveRequest({ deviceId })
+
+  const [loading, startTransition] = useTransition()
+
+  const handleClick = () => {
+    startTransition(async () => {
+      await createRequest({ target: deviceId, type: requestType })
+    })
   }
 
+  const disabled = rest.disabled || loading || !!currentRequest
+
   return (
-    <Button {...rest} onClick={handleClick}>
-      Start session
+    <Button {...rest} disabled={disabled} onClick={handleClick}>
+      {currentRequest ? 'Pending' : children}
     </Button>
   )
 }
 
-const StopSessionButton = (props: SessionButton.Props) => {
+function CancelRequestButton(props: SessionButton.Props) {
   const { deviceId, ...rest } = props
-  const { device: thisDevice } = useDeviceContext()
-  const activeSession = useActiveSession(deviceId)
-  const { stop } = useSessionManager()
-  const endSession = useStopSession()
+  const remove = useRemoveRequest()
+  const [loading, startTransition] = useTransition()
+  const currentRequest = useActiveRequest({ deviceId })
 
-  const handleClick = async () => {
-    if (!activeSession) return
-    // if we are stopping for this device just notify the context
-    if (activeSession.device === thisDevice?._id) {
-      console.log('stopping session for this device')
-      return stop()
-    }
-    // otherwise ask the server to close the session for the device
-    await endSession({ sessionId: activeSession._id })
+  const handler = async () => {
+    if (!currentRequest) return
+    const { _id: requestId } = currentRequest
+    startTransition(async () => {
+      await remove({ requestId })
+    })
   }
 
+  if (!currentRequest) return null
+
   return (
-    <Button {...rest} onClick={handleClick} disabled={!activeSession}>
-      End session
+    <Button
+      variant="destructive"
+      size="icon"
+      {...rest}
+      disabled={rest.disabled || !currentRequest || loading}
+      onClick={handler}
+    >
+      <CircleXIcon />
     </Button>
   )
 }

@@ -168,39 +168,10 @@ const machine = config.createMachine({
             actions: [emit({ type: 'error', error: 'cannot start tracking without geolocation' })],
           },
           {
-            target: 'creating_session',
-            guard: ({ event }) => !event.sessionId,
-            description: 'Starting requested without an id. calling service to get one',
-          },
-          {
             description: 'we have a sessionId to start tracking.',
             guard: ({ event }) => !!event.sessionId,
+            actions: assign({ sessionId: ({ event }) => event.sessionId }),
             target: 'working',
-          },
-        ],
-      },
-    },
-    creating_session: {
-      description:
-        'notify the server we want to start a session for the current device. we get the sessionId back or throws',
-      entry: [emit({ type: 'starting' })],
-      invoke: {
-        id: 'startSession',
-        src: 'createSession',
-        onDone: {
-          target: 'working',
-          actions: assign({
-            sessionId: ({ event }) => event.output,
-            error: undefined,
-          }),
-          guard: ({ event }) => !!event.output,
-        },
-        onError: [
-          {
-            target: 'error',
-            actions: assign({
-              error: ({ event }) => (event.error ? String(event.error) : 'unknown'),
-            }),
           },
         ],
       },
@@ -211,6 +182,13 @@ const machine = config.createMachine({
       entry: [startWatch, emit({ type: 'started' })],
       exit: [stopWatch, emit({ type: 'stopped' })],
       on: {
+        start: [
+          {
+            target: '.stopping',
+            description: 'if we receive a a falsy session id we stop',
+            guard: ({ event }) => !event.sessionId,
+          },
+        ],
         stop: {
           target: '.stopping',
           description: 'notify server of stop current session and go idle when done',
@@ -223,6 +201,7 @@ const machine = config.createMachine({
         // },
       },
       initial: 'locating',
+
       states: {
         waiting: {
           description: 'wait the defined interval to dispatch the device location',
@@ -309,28 +288,9 @@ const machine = config.createMachine({
         },
         stopping: {
           entry: [emit({ type: 'stopping' })],
-          description: 'notify server to close the active session then go idle. to error if fails',
-          invoke: {
-            id: 'close_and_stop_session',
-            src: 'closeSession',
-            input: ({ context }) => ({ sessionId: context.sessionId! }),
-            onDone: {
-              target: '#tracking.idle',
-              actions: [
-                assign({ sessionId: null, lastLocation: null, lastSentMs: undefined }),
-                () => console.log('⚠️ stopped session successfully'),
-              ],
-            },
-            onError: {
-              target: '#tracking.error',
-              actions: [
-                assign({
-                  error: ({ event }) => (event.error ? String(event.error) : 'unknown'),
-                }),
-                () => console.log('🤬 failed to stop session', 'tracking.working.stopping'),
-              ],
-            },
-          },
+          description:
+            'This state was in charge of closing the session on the server but with the requests api we do it differently, but it is still useful to have a stopping state to cleanup and go idle.',
+          target: '#tracking.idle',
         },
       },
     },

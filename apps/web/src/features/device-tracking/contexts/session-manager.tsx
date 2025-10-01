@@ -4,7 +4,7 @@ import { useEffect } from 'react'
 import { fromPromise, type ActorRefFrom, type StateFrom } from 'xstate'
 import { useMachine, useSelector } from '@xstate/react'
 
-import type { Doc, Id } from '@workspace/backend/dataModel'
+import type { Doc } from '@workspace/backend/dataModel'
 import machine, {
   createSettingsFactory,
   // type Geolocator,
@@ -15,13 +15,18 @@ import { createContext } from '@workspace/react-utils'
 import { useDeviceContext } from '@/features/device-manager'
 import { useGeolocationContext } from '@/features/geolocation'
 
-import { useActiveSession, useSendPosition, useStartSession, useStopSession } from '../hooks'
+import {
+  useAcknowledgeRequest,
+  useActiveRequest,
+  useActiveSession,
+  useSendPosition,
+} from '../hooks'
 
 export namespace SessionManager {
   export type Value = {
     actor: ActorRefFrom<typeof machine>
-    start: (options?: { deviceId?: Id<'devices'> }) => void
-    stop: () => void
+    // start: (options?: { deviceId?: Id<'devices'> }) => void
+    // stop: () => void
     state: StateFrom<typeof machine>
     active: boolean
   }
@@ -44,12 +49,13 @@ const parseSettings = createSettingsFactory<DeviceSettings>((settings) => ({
 
 export const SessionManager: React.FC<SessionManager.Props> = (props) => {
   const { device } = useDeviceContext()
-  const activeSession = useActiveSession(device?._id)
   const { actor: geo } = useGeolocationContext()
 
-  const startSession = useStartSession()
-  const stopSession = useStopSession()
+  const trackingRequest = useActiveRequest({ deviceId: device?._id })
+  const activeSession = useActiveSession(device?._id)
+
   const sendPosition = useSendPosition()
+  const acknowledge = useAcknowledgeRequest()
 
   const [state, send, actor] = useMachine(
     machine.provide({
@@ -58,21 +64,6 @@ export const SessionManager: React.FC<SessionManager.Props> = (props) => {
           const { timestamp, ...data } = input
           await sendPosition(data)
         }),
-        closeSession: fromPromise(async ({ input }) => {
-          const { sessionId } = input
-          await stopSession({ sessionId })
-          return
-        }),
-        // get a session id from the server or active session and resolve that
-        createSession: fromPromise(async () => {
-          if (activeSession?._id) return activeSession._id
-
-          if (!device?._id) throw new Error('no device id available to start session')
-          // start a new one on the server and get the id back
-          const sessionId = await startSession({ deviceId: device?._id })
-          return sessionId
-        }),
-
         // fixme: this is ugly. we technically do not need it at least this complex
         // and could just be a fromCallback or just an event dispatch to geo
         // to force a new location fetch.
@@ -101,13 +92,6 @@ export const SessionManager: React.FC<SessionManager.Props> = (props) => {
         geolocatorActor: geo,
         settings: parseSettings(device?.settings),
       },
-      inspect: (event) => {
-        // const a: (typeof event)['type'][] = ['@xstate.event'] as const
-        if (event.type === '@xstate.event') {
-          if (event.type.startsWith('xstate.')) return // ignore internal events
-          console.log('[xstate][session manager]', event.event)
-        }
-      },
     },
   )
 
@@ -122,15 +106,6 @@ export const SessionManager: React.FC<SessionManager.Props> = (props) => {
     }
   }, [actor])
 
-  const settings = useSelector(actor, (state) => state.context.settings)
-
-  // update machine settings when device settings change
-  useEffect(() => {
-    // todo: make comparison cleaner
-    if (JSON.stringify(parseSettings(device?.settings)) === JSON.stringify(settings)) return
-    send({ type: 'update_settings', settings: parseSettings(device?.settings) })
-  }, [device?.settings, settings, send])
-
   // --------------------------------------------------------------------------
   // machine state values
 
@@ -138,57 +113,40 @@ export const SessionManager: React.FC<SessionManager.Props> = (props) => {
   const knownSessionId = useSelector(actor, (state) => state.context.sessionId)
   const isWorking = useSelector(actor, (state) => state.matches('working'))
   const isStopping = useSelector(actor, (state) => state.matches({ working: 'stopping' }))
+  const settings = useSelector(actor, (state) => state.context.settings)
 
   // --------------------------------------------------------------------------
-  // main effect to handle session changes
+  // effects
 
-  // update the active session when it changes and eventually start/stop the machine
+  // todo: move inside state machine ?:122
+  useEffect(() => {
+    if (!trackingRequest) return
+    const { _id: requestId, target } = trackingRequest
+    if (target !== device?._id) return // not for us
+    acknowledge({ requestId })
+  }, [trackingRequest, acknowledge, device?._id])
+
+  // update machine settings when device settings change
+  useEffect(() => {
+    // fixme: make comparison cleaner
+    if (JSON.stringify(parseSettings(device?.settings)) === JSON.stringify(settings)) return
+    send({ type: 'update_settings', settings: parseSettings(device?.settings) })
+  }, [device?.settings, settings, send])
+
   useEffect(() => {
     const sessionId = activeSession?._id
+
     if (sessionId && sessionId === knownSessionId) return // nothing to do
 
-    if (isStopping) return // do not interfere when stopping
-
-    // if we don't have an id tell the machine to stop. it will be idempotent
-    // if the current state doesn't handle stop events
-    if (!sessionId) return send({ type: 'stop' })
-
-    // we got a new session id from the server. tell the machine to work.
-    // this should be idempotent if the machine is already working on something
-    return send({ type: 'start', sessionId: sessionId })
-  }, [activeSession?._id, send, knownSessionId, isStopping])
-
-  // todo: this should just send the event to the machine that should handle
-  // creating the session with the startSession actor if required
-  const start = async ({ deviceId }: { deviceId?: Id<'devices'> } = {}) => {
-    // handle starting a session for another device by requesting a new session
-    // for that device to the server, then bail.
-    if (deviceId && deviceId !== device?._id) {
-      return startSession({ deviceId })
-    }
-    // if the state machine is working already there's nothing to do. start
-    // should technically be idempotent and disabled
-    if (isWorking) return
-    if (!device?._id) {
-      console.error(
-        `[SessionManager] attempting to start session on this device but we have no device id.
-          Maybe the device is not registered with the application yet?
-          `,
-      )
-      return
-    }
-    // notify we want to start for this device. the machine will handle creating
-    // the session on the server if it doesn't already have a known session.
-    // see the startSession actor.
-    return send({ type: 'start' })
-  }
+    if (sessionId) send({ type: 'start', sessionId })
+    // sessionId = null|undefined so we need to stop the machine
+    else if (!isStopping) send({ type: 'stop' })
+  }, [activeSession?._id, knownSessionId, send, isStopping])
 
   const value: SessionManager.Value = {
     actor,
     state,
     active: isWorking,
-    start,
-    stop: () => send({ type: 'stop' }),
   }
 
   return <Provider value={value}>{props.children}</Provider>

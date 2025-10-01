@@ -4,6 +4,10 @@
 
 import { defineTable } from 'convex/server'
 import { v } from 'convex/values'
+import {
+  trackingRequestType,
+  // trackingRequestStatus
+} from './enums'
 
 /**
  * Table to store tracking sessions for devices.
@@ -29,6 +33,9 @@ export const trackLocationMetadata = v.object({
   accuracy: v.optional(v.number()),
   altitude: v.optional(v.number()),
   altitudeAccuracy: v.optional(v.number()),
+  // todo: these can be either received or evaluated on the server if missing
+  // using the previous point and timestamp to calculate speed (and heading)
+  // if the current meta don't have them but previous do.
   heading: v.optional(v.number()),
   speed: v.optional(v.number()),
 })
@@ -46,3 +53,36 @@ export const trackLocation = defineTable({
 })
   .index('by_session', ['session'])
   .index('by_user', ['user'])
+
+/**
+ * Tracking requests between devices.
+ * A request is for now an ephemeral object that is created when a device wants
+ * to start tracking another device (or itself) and deleted when the target
+ * receives the requests and acknowledges it, by starting a new tracking session.
+ *
+ * @todo use the status and acknowledged fields to manage the request lifecycle.
+ * For now there is no logic to disregard a request, so any time one is created
+ * and the target sees it, it starts a new session by default.
+ *
+ * In the future we'll want to add the ability to deny or ignore a request for
+ * a variety of reasons and keep track of the request status.
+ */
+export const trackRequests = defineTable({
+  sender: v.id('devices'), // device sending the request
+  target: v.id('devices'), // device to be tracked
+  owner: v.id('users'), // user owning the target device
+  // status: trackingRequestStatus,
+  // // for future use - if the target device has seen the request
+  acknowledged: v.boolean(),
+  // // set once the session is created from the target
+  session: v.union(v.id('trackSession'), v.null()),
+  // // for future use to request start and stop events (which target may disregard)
+  type: v.optional(trackingRequestType),
+})
+  // get requests for a target device
+  .index('target', ['target'])
+  .index('acknowledged', ['target', 'acknowledged'])
+  // index for request type
+  .index('type', ['type'])
+// .index('status', ['status']) // get requests by status
+// .index('session', ['session']) // get request by session

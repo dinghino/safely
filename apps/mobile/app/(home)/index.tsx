@@ -6,23 +6,23 @@ import { SignOutButton } from '@/components/sign-out-button'
 export default function Page() {
   const { user } = useUser()
 
+  const displayName = user?.username ?? user?.emailAddresses[0]?.emailAddress
+
   return (
-    <View>
+    <View style={{ gap: 16, alignItems: 'center', justifyContent: 'center', flex: 1 }}>
       <SignedIn>
-        <Text>Hello {user?.emailAddresses[0]?.emailAddress}</Text>
-        <View style={{ padding: 16}}>
-          <SignOutButton />
-        </View>
+        <Text style={{ fontSize: 24, fontWeight: 'bold', marginBottom: 16 }}>
+          Hello, {displayName}
+        </Text>
+        <SignOutButton />
       </SignedIn>
       <SignedOut>
-        <View style={{ gap: 16, padding: 16 }}>
-          <Link href="/(auth)/sign-in" asChild>
-            <Button onPress={() => {}} title="Sign in" />
-          </Link>
-          <Link href="/(auth)/sign-up" asChild>
-            <Button onPress={() => {}} title="Sign up" />
-          </Link>
-        </View>
+        <Link href="/(auth)/sign-in" asChild>
+          <Button title="Sign in" />
+        </Link>
+        <Link href="/(auth)/sign-up" asChild>
+          <Button title="Sign up" />
+        </Link>
       </SignedOut>
     </View>
   )

@@ -8,27 +8,14 @@ export default function Layout() {
   return (
     <Stack
       screenOptions={{
-        headerStyle: {
-          backgroundColor: '#2a2a2a',
-        },
-        contentStyle: {
-          backgroundColor: '#efefef',
-          padding: 16,
-        },
-        
+        headerStyle: { backgroundColor: '#2a2a2a' },
+        contentStyle: { backgroundColor: '#efefef' },
         headerTintColor: '#fff',
-        headerTitleStyle: {
-          fontWeight: 'bold',
-        }
+        headerTitleStyle: { fontWeight: 'bold' },
       }}
     >
-      <Stack.Screen
-        name="index"
-        options={{
-          title: 'Home',
-          headerRight: () => <HeaderRight />
-        }}
-      />
+      <Stack.Screen name="index" options={{ title: 'Home', headerRight: () => <HeaderRight /> }} />
+      <Stack.Screen name="tabs" options={{ headerTitle: 'Tabs' }} />
     </Stack>
   )
 }
@@ -40,7 +27,7 @@ function HeaderRight() {
         <SignOutButton />
       </SignedIn>
       <SignedOut>
-        <Link href="/(auth)/sign-in" asChild>
+        <Link href="/sign-in" asChild>
           <Button title="Sign in" />
         </Link>
       </SignedOut>

@@ -2,16 +2,21 @@ import { SignedIn, SignedOut, useUser } from '@clerk/clerk-expo'
 import { Link, router } from 'expo-router'
 import { Button, StyleSheet, Text, View } from 'react-native'
 import { SignOutButton } from '@/components/sign-out-button'
+import { ServerHealthcheck } from '@/components/healtcheck'
+import { useQuery } from 'convex/react'
+import { api } from '@workspace/backend/api'
 
 export default function Page() {
   const { user } = useUser()
-
+  const data = useQuery(api.users.current)
   const displayName = user?.username ?? user?.emailAddresses[0]?.emailAddress
 
   return (
     <View style={styles.container}>
       <SignedIn>
         <Text style={styles.name}>Hello, {displayName}</Text>
+        {data && <Text style={{}}>your id is: {data._id}</Text>}
+        <ServerHealthcheck />
         <SignOutButton />
         <Button title="Go to tabs" onPress={() => router.push('/tabs')} />
       </SignedIn>

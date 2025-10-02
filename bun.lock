@@ -42,6 +42,8 @@
       "version": "1.0.0",
       "dependencies": {
         "@clerk/clerk-expo": "^2.15.4",
+        "@workspace/backend": "workspace:*",
+        "convex": "^1.27.3",
         "expo": "~54.0.12",
         "expo-auth-session": "^7.0.8",
         "expo-constants": "~18.0.9",

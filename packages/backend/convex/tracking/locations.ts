@@ -57,7 +57,7 @@ export const add = mutation({
       ? [
           ctx.db.patch(device._id, { last_seen: Date.now() }),
           ctx.runMutation(api.devices.updatePosition, {
-            deviceId: device.deviceId,
+            deviceId: device._id,
             position: point,
           }),
         ]

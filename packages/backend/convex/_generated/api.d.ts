@@ -8,28 +8,32 @@
  * @module
  */
 
-import type * as auth_index from '../auth/index.js'
-import type * as devices from '../devices.js'
-import type * as geospatial from '../geospatial.js'
-import type * as healthCheck from '../healthCheck.js'
-import type * as http from '../http.js'
-import type * as lib_constants from '../lib/constants.js'
-import type * as lib_devices_get from '../lib/devices/get.js'
-import type * as lib_devices_heartbeat from '../lib/devices/heartbeat.js'
-import type * as lib_devices_index from '../lib/devices/index.js'
-import type * as presence from '../presence.js'
-import type * as privateData from '../privateData.js'
-import type * as schemas_enums from '../schemas/enums.js'
-import type * as schemas_index from '../schemas/index.js'
-import type * as settings from '../settings.js'
-import type * as todos from '../todos.js'
-import type * as tracking_lib from '../tracking/lib.js'
-import type * as tracking_locations from '../tracking/locations.js'
-import type * as tracking_requests from '../tracking/requests.js'
-import type * as tracking_sessions from '../tracking/sessions.js'
-import type * as users from '../users.js'
+import type * as auth_index from "../auth/index.js";
+import type * as devices from "../devices.js";
+import type * as geospatial from "../geospatial.js";
+import type * as healthCheck from "../healthCheck.js";
+import type * as http from "../http.js";
+import type * as lib_constants from "../lib/constants.js";
+import type * as lib_devices_get from "../lib/devices/get.js";
+import type * as lib_devices_heartbeat from "../lib/devices/heartbeat.js";
+import type * as lib_devices_index from "../lib/devices/index.js";
+import type * as presence from "../presence.js";
+import type * as privateData from "../privateData.js";
+import type * as schemas_enums from "../schemas/enums.js";
+import type * as schemas_index from "../schemas/index.js";
+import type * as settings from "../settings.js";
+import type * as todos from "../todos.js";
+import type * as tracking_lib from "../tracking/lib.js";
+import type * as tracking_locations from "../tracking/locations.js";
+import type * as tracking_requests from "../tracking/requests.js";
+import type * as tracking_sessions from "../tracking/sessions.js";
+import type * as users from "../users.js";
 
-import type { ApiFromModules, FilterApi, FunctionReference } from 'convex/server'
+import type {
+  ApiFromModules,
+  FilterApi,
+  FunctionReference,
+} from "convex/server";
 
 /**
  * A utility for referencing Convex functions in your app's API.
@@ -40,44 +44,47 @@ import type { ApiFromModules, FilterApi, FunctionReference } from 'convex/server
  * ```
  */
 declare const fullApi: ApiFromModules<{
-  'auth/index': typeof auth_index
-  devices: typeof devices
-  geospatial: typeof geospatial
-  healthCheck: typeof healthCheck
-  http: typeof http
-  'lib/constants': typeof lib_constants
-  'lib/devices/get': typeof lib_devices_get
-  'lib/devices/heartbeat': typeof lib_devices_heartbeat
-  'lib/devices/index': typeof lib_devices_index
-  presence: typeof presence
-  privateData: typeof privateData
-  'schemas/enums': typeof schemas_enums
-  'schemas/index': typeof schemas_index
-  settings: typeof settings
-  todos: typeof todos
-  'tracking/lib': typeof tracking_lib
-  'tracking/locations': typeof tracking_locations
-  'tracking/requests': typeof tracking_requests
-  'tracking/sessions': typeof tracking_sessions
-  users: typeof users
-}>
-declare const fullApiWithMounts: typeof fullApi
+  "auth/index": typeof auth_index;
+  devices: typeof devices;
+  geospatial: typeof geospatial;
+  healthCheck: typeof healthCheck;
+  http: typeof http;
+  "lib/constants": typeof lib_constants;
+  "lib/devices/get": typeof lib_devices_get;
+  "lib/devices/heartbeat": typeof lib_devices_heartbeat;
+  "lib/devices/index": typeof lib_devices_index;
+  presence: typeof presence;
+  privateData: typeof privateData;
+  "schemas/enums": typeof schemas_enums;
+  "schemas/index": typeof schemas_index;
+  settings: typeof settings;
+  todos: typeof todos;
+  "tracking/lib": typeof tracking_lib;
+  "tracking/locations": typeof tracking_locations;
+  "tracking/requests": typeof tracking_requests;
+  "tracking/sessions": typeof tracking_sessions;
+  users: typeof users;
+}>;
+declare const fullApiWithMounts: typeof fullApi;
 
-export declare const api: FilterApi<typeof fullApiWithMounts, FunctionReference<any, 'public'>>
+export declare const api: FilterApi<
+  typeof fullApiWithMounts,
+  FunctionReference<any, "public">
+>;
 export declare const internal: FilterApi<
   typeof fullApiWithMounts,
-  FunctionReference<any, 'internal'>
->
+  FunctionReference<any, "internal">
+>;
 
 export declare const components: {
   geospatial: {
     document: {
       get: FunctionReference<
-        'query',
-        'internal',
+        "query",
+        "internal",
         { key: string },
         {
-          coordinates: { latitude: number; longitude: number }
+          coordinates: { latitude: number; longitude: number };
           filterKeys: Record<
             string,
             | string
@@ -86,17 +93,17 @@ export declare const components: {
             | null
             | bigint
             | Array<string | number | boolean | null | bigint>
-          >
-          key: string
-          sortKey: number
+          >;
+          key: string;
+          sortKey: number;
         } | null
-      >
+      >;
       insert: FunctionReference<
-        'mutation',
-        'internal',
+        "mutation",
+        "internal",
         {
           document: {
-            coordinates: { latitude: number; longitude: number }
+            coordinates: { latitude: number; longitude: number };
             filterKeys: Record<
               string,
               | string
@@ -105,147 +112,157 @@ export declare const components: {
               | null
               | bigint
               | Array<string | number | boolean | null | bigint>
-            >
-            key: string
-            sortKey: number
-          }
-          levelMod: number
-          maxCells: number
-          maxLevel: number
-          minLevel: number
+            >;
+            key: string;
+            sortKey: number;
+          };
+          levelMod: number;
+          maxCells: number;
+          maxLevel: number;
+          minLevel: number;
         },
         null
-      >
+      >;
       remove: FunctionReference<
-        'mutation',
-        'internal',
+        "mutation",
+        "internal",
         {
-          key: string
-          levelMod: number
-          maxCells: number
-          maxLevel: number
-          minLevel: number
+          key: string;
+          levelMod: number;
+          maxCells: number;
+          maxLevel: number;
+          minLevel: number;
         },
         boolean
-      >
-    }
+      >;
+    };
     query: {
       debugCells: FunctionReference<
-        'query',
-        'internal',
+        "query",
+        "internal",
         {
-          levelMod: number
-          maxCells: number
-          maxLevel: number
-          minLevel: number
+          levelMod: number;
+          maxCells: number;
+          maxLevel: number;
+          minLevel: number;
           rectangle: {
-            east: number
-            north: number
-            south: number
-            west: number
-          }
+            east: number;
+            north: number;
+            south: number;
+            west: number;
+          };
         },
         Array<{
-          token: string
-          vertices: Array<{ latitude: number; longitude: number }>
+          token: string;
+          vertices: Array<{ latitude: number; longitude: number }>;
         }>
-      >
+      >;
       execute: FunctionReference<
-        'query',
-        'internal',
+        "query",
+        "internal",
         {
-          cursor?: string
-          levelMod: number
-          logLevel: 'DEBUG' | 'INFO' | 'WARN' | 'ERROR'
-          maxCells: number
-          maxLevel: number
-          minLevel: number
+          cursor?: string;
+          levelMod: number;
+          logLevel: "DEBUG" | "INFO" | "WARN" | "ERROR";
+          maxCells: number;
+          maxLevel: number;
+          minLevel: number;
           query: {
             filtering: Array<{
-              filterKey: string
-              filterValue: string | number | boolean | null | bigint
-              occur: 'should' | 'must'
-            }>
-            maxResults: number
+              filterKey: string;
+              filterValue: string | number | boolean | null | bigint;
+              occur: "should" | "must";
+            }>;
+            maxResults: number;
             rectangle: {
-              east: number
-              north: number
-              south: number
-              west: number
-            }
+              east: number;
+              north: number;
+              south: number;
+              west: number;
+            };
             sorting: {
-              interval: { endExclusive?: number; startInclusive?: number }
-            }
-          }
+              interval: { endExclusive?: number; startInclusive?: number };
+            };
+          };
         },
         {
-          nextCursor?: string
+          nextCursor?: string;
           results: Array<{
-            coordinates: { latitude: number; longitude: number }
-            key: string
-          }>
+            coordinates: { latitude: number; longitude: number };
+            key: string;
+          }>;
         }
-      >
+      >;
       nearestPoints: FunctionReference<
-        'query',
-        'internal',
+        "query",
+        "internal",
         {
-          levelMod: number
-          logLevel: 'DEBUG' | 'INFO' | 'WARN' | 'ERROR'
-          maxDistance?: number
-          maxLevel: number
-          maxResults: number
-          minLevel: number
-          nextCursor?: string
-          point: { latitude: number; longitude: number }
+          levelMod: number;
+          logLevel: "DEBUG" | "INFO" | "WARN" | "ERROR";
+          maxDistance?: number;
+          maxLevel: number;
+          maxResults: number;
+          minLevel: number;
+          nextCursor?: string;
+          point: { latitude: number; longitude: number };
         },
         Array<{
-          coordinates: { latitude: number; longitude: number }
-          distance: number
-          key: string
+          coordinates: { latitude: number; longitude: number };
+          distance: number;
+          key: string;
         }>
-      >
-    }
-  }
+      >;
+    };
+  };
   presence: {
     public: {
-      disconnect: FunctionReference<'mutation', 'internal', { sessionToken: string }, null>
+      disconnect: FunctionReference<
+        "mutation",
+        "internal",
+        { sessionToken: string },
+        null
+      >;
       heartbeat: FunctionReference<
-        'mutation',
-        'internal',
+        "mutation",
+        "internal",
         {
-          interval?: number
-          roomId: string
-          sessionId: string
-          userId: string
+          interval?: number;
+          roomId: string;
+          sessionId: string;
+          userId: string;
         },
         { roomToken: string; sessionToken: string }
-      >
+      >;
       list: FunctionReference<
-        'query',
-        'internal',
+        "query",
+        "internal",
         { limit?: number; roomToken: string },
         Array<{ lastDisconnected: number; online: boolean; userId: string }>
-      >
+      >;
       listRoom: FunctionReference<
-        'query',
-        'internal',
+        "query",
+        "internal",
         { limit?: number; onlineOnly?: boolean; roomId: string },
         Array<{ lastDisconnected: number; online: boolean; userId: string }>
-      >
+      >;
       listUser: FunctionReference<
-        'query',
-        'internal',
+        "query",
+        "internal",
         { limit?: number; onlineOnly?: boolean; userId: string },
         Array<{ lastDisconnected: number; online: boolean; roomId: string }>
-      >
-      removeRoom: FunctionReference<'mutation', 'internal', { roomId: string }, null>
+      >;
+      removeRoom: FunctionReference<
+        "mutation",
+        "internal",
+        { roomId: string },
+        null
+      >;
       removeRoomUser: FunctionReference<
-        'mutation',
-        'internal',
+        "mutation",
+        "internal",
         { roomId: string; userId: string },
         null
-      >
-    }
-  }
-}
+      >;
+    };
+  };
+};

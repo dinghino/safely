@@ -15,13 +15,13 @@ import { deviceStatus } from './enums'
 export const devices = defineTable({
   owner: v.id('users'),
   name: v.optional(v.string()),
-  deviceId: v.string(),
+  // deviceId: v.string(),
   last_seen: v.number(),
   platform: v.optional(v.string()),
   status: deviceStatus,
 })
   .index('by_owner', ['owner'])
-  .index('by_deviceId', ['deviceId'])
+  // .index('by_deviceId', ['deviceId'])
   .index('by_last_seen', ['last_seen'])
   .index('by_status', ['status'])
 

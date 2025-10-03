@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { useDeviceId } from '../../../shared/hooks/use-device-id'
+import { useDeviceId } from '@/shared/hooks/use-device-id'
 
 interface DeviceInfo {
   deviceId: string

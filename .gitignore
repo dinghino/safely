@@ -11,3 +11,5 @@ node_modules
 
 # db snapshots for testing and backup
 packages/backend/.snapshots
+.vercel
+/.vercel

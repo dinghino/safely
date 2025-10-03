@@ -26,6 +26,12 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      ["expo-secure-store", {}]
+    ],
+    "experiments": {
+      "reactCanary": true
     }
   }
 }

@@ -35,7 +35,7 @@ function isSessionOpen(
   return !!session && !session.endedAt
 }
 
-export function DevicePageClient({ deviceId }: { deviceId: string }) {
+export function DevicePageClient({ deviceId }: { deviceId: Id<'devices'> }) {
   // fixme: this is ugly but need for a quick deployment test. this whole page is going to go anyway
   const device = useQuery(api.devices.get, { deviceId }) ?? undefined
 

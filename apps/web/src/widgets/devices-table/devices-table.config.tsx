@@ -31,7 +31,7 @@ export const getColumns = ({ deviceBaseUrl }: { deviceBaseUrl: string }) => {
       id: 'name',
       header: 'Device',
       cell: ({ row }) => {
-        const href = `${deviceBaseUrl}/${row.original.deviceId}`
+        const href = `${deviceBaseUrl}/${row.original._id}`
         return (
           <Link href={{ pathname: href }}>
             <DeviceName device={row.original} />
@@ -69,7 +69,7 @@ export const getColumns = ({ deviceBaseUrl }: { deviceBaseUrl: string }) => {
         <span>{dayjs.duration(cell.getValue() ?? 60_000, 'ms').humanize(false)}</span>
       ),
     }),
-    c.accessor('deviceId', {
+    c.accessor('_id', {
       id: 'deviceId',
       header: 'Device ID',
       enableHiding: true,

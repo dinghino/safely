@@ -1,3 +1,4 @@
+import { HeartbeatManager } from '@/components/heartbeat'
 import { SignOutButton } from '@/components/sign-out-button'
 import { DeviceManager } from '@/contexts/device-manager'
 import { SignedIn, SignedOut } from '@clerk/clerk-expo'
@@ -8,6 +9,7 @@ import { Button } from 'react-native'
 export default function Layout() {
   return (
     <DeviceManager>
+      <HeartbeatManager />
       <Stack
         screenOptions={{
           headerStyle: { backgroundColor: '#2a2a2a' },

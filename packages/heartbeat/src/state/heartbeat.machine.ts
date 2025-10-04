@@ -40,7 +40,7 @@ const requestPositionToGeolocator = config.createAction(({ context }) => {
   // if (!isStalePosition(context)) return
   // request new position
   const { interval } = context
-  context.geolocatorActor.send({
+  context.geolocatorActor?.send({
     type: 'GET_POSITION',
     options: { enableHighAccuracy: false, maximumAge: interval, timeout: interval / 2 },
   })
@@ -90,7 +90,8 @@ const working = config.createStateConfig({
         {
           target: 'getPosition',
           actions: [],
-          guard: ({ context }) => isStalePosition(context),
+          guard: ({ context }) =>
+            isStalePosition(context) && context.canGeolocate && !!context.geolocatorActor,
         },
         {
           target: 'dispatching',

@@ -1,6 +1,6 @@
 import { Link, router } from 'expo-router'
 import { useQuery } from 'convex/react'
-import { Button, StyleSheet, Text, View, Alert } from 'react-native'
+import { Button, StyleSheet, Text, View, Alert, Platform } from 'react-native'
 import { SignedIn, SignedOut, useUser } from '@clerk/clerk-expo'
 
 import { api } from '@workspace/backend/api'
@@ -22,15 +22,22 @@ export default function Page() {
       <SignedIn>
         <ServerHealthcheck />
         <Text style={styles.name}>Hello, {displayName}</Text>
-        {data && <Text style={styles.id}>{data._id}</Text>}
+        {data && <Text style={styles.badge}>{data._id}</Text>}
         <SignOutButton />
-        <Button onPress={() => Alert.alert('This is the home screen of the app.', 'Bob Ross')} title="Info" />
+        <Button
+          onPress={() => Alert.alert('Info', JSON.stringify({os: Platform.OS, version: Platform.Version}, null, 2))}
+          title="Info"
+        />
         <Button
           title="Register Device"
           disabled={manager.isRegistered}
-          onPress={manager.registerDevice}
+          onPress={manager.register}
         />
-        <Text>Device ID: {manager.deviceId ?? 'no id'}</Text>
+        <Text style={styles.badge}>ID: {manager.device?._id ?? 'no id'}</Text>
+        <View style={{ flexDirection: 'row', gap: 8 }}>
+          <Text style={styles.badge}>name: {manager.device?.name ?? 'unknown'}</Text>
+          <Text style={styles.badge}>status: {manager.device?.status ?? 'unknown'}</Text>
+        </View>
         <Button title="Go to tabs" onPress={() => router.push('/tabs')} />
       </SignedIn>
       <SignedOut>
@@ -57,7 +64,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
   },
-  id: {
+  badge: {
     fontSize: 16,
     color: '#fff',
     backgroundColor: '#2a2a2a',

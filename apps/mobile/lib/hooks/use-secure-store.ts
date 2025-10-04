@@ -24,7 +24,10 @@ export function useSecureStore<T>(options: UseStoreOptions<T>) {
   } = options
 
   const [value, setValue] = useState<T | undefined>(defaultValue)
-
+  // const value = use(store.load({ key, defaultValue, parser: loader }))
+  // const setValue = (v: T | undefined) => {
+  //   v ? store.save(key, transformer(v)) : store.clear(key)
+  // }
   useEffect(() => {
     store.load({ key, defaultValue, parser: loader }).then(
       (v) => v && setValue(v as T),
@@ -33,9 +36,14 @@ export function useSecureStore<T>(options: UseStoreOptions<T>) {
   }, [defaultValue, key, loader])
 
   const save = async (newValue: T) => {
-    await store.save('key', transformer(newValue))
+    await store.save(key, transformer(newValue))
     setValue(newValue)
   }
 
-  return [value, save] as const
+  const clear = async () => {
+    await store.clear(key)
+    setValue(undefined)
+  }
+
+  return [value, save, clear] as const
 }

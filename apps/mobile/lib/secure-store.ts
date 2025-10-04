@@ -14,3 +14,7 @@ export async function load<T>(options: GetValueOptions<T>): Promise<T | undefine
   const result = await SecureStore.getItemAsync(key)
   return result ? parser(result) : defaultValue
 }
+
+export async function clear(key: string) {
+  await SecureStore.deleteItemAsync(key)
+}

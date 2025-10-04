@@ -81,7 +81,7 @@ export const register = mutation({
     if (args.deviceId) {
       const existing = await ctx.db.get(args.deviceId)
 
-      if (!existing) throw new Error('Device not found')
+      if (!existing) return null
       if (existing.owner !== user._id)
         throw new Error('Device ID already registered to another user')
 

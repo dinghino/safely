@@ -17,14 +17,14 @@
   "license": "ISC",
   "description": "",
   "devDependencies": {
-    "@types/node": "^24.5.2",
-    "typescript": "^5.9.2"
+    "@types/node": "^24.6.2",
+    "typescript": "^5.9.3"
   },
   "dependencies": {
     "@clerk/backend": "^2.14.0",
     "@convex-dev/geospatial": "^0.1.9",
     "@convex-dev/presence": "^0.1.5",
-    "convex": "^1.27.1",
+    "convex": "^1.27.3",
     "svix": "^1.76.1"
   }
 }

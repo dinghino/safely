@@ -29,7 +29,7 @@ export const DeviceProvider: React.FC<DeviceProvider.Props> = ({ children }) => 
   const register = useMutation(api.devices.register)
   const deviceInfo = useDeviceInfo()
 
-  const [deviceId, setId] = useDeviceId()
+  const [deviceId, setId, clearId] = useDeviceId()
 
   const device = useQuery(api.devices.get, { deviceId })
 
@@ -37,7 +37,7 @@ export const DeviceProvider: React.FC<DeviceProvider.Props> = ({ children }) => 
     if (deviceId) return // device already registered
     const { platform } = deviceInfo
     const id = await register({ platform })
-    setId(id)
+    return id ? setId(id) : clearId()
   }
 
   const value = {

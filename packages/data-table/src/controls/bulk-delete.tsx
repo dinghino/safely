@@ -58,7 +58,7 @@ export function BulkDeleteButton<T extends WithId>(props: BulkDeleteButton.Props
           ) : (
             <Trash className="-ms-1 size-4 opacity-60" aria-hidden="true" />
           )}
-          <span className="text-xs @max-lg:hidden">Delete</span>
+          <span className="@max-lg:hidden text-xs">Delete</span>
           <Badge className="aspect-square p-1 font-mono text-xs">
             {table.getSelectedRowModel().rows.length}
           </Badge>
@@ -67,7 +67,7 @@ export function BulkDeleteButton<T extends WithId>(props: BulkDeleteButton.Props
       <AlertDialogContent>
         <div className="flex flex-col gap-2 max-sm:items-center sm:flex-row sm:gap-4">
           <div
-            className="border-border flex size-9 shrink-0 items-center justify-center rounded-full border"
+            className="flex size-9 shrink-0 items-center justify-center rounded-full border border-border"
             aria-hidden="true"
           >
             <CircleAlert className="opacity-80" size={16} />

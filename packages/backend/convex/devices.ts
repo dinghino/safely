@@ -38,10 +38,13 @@ export const getAll = query({
  * @todo retrieve active tracking session
  */
 export const get = query({
-  args: { deviceId: v.string() },
+  // args: { deviceId: v.union(v.string(), v.id('devices')) },
+  args: { deviceId: v.optional(v.id('devices')) },
   handler: async (ctx, args) => {
+    if (!args.deviceId) return undefined
     const user = await getCurrentUserOrThrow(ctx)
-    const device = await helpers.get.deviceByDeviceId(ctx, args.deviceId)
+    const device = await ctx.db.get(args.deviceId)
+    // const device = await helpers.get.deviceByDeviceId(ctx, args.deviceId)
     // todo: better error handling - not found vs not owned
     // if (!device || device.owner !== user._id) throw new Error('Device not found')
     if (!device || device.owner !== user._id) return undefined
@@ -54,15 +57,53 @@ export const get = query({
  * todo: auth check?
  */
 export const lastKnownPosition = query({
-  args: { deviceId: v.string() },
+  args: { deviceId: v.id('devices') },
   handler: async (ctx, args) => {
     const { deviceId } = args
-    const device = await helpers.get.deviceByDeviceId(ctx, deviceId)
+    const device = await helpers.get.deviceById(ctx, deviceId)
 
     if (!device) throw new Error('Device not found')
 
     const result = await geospatial.get(ctx, device._id)
     return result ?? null
+  },
+})
+
+export const register = mutation({
+  args: {
+    name: v.optional(v.string()),
+    platform: v.optional(v.string()),
+    deviceId: v.optional(v.id('devices')),
+  },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUserOrThrow(ctx)
+
+    if (args.deviceId) {
+      const existing = await ctx.db.get(args.deviceId)
+
+      if (!existing) return null
+      if (existing.owner !== user._id)
+        throw new Error('Device ID already registered to another user')
+
+      await ctx.runMutation(api.devices.heartbeat, { deviceId: existing._id })
+
+      return args.deviceId
+    }
+    const id = await ctx.db.insert('devices', {
+      ...args,
+      last_seen: Date.now(),
+      status: 'unknown',
+      owner: user._id,
+    })
+    await ctx.db.insert('deviceSettings', {
+      deviceId: id,
+      trackingMode: 'off',
+      updateIntervalMs: DEFAULT_HEARTBEAT_INTERVAL_MS,
+      heartbeatIntervalMs: DEFAULT_HEARTBEAT_INTERVAL_MS,
+    })
+
+    await ctx.runMutation(api.devices.heartbeat, { deviceId: id! })
+    return id
   },
 })
 
@@ -72,47 +113,50 @@ export const lastKnownPosition = query({
  * - If device exists, executes a heartbeat updating the last_seen timestamp
  *@throws if device exists and belongs to another user
  */
-export const register = mutation({
-  args: {
-    name: v.optional(v.string()),
-    deviceId: v.string(),
-    platform: v.optional(v.string()),
-  },
-  handler: async (ctx, args) => {
-    const { deviceId } = args
-    const user = await getCurrentUserOrThrow(ctx)
+// export const _register = mutation({
+//   args: {
+//     name: v.optional(v.string()),
+//     deviceId: v.string(),
+//     platform: v.optional(v.string()),
+//   },
+//   handler: async (ctx, args) => {
+//     const { deviceId } = args
+//     const user = await getCurrentUserOrThrow(ctx)
 
-    let id: Id<'devices'>
-    const existingDevice = await helpers.get.deviceByDeviceId(ctx, deviceId)
+//     let id: Id<'devices'>
+//     const existingDevice = await helpers.get.deviceById(ctx, deviceId)
+//     id = existingDevice?._id!
 
-    if (existingDevice) {
-      id = existingDevice._id
+//     if (existingDevice) {
+//       id = existingDevice._id
 
-      if (existingDevice.owner !== user._id) {
-        // todo: obfuscate error?
-        throw new Error('Device ID already registered to another user')
-      }
-    }
+//       if (existingDevice.owner !== user._id) {
+//         // todo: obfuscate error?
+//         throw new Error('Device ID already registered to another user')
+//       }
+//     }
 
-    if (!existingDevice) {
-      id = await ctx.db.insert('devices', {
-        ...args,
-        last_seen: Date.now(),
-        status: 'unknown',
-        owner: user._id,
-      })
-      await ctx.db.insert('deviceSettings', {
-        deviceId: id,
-        trackingMode: 'off',
-        updateIntervalMs: DEFAULT_HEARTBEAT_INTERVAL_MS,
-        heartbeatIntervalMs: DEFAULT_HEARTBEAT_INTERVAL_MS,
-      })
-    }
+//     if (!existingDevice) {
+//       id = await ctx.db.insert('devices', {
+//         ...args,
+//         last_seen: Date.now(),
+//         status: 'unknown',
+//         owner: user._id,
+//       })
+//       await ctx.db.insert('deviceSettings', {
+//         deviceId: id,
+//         trackingMode: 'off',
+//         updateIntervalMs: DEFAULT_HEARTBEAT_INTERVAL_MS,
+//         heartbeatIntervalMs: DEFAULT_HEARTBEAT_INTERVAL_MS,
+//       })
+//     }
 
-    /// handles updating last_seen, status and session (location not provided here)
-    await ctx.runMutation(api.devices.heartbeat, { deviceId: id! })
-  },
-})
+//     /// handles updating last_seen, status and session (location not provided here)
+//     await ctx.runMutation(api.devices.heartbeat, { deviceId: id! })
+
+//     return id as Id<'devices'>
+//   },
+// })
 
 /**
  * Change the status of the given device.
@@ -206,7 +250,7 @@ export const heartbeat = mutation({
     // handle location data if provided
     // todo: move to /lib as helper to encapsulate all logic and flatten it
     if (location) {
-      await geospatial.insert(ctx, deviceId, location.point, { deviceId: device.deviceId })
+      await geospatial.insert(ctx, deviceId, location.point, { deviceId: device._id })
       // fixme: we are deciding if we want heartbeat to also handle tracking sessions
       // for now this is disabled here. we'll see
       // // update tracking session if location data provided and session is open
@@ -301,12 +345,10 @@ export const deleteDevice = mutation({
  * or last known position through session tracking
  */
 export const updatePosition = mutation({
-  args: { deviceId: v.string(), position: point },
+  args: { deviceId: v.id('devices'), position: point },
   handler: async (ctx, args) => {
     const { deviceId, position } = args
-    const device = await helpers.get.deviceByDeviceId(ctx, deviceId)
-
-    if (!device) throw new Error('Device not found')
+    const device = await helpers.get.deviceById(ctx, deviceId)
 
     // since we are indexing on device._id we are constantly updating one point
     // so we don't need to care about duplicates

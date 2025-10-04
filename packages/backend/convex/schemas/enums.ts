@@ -40,11 +40,11 @@ export const trackingMode = v.union(
  * @todo implement in the tracking requests logic - for now they are ephemeral
  */
 export const trackingRequestStatus = v.union(
-  v.literal('pending'),   // request sent, waiting for target device to approve
-  v.literal('approved'),  // target device approved, waiting for session to start
-  v.literal('denied'),    // target device or server denied the request
-  v.literal('expired'),   // request expired without response
-  v.literal('canceled'),  // sender canceled the request before acknowledgment
+  v.literal('pending'), // request sent, waiting for target device to approve
+  v.literal('approved'), // target device approved, waiting for session to start
+  v.literal('denied'), // target device or server denied the request
+  v.literal('expired'), // request expired without response
+  v.literal('canceled'), // sender canceled the request before acknowledgment
 )
 
 export const trackingRequestType = v.union(v.literal('start'), v.literal('stop'))

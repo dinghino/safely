@@ -3,7 +3,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@workspace/ui/components/card'
 import { useDeviceInfo } from '@/features/device-manager/hooks'
 
-
 export default function DeviceInfoComponent() {
   const deviceInfo = useDeviceInfo()
 

@@ -18,7 +18,7 @@ export const getOpen = query({
     const user = await getCurrentUserOrThrow(ctx)
 
     const device = await ctx.db.get(target)
-    if (!isOwnedByTheUser(device, user)) throw new Error('Device not found')
+    if (!isOwnedByTheUser(device, user)) return null
 
     return await ctx.db
       .query('trackRequests')

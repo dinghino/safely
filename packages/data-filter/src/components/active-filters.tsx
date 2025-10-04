@@ -121,7 +121,7 @@ export function ActiveFiltersMobileContainer({ children }: { children: React.Rea
     <div className="relative w-full overflow-x-hidden">
       {/* Left blur effect */}
       {showLeftBlur && (
-        <div className="from-background animate-in fade-in-0 pointer-events-none absolute top-0 bottom-0 left-0 z-10 w-16 bg-gradient-to-r to-transparent" />
+        <div className="fade-in-0 pointer-events-none absolute top-0 bottom-0 left-0 z-10 w-16 animate-in bg-gradient-to-r from-background to-transparent" />
       )}
 
       {/* Scrollable container */}
@@ -135,7 +135,7 @@ export function ActiveFiltersMobileContainer({ children }: { children: React.Rea
 
       {/* Right blur effect */}
       {showRightBlur && (
-        <div className="from-background animate-in fade-in-0 pointer-events-none absolute top-0 right-0 bottom-0 z-10 w-16 bg-gradient-to-l to-transparent" />
+        <div className="fade-in-0 pointer-events-none absolute top-0 right-0 bottom-0 z-10 w-16 animate-in bg-gradient-to-l from-background to-transparent" />
       )}
     </div>
   )

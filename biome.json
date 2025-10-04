@@ -39,7 +39,7 @@
     "enabled": true,
     "rules": {
       "recommended": true,
-      "correctness": { 
+      "correctness": {
         "useExhaustiveDependencies": "info",
         "useJsxKeyInIterable": "off",
         "noChildrenProp": "off",

@@ -1,23 +1,22 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
-import generateId from '@/lib/nanoid'
+import { useEffect } from 'react'
+import { NANOID_LENGTH } from '@/lib/nanoid'
 import { useLocalStorage } from '@/shared/hooks/use-local-storage'
-
-const staticId = generateId()
+import type { Id } from '@workspace/backend/dataModel'
 
 export function useDeviceId() {
-  const sent = useRef(false)
   const [deviceId, setId, removeId] = useLocalStorage({
     key: 'safely_device_id',
     getInitialValueInEffect: false,
   })
 
+  // todo: remove in the future before release
   useEffect(() => {
-    if (sent.current) return
-    sent.current = true
-    if (!deviceId) setId(staticId)
-  }, [deviceId, setId])
+    if (!deviceId) return
+    // make sure we have a valid convex id since we are migrating from nanoid
+    if (deviceId.length === NANOID_LENGTH) removeId()
+  }, [deviceId, removeId])
 
-  return [deviceId, removeId] as const
+  return [deviceId as Id<'devices'>, setId, removeId] as const
 }

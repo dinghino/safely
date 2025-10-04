@@ -1,6 +1,6 @@
 'use client'
-import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable"
-import { useSortableContext } from "./sortable.context"
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
+import { useSortableContext } from './sortable.context'
 
 export namespace SortableList {
   export type Props = {

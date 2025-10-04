@@ -18,9 +18,7 @@ export const AuthenticatedProviders = (props: AuthenticatedProviders.Props) => {
     <DeviceProvider>
       <GeolocationProvider>
         <HeartbeatManager>
-          <SessionManager>
-          {children}
-          </SessionManager>
+          <SessionManager>{children}</SessionManager>
         </HeartbeatManager>
       </GeolocationProvider>
     </DeviceProvider>

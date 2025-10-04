@@ -173,7 +173,8 @@ function SessionDebugger() {
   return (
     <div className="flex flex-col gap-2">
       <div className="inline-flex items-center gap-4 rounded bg-card p-2">
-        {device && <SessionButton deviceId={device?._id} />}<Badge variant="secondary">{JSON.stringify(state.value)}</Badge>
+        {device && <SessionButton deviceId={device?._id} />}
+        <Badge variant="secondary">{JSON.stringify(state.value)}</Badge>
       </div>
       <div className="overflow-x-auto rounded bg-card p-2">
         {session ? <SessionData sessionId={session._id} /> : <div>No active session</div>}

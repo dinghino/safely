@@ -51,8 +51,8 @@ export namespace Tracking {
     | { type: 'set_location'; location: Geolocator.Data }
     // internal event linking state of the actors
     | { type: 'can_geolocate'; canGeolocate: boolean }
-    // set an existing session id to work on - this should not be handled when we are already working
-    // | { type: 'set_session'; sessionId: SessionId }
+  // set an existing session id to work on - this should not be handled when we are already working
+  // | { type: 'set_session'; sessionId: SessionId }
 
   export type Emitted =
     // emit when the state machine is ready to work on active sessions
@@ -100,7 +100,7 @@ export namespace Tracking {
      * This **might** not be even needed, but should be called when we are
      * about to dispatch a new location to the server, to ensure we have latest
      * location data available to send.
-     * 
+     *
      * @todo since we are already able to listen to location updates from the
      * geolocator actor, we do not need this to return a location (maybe `sendBack`)
      * but we might want to dispatch a GET_LOCATION event to the actor so that we

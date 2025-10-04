@@ -13,7 +13,7 @@ export const TextField = ({ label, ...inputProps }: TextField.Props) => {
   const field = useFieldContext<string>()
 
   return (
-    <div className="space-y-2 w-full">
+    <div className="w-full space-y-2">
       <div className="space-y-1">
         {label && <Label htmlFor={field.name}>{label}</Label>}
         <Input

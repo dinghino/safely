@@ -17,6 +17,10 @@ import type { Heartbeat } from './types'
  */
 export const linkGeolocator: Heartbeat.Actors['setup'] = fromCallback(({ sendBack, input }) => {
   const { service } = input
+  if (!service) {
+    console.warn('No geolocator service provided to heartbeat state machine')
+    return () => {}
+  }
   const location = service.on('LOCATION_UPDATE', ({ data }) => {
     sendBack({ type: 'locationUpdate', location: data })
   })

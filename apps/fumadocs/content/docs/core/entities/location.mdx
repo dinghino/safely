@@ -1,0 +1,39 @@
+---
+title: Location data
+---
+
+Location data represents a physical place. it is one of the most importtant entities
+in the system.
+
+For now locations are tied to a [device](./devices) and reference two main things:
+
+1. the last known location of a device, one per device
+2. active tracking sessions logged for a device, allowing to track location over time
+
+It is composed by several sub entities, to optimize geo queries and data storage.
+We will cover these in the future, but generally speaking we have:
+
+- a location data entity, that is used to store metadata and references to devices, users and optionally sessions,
+  as well as all the metadata for the point
+- geospatial data that keeps the actual GIS information, optimized for geo queries
+
+## Last known location
+
+This location is updated every time a device sends a location update, either through
+an heartbeat message, an active session or a manual one-off update (not implemented yet).
+
+When a last known location is sent from a device it updates the existing location
+with the new data, allowing to always have the most recent location for a device.
+
+> This is helpful in scenarios where we want to share live location updates with
+other users for a device without having to share historical data.
+
+## Active sessions
+
+An active session is similar to what a fitness tracker would record and stores
+location updates over time, allowing to track the movement of a device for the given
+session.
+
+<Callout type="info" title="Future work">
+  Sessions will be discussed in more detail in their dedicated documentation.
+</Callout>

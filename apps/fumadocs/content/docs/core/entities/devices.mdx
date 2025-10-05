@@ -1,0 +1,73 @@
+---
+title: Devices
+description: Devices entity
+---
+
+A Device is any piece of hardware that is tied to the user.
+
+Devices can be anything from a PC, mobile phone, tablet and IoT devices.
+Depending on the `type` of device we can expect different properties and features available,
+but generally speaking all devices share the same core properties:
+
+### Main device entity
+
+<AutoTypeTable
+  type={`
+  import { Doc } from '@workspace/backend/types'
+  export type Device = Doc<'devices'> & { settings: Doc<'deviceSettings'> }
+  `}
+  name="Device"
+/>
+
+### Device Settings
+
+These are stored in their separate table but returned along the device entity for convenience.
+
+<AutoTypeTable
+  type={`
+  import { Doc } from '@workspace/backend/types'
+  export type Settings = Omit<Doc<'deviceSettings'>, '_id'|'_creationTime'>
+  `}
+  name="Settings"
+/>
+
+
+## Device status
+
+One of the most important properties of a device is its `status`, which, at the core,
+indicates whether the device is online or offline, the last time **and location**
+it was seen online and if it can receive or issue commands.
+
+It gives users confidence in the device's availability and responsiveness and,
+when combined with other properties, can help identify potential issues or security concerns.
+
+### Online
+
+A device is considered `online` when it has sent a `heartbeat` and no specific
+status has been set to indicate other functional modes.
+
+### Offline
+
+A device is considered `offline` when it has not sent a `heartbeat` for a
+specific period of time (configurable by the user per device) or when it has
+gracefully disconnected (e.g. user turned it off, logged out etc.)
+
+### Idle
+
+<Callout type="info">
+Idle state is a placeholder unused state at the moment.
+</Callout>
+
+Whenever a device is online but doing nothing particular (but heartbeats) it can
+go into `idle` state. This can be useful to indicate that the device is
+available but not actively being used.
+
+### Unknown
+
+
+<Callout type="info">
+Placeholder unused state.
+</Callout>
+
+This status is used when the device has never sent a `heartbeat` or
+connected to the service. It should never be seen by users, but will become useful in the future.

@@ -1,0 +1,15 @@
+{
+  "title": "Core",
+  "description": "Core concepts and philosophy",
+  "root": true,
+  "defaultOpen": true,
+  "icon": "code",
+  "pages": [
+    "---Introduction---",
+    "index",
+    "---Entities---",
+    "...entities",
+    "---Stuff---",
+    "..."
+  ]
+}

@@ -7,3 +7,5 @@ export type LocationMetadata = Infer<typeof trackLocationMetadata>
 export type TrackingMode = Infer<typeof trackingMode>
 
 export type TrackingRequestType = Infer<typeof trackingRequestType>
+
+export type { Doc } from '../convex/_generated/dataModel'

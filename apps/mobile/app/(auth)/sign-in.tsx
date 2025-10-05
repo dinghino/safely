@@ -27,10 +27,12 @@ const SignInWithOAuth = () => {
   // biome-ignore lint/correctness/useExhaustiveDependencies: static callback
   const onPress = useCallback(async () => {
     try {
+      const redirectUrl = AuthSession.makeRedirectUri({ path: 'sso-callback' })
+      console.log('Clerk auth flow, redirect URL:', redirectUrl)
       const { createdSessionId, setActive } = await startSSOFlow({
         strategy: 'oauth_google',
         // redirectUrl: Linking.createURL('/'),
-        redirectUrl: AuthSession.makeRedirectUri({}),
+        redirectUrl,
       })
       if (createdSessionId) {
         setActive!({ session: createdSessionId })

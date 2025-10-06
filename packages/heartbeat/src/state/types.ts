@@ -73,6 +73,11 @@ export namespace Heartbeat {
       Internal<'locationUpdate' | 'canGeolocate' | 'locationUpdate'>,
       { service: Geolocator.Actor | null }
     >
+    /** promise actor to try and get the most up to date location */
+    getPosition: PromiseActorLogic<
+      Geolocator.Data,
+      { service: Geolocator.Actor | null; options: Geolocator.Options }
+    >
   }
 
   export namespace Dispatcher {

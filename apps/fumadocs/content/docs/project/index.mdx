@@ -1,0 +1,81 @@
+---
+title: Introduction
+---
+
+Welcome to the documentation for the safely.pet project!
+
+This section of the documentation will help you understand the structure of the project and
+get up to speed on what's where.
+
+## Project structure
+
+The project is build with `turborepo` and consists of multiple packages and apps.
+
+### Apps
+
+1. `web` is the main web `next.js` app that serves the main application with full dashboard capabilities.
+2. `mobile` is the `react-native` app that serves for now as simple app to allow device tracking development.
+3. `fumadocs` is the documentation site you are currently on, built with `next.js` and `mdx`.
+
+### Packages
+
+The project is divided into multiple packages to allow for better code sharing and separation of concerns.
+
+<Callout type="warning" title="Work in progress">
+  Since we added the `mobile` app to the project, packages will be restructured in the future
+  to allow for better code sharing between `web` and `mobile`.
+</Callout>
+
+Generally speaking we have the following packages:
+
+- `backend` contains the `convex` code. this generates the actual code that runs on the backend
+  and the client definitions to be used in the apps, similar to `tRPC`.
+- `ui` contains **web** specific components and helpers, encapsulating `shadcn` and extra components.
+  due to the nature of `shadcn` this package is web only.
+- `data-table` contains a generic data table framework that uses `tanstack-table` under the hood and
+  `shadcn` data-table components to allow easier and consistent setup for tables.
+- `data-filter` contains a generic data filtering framework that can be used with any data source
+  and is set up explicitly to work with `data-table`, but can be used standalone.
+
+#### Feature packages
+
+These will be reorganized in the future, to allow better code sharing between `web` and `mobile`, but
+as of now we have the following feature packages:
+
+- `geolocation` is the core package that handles managing the device location through adapters and
+  state machines. provides a generic interface to be implemented by apps to provide location data to
+  the other feature specific packages.
+- `heartbeat` is a custom presence and heartbeat implementation that allows a device to send
+  periodic heartbeats. The custom implementation allows to dispatch device metadata (battery, network etc.)
+  as well as the location data from `geolocation` package if available, to provide the last known location
+  of the device.
+- `device-tracking` contains all the logic and helpers to deal with device tracking functionality
+  for active sessions. This package is used by both `web` and `mobile` apps.
+
+
+## Project overview
+
+import { File, Folder, Files } from 'fumadocs-ui/components/files'
+import { Package, Server, PaintBucket, TypeIcon } from 'lucide-react'
+
+<Files>
+  <Folder name="apps" defaultOpen>
+    <Folder name="fumadocs" icon="memo"/>
+    <Folder name="web" icon="globe"/>
+    <Folder name="mobile" icon="smartphone"/>
+  </Folder>
+  <Folder name="packages" defaultOpen>
+    <Folder name="backend" icon={<Server/>}>
+      <File name="api" icon={<Server />}/>
+      <File name="types" icon={<TypeIcon />}/>
+    </Folder>
+    <Folder name="react-utils" />
+    <Folder name="data-filter" />
+    <Folder name="data-table" />
+    <Folder name="device-tracking" />
+    <Folder name="ui" defaultOpen>
+      <File name="web components and helpers" icon={<PaintBucket/>}/>
+    </Folder>
+    <File name="..." icon={<Package/>}/>
+  </Folder>
+</Files>

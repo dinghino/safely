@@ -1,0 +1,125 @@
+---
+title: Device Workflow
+description: How does a device interact with the platform
+icon: smartphone
+---
+
+Each user can have multiple device connected to their account. A device can be a
+computer, smartphone, tracker or any other piece of hardware that can connect to
+the platform. see [Devices](../concepts/devices).
+
+Until a device is registered it cannot interact with advanced features of the
+platform, such issuing commands to other devices, or accessing sensitive
+information.
+
+## Device Registration
+
+Registration can happen in two ways:
+
+- Explicitly by the user, manually registering the device.
+- Automatically, when the user is logged in the application and the device is not registered.
+
+<Callout type="info">
+  For the moment only explicit registration is supported.
+</Callout>
+
+When a device is registered it receives a unique identifier from the system and
+is associated with the user account.
+
+### Manual registration
+
+A straightforward way to register a device is through the `register device` button
+in the application. This will open a dialog where the user can enter a name for the
+device and confirm the registration.
+
+This is a one-off process that only needs to be done once per device.
+
+<Callout type="info" title="Other registration methods">
+  We will add other means of registering a device in the future, such as scanning a QR code or
+  entering a code on another device.
+</Callout>
+
+### Automatic registration
+
+Any device that is implicitly tied to a user account, such as a smartphone or tablet
+used to access the application, can be automatically registered when the user logs in.
+
+<Callout type="warning" title="Not yet implemented">
+  This feature is not yet implemented for development purposes, but will be added in the future.
+</Callout>
+
+## Device heartbeat
+
+Whenever a device is online and can connect to the platform, it sends a periodic heartbeat
+signal to the server. This signal is used to determine if the device is online or offline,
+meaning if it can receive data and commands from the platform.
+
+The heartbeat interval is configurable, but typically happens every few minutes. If the
+server does not receive a heartbeat from a device within a certain timeframe, it is considered
+offline, which (will) trigger an optional notification to the user if configured to do so.
+
+The heartbeat also serves the very important purpose of knowing the last known location of the device,
+which is used for location-based features such as geofencing and location history, and to trigger
+important notifications based on what is happening around the device.
+
+## Active tracking
+
+The user or the system can request a device to start a tracking session. This means the device
+will start sending its location to the platform at a higher frequency and precision,
+with the server storing this information for later use.
+
+Sessions are managed through a request system, where a new request for a given device based
+is added by the user (explicitly) or the system, based on certain conditions.
+
+<AutoTypeTable
+  type={`
+  import { Doc } from '@workspace/backend/types';
+  export type TrackRequest = Omit<Doc<'trackRequests'>, '_id'| '_creationTime'>
+  `}
+  name="TrackRequest"
+/>
+
+Each device can have a single request active at any given time and a request can be canceled by the issuer
+or the user.
+
+### Requesting a session
+
+Whenever a user wants to start a tracking session for a device we need to send a new request,
+specifying the `target` device, the `sender` device (the one issuing the request) and the `type`, which
+will be later used by the server to execute the correct action.
+
+In our current system, the `sender` is automatically determined, as well as the `owner` of the request
+(through the `JWT` auth token); if the actors in the request are valid, a new request will be created,
+otherwise an error will be returned.
+
+### Receiving a session request
+
+When a device receives a new request, it can either accept or reject it. If the request is accepted,
+the device with `acknowledge` the request to the server with optional metadata, allowing the server
+to decide the next steps.
+
+<Callout type="info" title="Request Acknowledgement">
+  For now a request acknowledgement is enough to start a tracking session, but in the future
+  the acknowledgement metadata will be used to determine if the session can start or not.
+</Callout>
+
+### Starting a session
+
+When the server receives an acknowledgement for a request, it will start a new tracking session,
+that is then picked up by the device that will start its tracking functionality and send location updates
+to the server.
+
+Once the session is set, the request will be updated with the `session` identifier, allowing both
+the `target` and `sender` devices to track the session status easily.
+
+<Callout type="info" title="Session Management">
+  the session tracking in the request is a future-proofing measure to allow other allowed
+  users (e.g. family members) to track a shared device owned by a specific user.
+</Callout>
+
+### Stopping a session
+
+Stopping a session follows the same request/acknowledgement pattern as starting a session
+
+A session can be stopped by the user or the system at any time, which will stop the device from sending
+location updates to the server.

@@ -7,6 +7,7 @@ import type { Guard } from 'xstate/guards'
 import { defaultGetPositionActor, linkGeolocator } from './actors'
 import type { Heartbeat, Geolocator } from './types'
 import { DEFAULT_INTERVAL, REQUIRED_ACTORS } from './constants'
+import { isStalePosition } from './utils'
 
 const config = setup({
   types: {
@@ -47,20 +48,6 @@ const config = setup({
 //     options: { enableHighAccuracy: false, maximumAge: interval, timeout: interval / 2 },
 //   })
 // })
-
-const isStalePosition = (context: Heartbeat.Context) => {
-  const { position, interval } = context
-
-  if (!position) return true
-  const { timestamp } = position
-  if (timestamp <= 0) return true
-  const age = Date.now() - timestamp
-  // give it some slack so we can dispatch the location retrieved on the previous
-  // round if it took too long to get it for that heartbeat.
-  const maxAge = interval * 1.5
-  console.info('⏱️ position stale check', { timestamp, age, maxAge, 'is stale?': age >= maxAge })
-  return age >= maxAge
-}
 
 /**
  * Custom action that validates required actor overrides from `machine.provide({})`

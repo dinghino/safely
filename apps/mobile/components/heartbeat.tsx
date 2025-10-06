@@ -72,10 +72,6 @@ export const HeartbeatManager = () => {
     },
   )
 
-  // useEffect(() => {
-  //   console.log('Heartbeat state changed', _state.value, _state.context)
-  // }, [_state])
-
   const deviceId = useSelector(actor, (state) => state.context.deviceId)
   const currentInterval = useSelector(actor, (state) => state.context.interval)
 
@@ -103,7 +99,6 @@ export const HeartbeatManager = () => {
   useEffect(() => {
     const { heartbeatIntervalMs: interval } = device?.settings ?? {}
     if (!interval || interval === currentInterval) return
-    console.log('updating heartbeat interval to', interval)
     send({ type: 'setInterval', interval })
   }, [send, currentInterval, device])
 

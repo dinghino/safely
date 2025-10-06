@@ -1,4 +1,4 @@
-import { fromCallback } from 'xstate'
+import { fromCallback, fromPromise } from 'xstate'
 import type { Heartbeat } from './types'
 
 /**
@@ -39,3 +39,21 @@ export const linkGeolocator: Heartbeat.Actors['setup'] = fromCallback(({ sendBac
     canGeolocate.unsubscribe()
   }
 })
+
+export const defaultGetPositionActor: Heartbeat.Actors['getPosition'] = fromPromise(
+  async ({ input }) => {
+    const { service, options } = input
+
+    if (!service) {
+      return Promise.reject(new Error('No geolocator service provided to heartbeat state machine'))
+    }
+
+    return new Promise((resolve) => {
+      const sub = service?.on('LOCATION_UPDATE', ({ data }) => {
+        sub.unsubscribe()
+        resolve(data)
+      })
+      service?.send({ type: 'GET_POSITION', options })
+    })
+  },
+)

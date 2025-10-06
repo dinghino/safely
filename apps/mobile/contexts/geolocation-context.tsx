@@ -102,13 +102,13 @@ export const GeolocationContext = ({ children }: GeolocationContext.Props) => {
     }
   }, [])
 
-  useEffect(() => {
-    if (ready && enabled)
-      BackgroundGeolocation.start().then((value) => {
-        console.log('BackgroundGeolocation started successfully', value)
-      })
-    else BackgroundGeolocation.stop()
-  }, [enabled, ready])
+  // useEffect(() => {
+  //   if (ready && enabled)
+  //     BackgroundGeolocation.start().then((value) => {
+  //       console.log('BackgroundGeolocation started successfully', value)
+  //     })
+  //   else BackgroundGeolocation.stop()
+  // }, [enabled, ready])
 
   const getLocation = async (options: CurrentPositionRequest = {}) => {
     try {

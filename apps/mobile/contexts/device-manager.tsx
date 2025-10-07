@@ -1,7 +1,7 @@
 import { useMutation, useQuery } from 'convex/react'
 
 import { api } from '@workspace/backend/api'
-import type { Doc, Id } from '@workspace/backend/dataModel'
+import type { Id, Device } from '@workspace/backend/types'
 import { createContext } from '@workspace/react-utils'
 import { useSecureStore } from '@/lib/hooks/use-secure-store'
 import { useEffect } from 'react'
@@ -9,7 +9,7 @@ import { Platform } from 'react-native'
 
 export namespace DeviceManager {
   export type Value = {
-    device: (Doc<'devices'> & { settings: Doc<'deviceSettings'> }) | null | undefined
+    device: Device | null | undefined
     register: () => Promise<void>
     deviceId: Id<'devices'> | undefined
     isRegistered: boolean

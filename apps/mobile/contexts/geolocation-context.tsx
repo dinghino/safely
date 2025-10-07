@@ -71,6 +71,7 @@ export const GeolocationContext = ({ children }: GeolocationContext.Props) => {
   useEffect(() => {
     setup(promise)
       .then(async (state) => {
+        // todo: transform state in a reducer since we update a bunch of fields at once?
         setReady(true)
         setEnabled(state.enabled)
         setState(state)
@@ -90,7 +91,6 @@ export const GeolocationContext = ({ children }: GeolocationContext.Props) => {
     if (!device) return
     if (!ready) return
     const newConfig = transformSettings(device.settings)
-    console.log('Updating BackgroundGeolocation config', newConfig)
     BackgroundGeolocation.setConfig(newConfig)
   }, [device, ready])
 

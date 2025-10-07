@@ -1,6 +1,6 @@
 export * as get from './get'
 export * as heartbeat from './heartbeat'
-
+export * as options from './options'
 import type { DeviceType } from '../../../types'
 
 type FromExpo = 'ios' | 'android' | 'windows' | 'macos' | 'web'

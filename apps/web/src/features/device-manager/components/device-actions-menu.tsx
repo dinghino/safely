@@ -1,19 +1,10 @@
 'use client'
 
-import { useState } from 'react'
 import { MoreVertical } from 'lucide-react'
 import { useMutation } from 'convex/react'
 
 import { api } from '@workspace/backend/api'
 import { Button } from '@workspace/ui/components/button'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@workspace/ui/components/dialog'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,7 +17,7 @@ import { SessionButton } from '@/features/device-tracking/components'
 import { useIsCurrent } from '../hooks/use-is-current'
 
 import type { Device } from '@/entities/device/types'
-import { DeviceForm } from './device-form'
+import { EditDeviceForm } from './forms'
 
 export function ActionsCell({ device }: { device: Device }) {
   // const isCurrent = useIsCurrent({ device })
@@ -66,27 +57,11 @@ export function DeviceActionsMenu({ device }: { device: Device }) {
             Unregister
           </DropdownMenuItem>
         </DeleteDialogButton>
-        <DialogForm
+        <EditDeviceForm
           trigger={<DropdownMenuItem onSelect={(e) => e.preventDefault()}>Edit</DropdownMenuItem>}
           device={device}
         />
       </DropdownMenuContent>
     </DropdownMenu>
-  )
-}
-
-function DialogForm({ trigger, device }: { trigger: React.ReactNode; device: Device }) {
-  const [open, setOpen] = useState(false)
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Rename Device</DialogTitle>
-          <DialogDescription>Enter a new name for your device.</DialogDescription>
-        </DialogHeader>
-        <DeviceForm device={device} onSubmitted={() => setOpen(false)} />
-      </DialogContent>
-    </Dialog>
   )
 }

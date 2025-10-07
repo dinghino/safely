@@ -5,8 +5,9 @@
  * ```
  */
 import type { Infer } from 'convex/values'
+import type { MutationCtx } from '../_generated/server'
+
 import type { DeviceType, TrackingMode } from '../../types'
-import { internalMutation, type MutationCtx } from '../_generated/server'
 import type { locatorOptions } from '../schemas/devices.schema'
 
 type OptionKey = { type: DeviceType; mode: TrackingMode }
@@ -51,7 +52,14 @@ const desktopOptions: DefaultOptionsMap = new Map([
 ])
 
 // merge the two maps
-const defaultOptions: DefaultOptionsMap = new Map([...mobileOptions, ...desktopOptions])
+const defaultOptions: DefaultOptionsMap = new Map([
+  [
+    { type: 'unknown', mode: 'off' },
+    { accuracy: 'VERY_LOW', maximumAge: 60000, timeout: 30000 },
+  ],
+  ...mobileOptions,
+  ...desktopOptions,
+])
 
 // export const deviceOptions = internalMutation({
 // handler: async (ctx) => {
@@ -69,9 +77,11 @@ export const deviceOptions = async (ctx: MutationCtx) => {
   for (const [key, options] of defaultOptions) {
     const exists = await getExisting(key)
     if (!exists) {
+      console.log('➕ Inserting new default device settings...', key)
       promises.push(ctx.db.insert('defaultDeviceSettings', { key, ...options }))
       continue
     }
+    console.log('🔄 Updating existing default device settings...', key)
     promises.push(ctx.db.replace(exists._id, { ...exists, ...options }))
   }
   await Promise.all(promises)

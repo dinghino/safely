@@ -30,11 +30,15 @@ export const register = mutation({
 
       return args.deviceId
     }
+
+    // create new device
+
     const id = await ctx.db.insert('devices', {
       ...args,
       last_seen: Date.now(),
       status: 'unknown',
       owner: user._id,
+      type: helpers.determineDeviceType(args.platform),
     })
     await ctx.db.insert('deviceSettings', {
       deviceId: id,

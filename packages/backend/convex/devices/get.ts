@@ -1,18 +1,7 @@
 import { v } from 'convex/values'
-import { GeospatialIndex, point } from '@convex-dev/geospatial'
-
-import { internalMutation, mutation, query } from '../_generated/server'
-import { api, components } from '../_generated/api'
-import type { Id } from '../_generated/dataModel'
-
+import { query } from '../_generated/server'
 import { getCurrentUserOrThrow } from '../lib/auth'
-
-import { deviceStatus, trackingMode } from '../schemas/enums'
-import { trackLocationMetadata } from '../schemas/tracker.schema'
-
 import * as helpers from '../lib/devices'
-
-// import { geospatial } from './location'
 
 /**
  * Get devices for the current user

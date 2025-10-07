@@ -62,7 +62,7 @@ export function DevicePageClient({ deviceId }: { deviceId: Id<'devices'> }) {
                 </Badge>
               )}
               <Badge variant="secondary">
-                interval {dayjs.duration(device?.settings.updateIntervalMs).humanize()}
+                interval {dayjs.duration(device?.settings.location.timeout).humanize()}
               </Badge>
             </div>
           )}

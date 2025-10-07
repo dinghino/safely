@@ -1,19 +1,9 @@
-/** @format */
-
 import type { UserJSON } from '@clerk/backend'
 import { type Validator, v } from 'convex/values'
-import { internalMutation, query } from './_generated/server'
-import { getCurrentUser, userByExternalId } from './lib/auth'
+import { internalMutation } from '../_generated/server'
+import { userByExternalId } from '../lib/auth'
 
-export const current = query({
-  handler: async (ctx) => await getCurrentUser(ctx),
-})
-
-// ----------------------------------------------------------------------------
-// Internals for syncing Clerk users via webhooks
-// ----------------------------------------------------------------------------
-
-export const upsertFromClerk = internalMutation({
+export const upsert = internalMutation({
   args: { data: v.any() as Validator<UserJSON> }, // no runtime validation, trust Clerk
   async handler(ctx, { data }) {
     const userAttributes = {
@@ -34,7 +24,7 @@ export const upsertFromClerk = internalMutation({
   },
 })
 
-export const deleteFromClerk = internalMutation({
+export const remove = internalMutation({
   args: { clerkUserId: v.string() },
   async handler(ctx, { clerkUserId }) {
     const user = await userByExternalId(ctx, clerkUserId)

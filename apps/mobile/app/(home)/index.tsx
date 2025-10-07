@@ -12,7 +12,7 @@ import { ServerHealthcheck } from '@/components/healtcheck'
 
 export default function Page() {
   const { user } = useUser()
-  const data = useQuery(api.users.current)
+  const data = useQuery(api.users.get.current)
   const displayName = user?.username ?? user?.emailAddresses[0]?.emailAddress
 
   const manager = useDeviceContext()

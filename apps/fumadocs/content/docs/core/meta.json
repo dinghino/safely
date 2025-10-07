@@ -7,6 +7,9 @@
   "pages": [
     "---Introduction---",
     "index",
+    "---Devices---",
+    "devices/index.mdx",
+    "...devices",
     "---Entities---",
     "...entities",
     "---Stuff---",

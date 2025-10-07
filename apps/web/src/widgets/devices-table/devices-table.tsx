@@ -12,7 +12,6 @@ import {
   DataTableToolbar,
 } from '@workspace/data-table'
 
-import { getDeviceFilters, getColumns } from './devices-table.config'
 import {
   ActiveFilters,
   ActiveFiltersMobileContainer,
@@ -25,7 +24,9 @@ import {
   useFilterSearchParams,
 } from '@workspace/data-filter'
 import { useDebounceCallback } from '@workspace/data-filter/hooks'
+
 import { RegisterDeviceButton } from '@/features/device-manager'
+import { getDeviceFilters, getColumns } from './devices-table.config'
 
 export namespace DevicesTable {
   export type Props = {
@@ -54,7 +55,7 @@ export function DevicesTable(props: DevicesTable.Props) {
         { label: 'Offline', value: 'offline' },
         { label: 'Online', value: 'online' },
       ],
-      trackingMode: [
+      mode: [
         { label: 'Off', value: 'off' },
         { label: 'Passive', value: 'passive' },
         { label: 'Active', value: 'active' },

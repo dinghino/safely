@@ -6,16 +6,16 @@ import { useMachine } from '@xstate/react'
 import { fromPromise } from 'xstate'
 
 import { api } from '@workspace/backend/api'
-import type { LocationData } from '@workspace/geolocation/types'
-import { useWindowEvent } from '@/shared/hooks/use-window-event'
-
-import machine from '@workspace/heartbeat'
-import type { Heartbeat } from '@workspace/heartbeat/types'
-
-import { useGeolocationContext } from '@/features/geolocation'
-import { useDeviceId } from '@/shared/hooks/use-device-id'
 import { createContext } from '@workspace/react-utils'
+
+import machine, { type Heartbeat} from '@workspace/heartbeat'
+import type { LocationData } from '@workspace/geolocation/types'
+
+import { useWindowEvent } from '@/shared/hooks/use-window-event'
+import { useDeviceId } from '@/shared/hooks/use-device-id'
+
 import type { Device } from '@/entities/device/types'
+import { useGeolocationContext } from '@/features/geolocation'
 
 export namespace HeartbeatManager {
   export type Actor = Heartbeat.Actor
@@ -86,7 +86,7 @@ export const HeartbeatManager = (props: HeartbeatManager.Props) => {
       input: {
         deviceId,
         geolocatorActor,
-        interval: device?.settings.heartbeatIntervalMs,
+        interval: device?.settings.heartbeat.interval ?? 60_000,
       },
     },
   )
@@ -96,7 +96,7 @@ export const HeartbeatManager = (props: HeartbeatManager.Props) => {
 
   // dispatch new interval from device settings
   useEffect(() => {
-    const { heartbeatIntervalMs: interval } = device?.settings ?? {}
+    const { heartbeat: { interval } = {} } = device?.settings ?? {}
     if (!interval) return
     send({ type: 'setInterval', interval })
   }, [send, device])

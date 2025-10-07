@@ -4,7 +4,6 @@ import { useEffect } from 'react'
 import { fromPromise, type ActorRefFrom, type StateFrom } from 'xstate'
 import { useMachine, useSelector } from '@xstate/react'
 
-import type { Doc } from '@workspace/backend/dataModel'
 import machine, {
   createSettingsFactory,
   // type Geolocator,
@@ -12,6 +11,8 @@ import machine, {
 } from '@workspace/device-tracking'
 
 import { createContext } from '@workspace/react-utils'
+
+import type { Device } from '@/entities/device/types'
 import { useDeviceContext } from '@/features/device-manager'
 import { useGeolocationContext } from '@/features/geolocation'
 
@@ -41,10 +42,9 @@ export { useSessionManager }
 
 const DEFAULT_INTERVAL = 60_000
 
-type DeviceSettings = Doc<'deviceSettings'> | undefined
-const parseSettings = createSettingsFactory<DeviceSettings>((settings) => ({
-  interval: settings?.updateIntervalMs ?? DEFAULT_INTERVAL,
-  trackingMode: settings?.trackingMode ?? 'off',
+const parseSettings = createSettingsFactory<Device|null|undefined>((device) => ({
+  interval: device?.settings.location.timeout ?? DEFAULT_INTERVAL,
+  trackingMode: device?.mode ?? 'off',
 }))
 
 export const SessionManager: React.FC<SessionManager.Props> = (props) => {
@@ -90,7 +90,7 @@ export const SessionManager: React.FC<SessionManager.Props> = (props) => {
     {
       input: {
         geolocatorActor: geo,
-        settings: parseSettings(device?.settings),
+        settings: parseSettings(device),
       },
     },
   )
@@ -129,9 +129,9 @@ export const SessionManager: React.FC<SessionManager.Props> = (props) => {
   // update machine settings when device settings change
   useEffect(() => {
     // fixme: make comparison cleaner
-    if (JSON.stringify(parseSettings(device?.settings)) === JSON.stringify(settings)) return
-    send({ type: 'update_settings', settings: parseSettings(device?.settings) })
-  }, [device?.settings, settings, send])
+    if (JSON.stringify(parseSettings(device)) === JSON.stringify(settings)) return
+    send({ type: 'update_settings', settings: parseSettings(device) })
+  }, [device, settings, send])
 
   useEffect(() => {
     const sessionId = activeSession?._id

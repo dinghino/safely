@@ -1,3 +1,5 @@
 export * from './button.submit'
 export * from './field.errors'
 export * from './field.text'
+export * from './field.select'
+export * from './field.slider'

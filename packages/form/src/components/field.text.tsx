@@ -3,18 +3,17 @@ import { Label } from '@workspace/ui/components/label'
 
 import { useFieldContext } from '../hooks'
 import { FieldErrors } from './field.errors'
+import type { SharedFieldProps } from './types'
 
 export namespace TextField {
-  export type Props = {
-    label?: string
-  } & React.InputHTMLAttributes<HTMLInputElement>
+  export type Props = SharedFieldProps & React.InputHTMLAttributes<HTMLInputElement>
 }
 export const TextField = ({ label, ...inputProps }: TextField.Props) => {
   const field = useFieldContext<string>()
 
   return (
     <div className="w-full space-y-2">
-      <div className="space-y-1">
+      <div className="space-y-2">
         {label && <Label htmlFor={field.name}>{label}</Label>}
         <Input
           id={field.name}

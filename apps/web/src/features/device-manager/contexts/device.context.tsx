@@ -26,12 +26,12 @@ export { useDeviceContext }
 // @copilot: This component manages device registration and location watching
 // todo: Consider extracting location watching logic to a separate hook
 export const DeviceProvider: React.FC<DeviceProvider.Props> = ({ children }) => {
-  const register = useMutation(api.devices.register)
+  const register = useMutation(api.devices.manage.register)
   const deviceInfo = useDeviceInfo()
 
   const [deviceId, setId, clearId] = useDeviceId()
 
-  const device = useQuery(api.devices.get, { deviceId })
+  const device = useQuery(api.devices.get.one, { deviceId })
 
   const registerDevice = async () => {
     if (deviceId) return // device already registered

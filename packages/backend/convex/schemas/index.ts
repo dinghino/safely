@@ -3,6 +3,8 @@ export {
   deviceSessions,
   deviceSessionTimeouts,
   deviceSessionTokens,
+  defaultDeviceSettings,
+  deviceOptions,
 } from './devices.schema'
 export { appSettings, deviceSettings } from './settings.schema'
 export { todos } from './todos.schema'

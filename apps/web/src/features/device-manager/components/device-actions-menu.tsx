@@ -41,7 +41,7 @@ export function ActionsCell({ device }: { device: Device }) {
 }
 
 export function DeviceActionsMenu({ device }: { device: Device }) {
-  const unregister = useMutation(api.devices.deleteDevice)
+  const unregister = useMutation(api.devices.manage.unregister)
   const isCurrent = useIsCurrent({ device })
 
   return (

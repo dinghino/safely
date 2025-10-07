@@ -8,7 +8,7 @@ import { useQuery } from 'convex/react'
  * Fully featured health check component to show the status of the API.
  */
 export function HealthCheck() {
-  const healthCheck = useQuery(api.healthCheck.get)
+  const healthCheck = useQuery(api.system.healthcheck)
 
   const isOk = healthCheck === 'OK'
   const isUnknown = healthCheck === undefined

@@ -1,6 +1,4 @@
-/** @format */
-
-import type { QueryCtx } from '../_generated/server'
+import type { QueryCtx } from '../../_generated/server'
 
 /**
  * Get current user from convex DB or throw

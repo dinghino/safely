@@ -21,6 +21,6 @@
     "isolatedModules": true,
     "noEmit": true
   },
-  "include": ["./**/*", "../types"],
+  "include": ["./**/*", "../types", "system.ts"],
   "exclude": ["./_generated"]
 }

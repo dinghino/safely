@@ -12,7 +12,7 @@ import { ServerHealthcheck } from '@/components/healtcheck'
 
 export default function Page() {
   const { user } = useUser()
-  const data = useQuery(api.users.current)
+  const data = useQuery(api.users.get.current)
   const displayName = user?.username ?? user?.emailAddresses[0]?.emailAddress
 
   const manager = useDeviceContext()
@@ -21,33 +21,50 @@ export default function Page() {
     <View style={styles.container}>
       <SignedIn>
         <ServerHealthcheck />
-        <Text style={styles.name}>Hello, {displayName}</Text>
+        <Text style={styles.name}>Hello, {displayName ?? 'Anonymous'}</Text>
         {data && <Text style={styles.badge}>{data._id}</Text>}
-        <SignOutButton />
+        <SignedIn>
+          <SignOutButton />
+        </SignedIn>
         <Button
-          onPress={() => Alert.alert('Info', JSON.stringify({os: Platform.OS, version: Platform.Version}, null, 2))}
+          onPress={() =>
+            Alert.alert(
+              'Info',
+              JSON.stringify({ os: Platform.OS, version: Platform.Version }, null, 2),
+            )
+          }
           title="Info"
         />
         <Button
           title="Register Device"
-          disabled={manager.isRegistered}
+          disabled={manager.isRegistered || !user}
           onPress={manager.register}
         />
-        <Text style={styles.badge}>ID: {manager.device?._id ?? 'no id'}</Text>
-        <View style={{ flexDirection: 'row', gap: 8 }}>
-          <Text style={styles.badge}>name: {manager.device?.name ?? 'unknown'}</Text>
-          <Text style={styles.badge}>status: {manager.device?.status ?? 'unknown'}</Text>
-        </View>
-        <Button title="Go to tabs" onPress={() => router.push('/tabs')} />
+        {manager.device && (
+          <>
+            <Text style={styles.badge}>ID: {manager.device._id ?? 'no id'}</Text>
+            <View style={{ flexDirection: 'row', gap: 8 }}>
+              <Text style={styles.badge}>name: {manager.device.name ?? 'unknown'}</Text>
+              <Text style={styles.badge}>status: {manager.device.status ?? 'unknown'}</Text>
+            </View>
+          </>
+        )}
       </SignedIn>
       <SignedOut>
-        <Link href="/sign-in" asChild>
-          <Button title="Sign in" />
-        </Link>
-        <Link href="/sign-up" asChild>
-          <Button title="Sign up" />
-        </Link>
+        <Text style={{ fontSize: 32 }}>Please sign in</Text>
+        <View style={{ flexDirection: 'row', gap: 8 }}>
+          <Link href="/sign-in" asChild>
+            <Button title="Sign in" />
+          </Link>
+          <Link href="/sign-up" asChild>
+            <Button title="Sign up" />
+          </Link>
+        </View>
       </SignedOut>
+      <View style={{ flex: 1 }} />
+      <View style={{ paddingBlock: 32 }}>
+        <Button title="Go to tabs" onPress={() => router.push('/tabs')} />
+      </View>
     </View>
   )
 }

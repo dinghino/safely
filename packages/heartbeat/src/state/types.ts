@@ -19,13 +19,13 @@ export namespace Heartbeat {
   export type State = StateFrom<typeof machine>
 
   export type Input = {
-    deviceId: string // todo: Id<'devices'> ?
+    deviceId: string | undefined // todo: Id<'devices'> ?
     interval?: number // in ms
     // todo: make the type looser, with only the events we care about
     //       doing so might break the relationship, but could give us benefit of
     //       using a different actor if we need to.
     // todo: completely remove (see below on `linkGeolocator`)
-    geolocatorActor: Geolocator.Actor // LocationMachine.Actor
+    geolocatorActor: Geolocator.Actor | null // LocationMachine.Actor
   }
   export type Context = Input & {
     interval: number
@@ -71,7 +71,12 @@ export namespace Heartbeat {
      */
     setup: CallbackActorLogic<
       Internal<'locationUpdate' | 'canGeolocate' | 'locationUpdate'>,
-      { service: Geolocator.Actor }
+      { service: Geolocator.Actor | null }
+    >
+    /** promise actor to try and get the most up to date location */
+    getPosition: PromiseActorLogic<
+      Geolocator.Data,
+      { service: Geolocator.Actor | null; options: Geolocator.Options }
     >
   }
 

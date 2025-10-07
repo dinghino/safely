@@ -58,9 +58,9 @@ export const HeartbeatManager = (props: HeartbeatManager.Props) => {
   const { children } = props
 
   const [deviceId] = useDeviceId()
-  const device = useQuery(api.devices.get, { deviceId })
-  const heartbeat = useMutation(api.devices.heartbeat)
-  const disconnect = useMutation(api.devices.disconnect)
+  const device = useQuery(api.devices.get.one, { deviceId })
+  const heartbeat = useMutation(api.devices.heartbeat.send)
+  const disconnect = useMutation(api.devices.heartbeat.disconnect)
 
   const { actor: geolocatorActor } = useGeolocationContext()
 

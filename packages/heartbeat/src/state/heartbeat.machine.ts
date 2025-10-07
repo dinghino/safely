@@ -4,9 +4,10 @@ import type { Guard } from 'xstate/guards'
 
 // import type { Locator } from '@workspace/geolocation/types'
 
-import { linkGeolocator } from './actors'
+import { defaultGetPositionActor, linkGeolocator } from './actors'
 import type { Heartbeat, Geolocator } from './types'
 import { DEFAULT_INTERVAL, REQUIRED_ACTORS } from './constants'
+import { isStalePosition } from './utils'
 
 const config = setup({
   types: {
@@ -18,7 +19,9 @@ const config = setup({
   actors: {
     // note: dispatcher and disconnect NEED to be set up when creating the machine
     setup: linkGeolocator,
+    getPosition: defaultGetPositionActor,
   } as Heartbeat.Actors,
+
   delays: {
     // idle interval is split between the idle state and working.getPosition states
     // todo: improve splitting
@@ -28,37 +31,23 @@ const config = setup({
   },
 })
 
-/**
- * Conditionally request position from geolocator actor if:
- * - we can geolocate
- * - we have a geolocator actor
- * - we don't have a position or it's stale
- */
-const requestPositionToGeolocator = config.createAction(({ context }) => {
-  // if (!context.canGeolocate) return
-  // if (!context.geolocatorActor) return // throw? we need to have it one way or another
-  // if (!isStalePosition(context)) return
-  // request new position
-  const { interval } = context
-  context.geolocatorActor.send({
-    type: 'GET_POSITION',
-    options: { enableHighAccuracy: false, maximumAge: interval, timeout: interval / 2 },
-  })
-})
-
-const isStalePosition = (context: Heartbeat.Context) => {
-  const { position, interval } = context
-
-  if (!position) return true
-  const { timestamp } = position
-  if (timestamp <= 0) return true
-  const age = Date.now() - timestamp
-  // give it some slack so we can dispatch the location retrieved on the previous
-  // round if it took too long to get it for that heartbeat.
-  const maxAge = interval * 2
-
-  return age >= maxAge
-}
+// /**
+//  * Conditionally request position from geolocator actor if:
+//  * - we can geolocate
+//  * - we have a geolocator actor
+//  * - we don't have a position or it's stale
+//  */
+// const requestPositionToGeolocator = config.createAction(({ context }) => {
+//   // if (!context.canGeolocate) return
+//   // if (!context.geolocatorActor) return // throw? we need to have it one way or another
+//   // if (!isStalePosition(context)) return
+//   // request new position
+//   const { interval } = context
+//   context.geolocatorActor?.send({
+//     type: 'GET_POSITION',
+//     options: { enableHighAccuracy: false, maximumAge: interval, timeout: interval / 2 },
+//   })
+// })
 
 /**
  * Custom action that validates required actor overrides from `machine.provide({})`
@@ -90,7 +79,7 @@ const working = config.createStateConfig({
         {
           target: 'getPosition',
           actions: [],
-          guard: ({ context }) => isStalePosition(context),
+          guard: ({ context }) => isStalePosition(context) && context.canGeolocate,
         },
         {
           target: 'dispatching',
@@ -103,7 +92,20 @@ const working = config.createStateConfig({
     },
     getPosition: {
       description: 'Query actor/service for current position and forward to dispatching state',
-      entry: [requestPositionToGeolocator],
+      // entry: [requestPositionToGeolocator],
+      invoke: {
+        src: 'getPosition',
+        id: 'get-current-position',
+        input: ({ context }) => ({
+          service: context.geolocatorActor,
+          options: { maximumAge: context.interval },
+        }),
+        onDone: {
+          target: 'dispatching',
+          actions: assign({ position: ({ event }) => event.output }),
+        },
+        onError: { target: 'dispatching' },
+      },
       on: {
         stop: { target: '#device-heartbeat.stopped' },
         locationUpdate: {

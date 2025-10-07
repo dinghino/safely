@@ -102,7 +102,7 @@ export function DevicesTable(props: DevicesTable.Props) {
 }
 
 function useDevicesData() {
-  const devices = useQuery(api.devices.getAll)
+  const devices = useQuery(api.devices.get.all)
   // data-table expects an 'id' field for now, so we map it here
   // todo: refactor data-table to allow custom id field
   return useMemo(() => devices?.map((d) => ({ ...d, id: d._id as string })) ?? [], [devices])

@@ -165,7 +165,7 @@ function GeolocationDemo() {
 function SessionDebugger() {
   const [deviceId] = useDeviceId()
 
-  const device = useQuery(api.devices.get, { deviceId })
+  const device = useQuery(api.devices.get.one, { deviceId })
   const session = useQuery(api.tracking.sessions.getActive, { deviceId: device?._id })
 
   const { state } = useSessionManager()

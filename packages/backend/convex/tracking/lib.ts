@@ -4,7 +4,7 @@ import { components } from '../_generated/api'
 import type { Doc, Id } from '../_generated/dataModel'
 import type { QueryCtx } from '../_generated/server'
 
-import { getCurrentUserOrThrow } from '../auth'
+import { getCurrentUserOrThrow } from '../lib/auth'
 
 export const geospatial = new GeospatialIndex<
   Id<'trackLocation'>,

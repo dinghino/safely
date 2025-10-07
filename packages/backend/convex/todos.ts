@@ -2,7 +2,7 @@
 
 import { v } from 'convex/values'
 import { mutation, query } from './_generated/server'
-import { getCurrentUserOrThrow } from './auth'
+import { getCurrentUserOrThrow } from './lib/auth'
 
 export const getAll = query({
   handler: async (ctx) => {

@@ -26,7 +26,7 @@ export async function scheduleDisconnect(
 
   interval = await getHeartbeatInterval(ctx, { interval, deviceId: entry.deviceId })
 
-  const timeout = await ctx.scheduler.runAfter(interval * 2.5, api.devices.disconnect, {
+  const timeout = await ctx.scheduler.runAfter(interval * 2.5, api.devices.heartbeat.disconnect, {
     sessionToken,
   })
   await ctx.db.insert('deviceSessionTimeouts', { sessionId, scheduledFunctionId: timeout })

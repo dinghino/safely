@@ -30,14 +30,14 @@ const handleClerkWebhook = httpAction(async (ctx, request) => {
   switch (event.type) {
     case 'user.created': // intentional fallthrough
     case 'user.updated':
-      await ctx.runMutation(internal.users.upsertFromClerk, {
+      await ctx.runMutation(internal.users.clerk.upsert, {
         data: event.data,
       })
       break
 
     case 'user.deleted': {
       const clerkUserId = event.data.id!
-      await ctx.runMutation(internal.users.deleteFromClerk, { clerkUserId })
+      await ctx.runMutation(internal.users.clerk.remove, { clerkUserId })
       break
     }
     default:

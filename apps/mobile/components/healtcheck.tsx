@@ -3,7 +3,7 @@ import { useQuery } from 'convex/react'
 import { StyleSheet, Text, View } from 'react-native'
 
 export const ServerHealthcheck = () => {
-  const check = useQuery(api.healthCheck.get)
+  const check = useQuery(api.system.healthcheck)
 
   const isOk = check === 'OK'
   const isUnknown = check === undefined

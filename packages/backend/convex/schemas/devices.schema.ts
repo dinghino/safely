@@ -1,17 +1,10 @@
 import { defineTable } from 'convex/server'
 import { v } from 'convex/values'
-import { deviceStatus } from './enums'
+import { deviceStatus, trackingMode, gpsAccuracy, deviceType } from './enums'
 
 /**
- * General status of a device
+ * registered devices for a user
  */
-// export const deviceStatus = v.union(
-//   v.literal('online'),
-//   v.literal('idle'),
-//   v.literal('offline'),
-//   v.literal('unknown'),
-// )
-
 export const devices = defineTable({
   owner: v.id('users'),
   name: v.optional(v.string()),
@@ -46,3 +39,72 @@ export const deviceSessionTokens = defineTable({
 })
   .index('token', ['token'])
   .index('sessionId', ['sessionId'])
+
+// ----------------------------------------------------------------------------
+// placeholder for device options and settings
+// ----------------------------------------------------------------------------
+
+export const locatorOptions = v.object({
+  // options: v.object({
+  // ms - mobile needs * 1000 as service uses seconds
+  timeout: v.number(),
+  maximumAge: v.number(),
+  accuracy: gpsAccuracy,
+  // }),
+})
+
+/**
+ * Table containing the default values for device options, assigned
+ * when a device is created.
+ * These can be overridden per device in the deviceOptions table.
+ */
+export const defaultDeviceSettings = defineTable({
+  key: v.object({ type: deviceType, mode: trackingMode }),
+  ...locatorOptions.fields,
+})
+  .index('key', ['key'])
+  .index('type', ['key.type'])
+
+/**
+ * Table containing device-specific options, overriding the defaults
+ * from the defaultOptions table.
+ */
+export const deviceOptions = defineTable({
+  deviceId: v.id('devices'),
+  mode: trackingMode,
+  location: locatorOptions,
+  heartbeat: v.object({
+    interval: v.number(), // ms
+  }),
+}).index('device_mode', ['deviceId', 'mode'])
+
+/*
+type LocationOptions = {
+  timeout?: number // ms - mobile needs * 1000 as service uses seconds
+  maximumAge?: number // ms
+  // sets enableHighAccuracy on navigator.geolocation or determines accuracy level
+  // on react-native-background-geolocation
+  // this should also determine samples, desiredAccuracy and other factors on the
+  // client app
+  accuracy?: Accuracy
+}
+
+type Plugin = {
+  timeout: 30 // 30 second timeout to fetch location
+  persist: true // Defaults to state.enabled
+  maximumAge: 5000 // Accept the last-known-location if not older than 5000 ms.
+  // config.stationaryRadius - no desired accuracy but actual distance
+  desiredAccuracy: 10 // Try to fetch a location with an accuracy of `10` meters.
+  samples: 3 // How many location samples to attempt.
+  // Custom meta-data.
+  extras: { route_id: 123 }
+}
+
+type navigatorGeolocator = {
+  enableHighAccuracy?: boolean
+  maximumAge?: number
+  timeout?: number
+}
+
+type Accuracy = 'VERY_LOW' | 'LOW' | 'MEDIUM' | 'HIGH' // high = gps w/ metadata
+*/

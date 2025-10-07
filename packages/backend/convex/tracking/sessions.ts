@@ -2,7 +2,7 @@ import { v } from 'convex/values'
 import { api } from '../_generated/api'
 import { internalMutation, mutation, query } from '../_generated/server'
 
-import { getCurrentUserOrThrow } from '../auth'
+import { getCurrentUserOrThrow } from '../lib/auth'
 import { _getActiveSession, _getSession, geospatial, isSessionOpen } from './lib'
 
 /**
@@ -90,7 +90,10 @@ export const create = internalMutation({
     // - a global settings object with the same conditions
     // - the request itself (i.e. the sender can request a specific mode)
     // for now we just use `active` and we'll figure out the rest later
-    await ctx.runMutation(api.devices.setTrackingMode, { deviceId: device._id, mode: 'active' })
+    await ctx.runMutation(api.devices.manage.setTrackingMode, {
+      deviceId: device._id,
+      mode: 'active',
+    })
     return newSession
   },
 })
@@ -112,7 +115,10 @@ export const close = internalMutation({
     if (!isSessionOpen(session)) throw new Error('Session already closed')
 
     await Promise.all([
-      ctx.runMutation(api.devices.setTrackingMode, { deviceId: device._id, mode: 'passive' }),
+      ctx.runMutation(api.devices.manage.setTrackingMode, {
+        deviceId: device._id,
+        mode: 'passive',
+      }),
       ctx.db.patch(session._id, { endedAt: Date.now() }),
     ])
   },
@@ -160,7 +166,7 @@ export const start = mutation({
 
     await Promise.all([
       // modify device settings to handle tracking properly
-      ctx.runMutation(api.devices.setTrackingMode, { deviceId: device._id, mode: 'active' }),
+      ctx.runMutation(api.devices.manage.setTrackingMode, { deviceId: device._id, mode: 'active' }),
     ])
     return newSession
   },
@@ -184,7 +190,7 @@ export const stop = mutation({
     if (!session) throw new Error('Session not found')
     if (!isSessionOpen(session)) throw new Error('Session already closed')
 
-    await ctx.runMutation(api.devices.setTrackingMode, {
+    await ctx.runMutation(api.devices.manage.setTrackingMode, {
       deviceId: session.device,
       mode: 'passive',
     })

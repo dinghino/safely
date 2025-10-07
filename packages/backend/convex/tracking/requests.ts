@@ -2,7 +2,7 @@ import { v } from 'convex/values'
 import { mutation, type MutationCtx, query } from '../_generated/server'
 import { internal } from '../_generated/api'
 
-import { getCurrentUserOrThrow } from '../auth'
+import { getCurrentUserOrThrow } from '../lib/auth'
 import { trackingRequestType } from '../schemas/enums'
 import type { Id } from '../_generated/dataModel'
 

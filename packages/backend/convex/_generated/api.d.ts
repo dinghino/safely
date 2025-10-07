@@ -26,7 +26,6 @@ import type * as schemas_enums from "../schemas/enums.js";
 import type * as schemas_index from "../schemas/index.js";
 import type * as seed from "../seed.js";
 import type * as seeds_devices from "../seeds/devices.js";
-import type * as settings from "../settings.js";
 import type * as system from "../system.js";
 import type * as todos from "../todos.js";
 import type * as tracking_lib from "../tracking/lib.js";
@@ -69,7 +68,6 @@ declare const fullApi: ApiFromModules<{
   "schemas/index": typeof schemas_index;
   seed: typeof seed;
   "seeds/devices": typeof seeds_devices;
-  settings: typeof settings;
   system: typeof system;
   todos: typeof todos;
   "tracking/lib": typeof tracking_lib;

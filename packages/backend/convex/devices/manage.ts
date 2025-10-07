@@ -45,13 +45,6 @@ export const register = mutation({
 
     const device = await ctx.db.get(id)
     await populateDeviceOptions(ctx, device!)
-    // fixme: delete this and the table
-    await ctx.db.insert('deviceSettings', {
-      deviceId: id,
-      trackingMode: 'off',
-      updateIntervalMs: DEFAULT_HEARTBEAT_INTERVAL_MS,
-      heartbeatIntervalMs: DEFAULT_HEARTBEAT_INTERVAL_MS,
-    })
 
     await ctx.runMutation(api.devices.heartbeat.send, { deviceId: id! })
     return id
@@ -123,17 +116,6 @@ export const setTrackingMode = mutation({
     if (device.owner !== user._id) {
       throw new Error('You do not own this device')
     }
-
-    const settings = await ctx.db
-      .query('deviceSettings')
-      .withIndex('by_deviceId', (q) => q.eq('deviceId', deviceId))
-      .unique()
-
-    if (!settings) throw new Error('Device settings not found')
-
-    await ctx.db.patch(settings._id, {
-      trackingMode: mode,
-      updateIntervalMs: TRACKING_MODE_UPDATE_INTERVALS[mode],
-    })
+    return await ctx.db.patch(device._id, { mode })
   },
 })

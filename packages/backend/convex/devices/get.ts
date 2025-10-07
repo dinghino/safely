@@ -15,7 +15,7 @@ export const all = query({
       .withIndex('by_owner', (q) => q.eq('owner', user._id))
       .collect()
 
-    return await Promise.all(data.map((dev) => helpers.get.addSettings(ctx, dev)))
+    return await Promise.all(data.map((dev) => helpers.get.embedSettings(ctx, dev)))
   },
 })
 
@@ -35,6 +35,7 @@ export const one = query({
     // todo: better error handling - not found vs not owned
     // if (!device || device.owner !== user._id) throw new Error('Device not found')
     if (!device || device.owner !== user._id) return undefined
-    return await helpers.get.addSettings(ctx, device)
+
+    return await helpers.get.embedSettings(ctx, device)
   },
 })

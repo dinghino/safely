@@ -13,6 +13,7 @@ export const devices = defineTable({
   platform: v.optional(v.string()),
   status: deviceStatus,
   type: deviceType,
+  mode: trackingMode,
 })
   .index('by_owner', ['owner'])
   // .index('by_deviceId', ['deviceId'])

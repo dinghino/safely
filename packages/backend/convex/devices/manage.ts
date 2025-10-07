@@ -9,6 +9,7 @@ import { deviceStatus, trackingMode } from '../schemas/enums'
 
 import * as helpers from '../lib/devices'
 import { DEFAULT_HEARTBEAT_INTERVAL_MS, TRACKING_MODE_UPDATE_INTERVALS } from '../lib/constants'
+import { populateDeviceOptions } from '../lib/devices/options'
 
 export const register = mutation({
   args: {
@@ -39,7 +40,12 @@ export const register = mutation({
       status: 'unknown',
       owner: user._id,
       type: helpers.determineDeviceType(args.platform),
+      mode: 'off',
     })
+
+    const device = await ctx.db.get(id)
+    await populateDeviceOptions(ctx, device!)
+    // fixme: delete this and the table
     await ctx.db.insert('deviceSettings', {
       deviceId: id,
       trackingMode: 'off',

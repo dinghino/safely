@@ -5,7 +5,7 @@ import { internalMutation, mutation, query } from './_generated/server'
 import { api, components } from './_generated/api'
 import type { Id } from './_generated/dataModel'
 
-import { getCurrentUserOrThrow } from './auth'
+import { getCurrentUserOrThrow } from './lib/auth'
 
 import { deviceStatus, trackingMode } from './schemas/enums'
 import { trackLocationMetadata } from './schemas/tracker.schema'

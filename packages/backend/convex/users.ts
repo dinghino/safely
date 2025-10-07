@@ -3,7 +3,7 @@
 import type { UserJSON } from '@clerk/backend'
 import { type Validator, v } from 'convex/values'
 import { internalMutation, query } from './_generated/server'
-import { getCurrentUser, userByExternalId } from './auth'
+import { getCurrentUser, userByExternalId } from './lib/auth'
 
 export const current = query({
   handler: async (ctx) => await getCurrentUser(ctx),

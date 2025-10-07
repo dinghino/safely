@@ -2,7 +2,7 @@ import { v } from 'convex/values'
 import { api } from '../_generated/api'
 import { internalMutation, mutation, query } from '../_generated/server'
 
-import { getCurrentUserOrThrow } from '../auth'
+import { getCurrentUserOrThrow } from '../lib/auth'
 import { _getActiveSession, _getSession, geospatial, isSessionOpen } from './lib'
 
 /**

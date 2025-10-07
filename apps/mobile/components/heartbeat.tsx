@@ -13,8 +13,8 @@ import { transformLocation } from '@/lib/geolocation'
 
 export const HeartbeatManager = () => {
   const { device } = useDeviceContext()
-  const heartbeat = useMutation(api.devices.heartbeat)
-  const disconnect = useMutation(api.devices.disconnect)
+  const heartbeat = useMutation(api.devices.heartbeat.send)
+  const disconnect = useMutation(api.devices.heartbeat.disconnect)
 
   const dispatcher = async ({ input }: { input: Heartbeat.Dispatcher.Input }) => {
     // error is caught by state machine we need to throw

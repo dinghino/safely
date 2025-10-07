@@ -13,7 +13,7 @@ import type { Device } from '@/entities/device/types'
  * we add them
  */
 export function DeviceForm({ device, onSubmitted }: { device: Device; onSubmitted?: () => void }) {
-  const rename = useMutation(api.devices.renameDevice)
+  const rename = useMutation(api.devices.manage.rename)
 
   const form = useAppForm({
     defaultValues: { name: device.name ?? '' },

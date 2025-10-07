@@ -8,11 +8,14 @@
  * @module
  */
 
-import type * as auth_index from "../auth/index.js";
-import type * as devices from "../devices.js";
+import type * as devices_get from "../devices/get.js";
+import type * as devices_heartbeat from "../devices/heartbeat.js";
+import type * as devices_location from "../devices/location.js";
+import type * as devices_manage from "../devices/manage.js";
 import type * as geospatial from "../geospatial.js";
 import type * as healthCheck from "../healthCheck.js";
 import type * as http from "../http.js";
+import type * as lib_auth_index from "../lib/auth/index.js";
 import type * as lib_constants from "../lib/constants.js";
 import type * as lib_devices_get from "../lib/devices/get.js";
 import type * as lib_devices_heartbeat from "../lib/devices/heartbeat.js";
@@ -27,7 +30,8 @@ import type * as tracking_lib from "../tracking/lib.js";
 import type * as tracking_locations from "../tracking/locations.js";
 import type * as tracking_requests from "../tracking/requests.js";
 import type * as tracking_sessions from "../tracking/sessions.js";
-import type * as users from "../users.js";
+import type * as users_clerk from "../users/clerk.js";
+import type * as users_get from "../users/get.js";
 
 import type {
   ApiFromModules,
@@ -44,11 +48,14 @@ import type {
  * ```
  */
 declare const fullApi: ApiFromModules<{
-  "auth/index": typeof auth_index;
-  devices: typeof devices;
+  "devices/get": typeof devices_get;
+  "devices/heartbeat": typeof devices_heartbeat;
+  "devices/location": typeof devices_location;
+  "devices/manage": typeof devices_manage;
   geospatial: typeof geospatial;
   healthCheck: typeof healthCheck;
   http: typeof http;
+  "lib/auth/index": typeof lib_auth_index;
   "lib/constants": typeof lib_constants;
   "lib/devices/get": typeof lib_devices_get;
   "lib/devices/heartbeat": typeof lib_devices_heartbeat;
@@ -63,7 +70,8 @@ declare const fullApi: ApiFromModules<{
   "tracking/locations": typeof tracking_locations;
   "tracking/requests": typeof tracking_requests;
   "tracking/sessions": typeof tracking_sessions;
-  users: typeof users;
+  "users/clerk": typeof users_clerk;
+  "users/get": typeof users_get;
 }>;
 declare const fullApiWithMounts: typeof fullApi;
 

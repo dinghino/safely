@@ -26,8 +26,8 @@ export { useDeviceContext }
 export const DeviceManager = ({ children }: DeviceManager.Props) => {
 
   const [deviceId, saveId, clearId] = useSecureStore<Id<'devices'> | undefined>({ key: 'deviceId' })
-  const device = useQuery(api.devices.get, { deviceId })
-  const registerMutation = useMutation(api.devices.register)
+  const device = useQuery(api.devices.get.one, { deviceId })
+  const registerMutation = useMutation(api.devices.manage.register)
 
   const register = async () => {
     const id = await registerMutation({ platform: Platform.OS, deviceId })

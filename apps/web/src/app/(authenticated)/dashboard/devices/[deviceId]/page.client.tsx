@@ -37,7 +37,7 @@ function isSessionOpen(
 
 export function DevicePageClient({ deviceId }: { deviceId: Id<'devices'> }) {
   // fixme: this is ugly but need for a quick deployment test. this whole page is going to go anyway
-  const device = useQuery(api.devices.get, { deviceId }) ?? undefined
+  const device = useQuery(api.devices.get.one, { deviceId }) ?? undefined
 
   const active = useQuery(api.tracking.sessions.getActive, { deviceId: device?._id })
   const sessions = useQuery(api.tracking.sessions.getAllOfDevice, { deviceId: device?._id }) ?? []

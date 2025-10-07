@@ -12,6 +12,7 @@ import type * as devices_get from "../devices/get.js";
 import type * as devices_heartbeat from "../devices/heartbeat.js";
 import type * as devices_location from "../devices/location.js";
 import type * as devices_manage from "../devices/manage.js";
+import type * as devices_options from "../devices/options.js";
 import type * as geospatial from "../geospatial.js";
 import type * as http from "../http.js";
 import type * as lib_auth_index from "../lib/auth/index.js";
@@ -54,6 +55,7 @@ declare const fullApi: ApiFromModules<{
   "devices/heartbeat": typeof devices_heartbeat;
   "devices/location": typeof devices_location;
   "devices/manage": typeof devices_manage;
+  "devices/options": typeof devices_options;
   geospatial: typeof geospatial;
   http: typeof http;
   "lib/auth/index": typeof lib_auth_index;

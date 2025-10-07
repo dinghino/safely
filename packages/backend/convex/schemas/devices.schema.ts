@@ -54,7 +54,9 @@ export const locatorOptions = v.object({
   accuracy: gpsAccuracy,
   // }),
 })
-
+export const heartbeatOptions = v.object({
+  interval: v.number(), // ms
+})
 /**
  * Table containing the default values for device options, assigned
  * when a device is created.
@@ -75,9 +77,7 @@ export const deviceOptions = defineTable({
   deviceId: v.id('devices'),
   mode: trackingMode,
   location: locatorOptions,
-  heartbeat: v.object({
-    interval: v.number(), // ms
-  }),
+  heartbeat: heartbeatOptions,
 }).index('device_mode', ['deviceId', 'mode'])
 
 /*

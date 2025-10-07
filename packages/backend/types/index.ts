@@ -14,3 +14,4 @@ export type TrackingRequestType = Infer<typeof trackingRequestType>
 export type { Doc, Id } from '../convex/_generated/dataModel'
 
 export type Device = NonNullable<FunctionReturnType<typeof api.devices.get.one>>
+export type GPSAccuracy = Device['settings']['location']['accuracy']

@@ -7,7 +7,7 @@ import { Button } from '@workspace/ui/components/button'
 
 export namespace Header {
   export type Props = {
-    links?: ReadonlyArray<{ href: string; label: string }>
+    links?: ReadonlyArray<{ href: string; label: string | React.ReactNode }>
   }
 }
 
@@ -18,7 +18,7 @@ export const Header = ({ links = [] }: Header.Props) => {
         <nav className="flex gap-4 text-lg">
           {links.map(({ href, label }) => {
             return (
-              <Button asChild variant="link" key={href}>
+              <Button asChild variant="ghost" key={href}>
                 <Link href={href as any}>{label}</Link>
               </Button>
             )

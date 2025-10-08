@@ -1,18 +1,7 @@
 import { v } from 'convex/values'
-import { GeospatialIndex, point } from '@convex-dev/geospatial'
-
-import { internalMutation, mutation, query } from '../_generated/server'
-import { api, components } from '../_generated/api'
-import type { Id } from '../_generated/dataModel'
-
+import { query } from '../_generated/server'
 import { getCurrentUserOrThrow } from '../lib/auth'
-
-import { deviceStatus, trackingMode } from '../schemas/enums'
-import { trackLocationMetadata } from '../schemas/tracker.schema'
-
 import * as helpers from '../lib/devices'
-
-// import { geospatial } from './location'
 
 /**
  * Get devices for the current user
@@ -26,7 +15,7 @@ export const all = query({
       .withIndex('by_owner', (q) => q.eq('owner', user._id))
       .collect()
 
-    return await Promise.all(data.map((dev) => helpers.get.addSettings(ctx, dev)))
+    return await Promise.all(data.map((dev) => helpers.get.embedSettings(ctx, dev)))
   },
 })
 
@@ -46,6 +35,7 @@ export const one = query({
     // todo: better error handling - not found vs not owned
     // if (!device || device.owner !== user._id) throw new Error('Device not found')
     if (!device || device.owner !== user._id) return undefined
-    return await helpers.get.addSettings(ctx, device)
+
+    return await helpers.get.embedSettings(ctx, device)
   },
 })

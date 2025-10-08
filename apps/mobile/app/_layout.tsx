@@ -1,4 +1,4 @@
-import { useAuth } from '@clerk/clerk-expo'
+import { ClerkLoaded, ClerkLoading, useAuth } from '@clerk/clerk-expo'
 import { ClerkProvider } from '@clerk/clerk-expo'
 import { tokenCache } from '@clerk/clerk-expo/token-cache'
 
@@ -15,10 +15,20 @@ const convex = new ConvexReactClient(process.env.EXPO_PUBLIC_CONVEX_URL!, {
 const RootLayout: React.FC = () => {
   return (
     <ClerkProvider tokenCache={tokenCache}>
-      <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
+      <ClerkLoaded>
+        <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
+          <StatusBar style="inverted" />
+          <Slot />
+        </ConvexProviderWithClerk>
+      </ClerkLoaded>
+      <ClerkLoading>
         <StatusBar style="inverted" />
-        <Slot />
-      </ConvexProviderWithClerk>
+        {/*
+        until clerk is loaded we can't mount the app since we get the user
+        first thing inside our contexts and it throws if clerk isn't ready
+        */}
+        {/* todo: render a loading screen here */}
+      </ClerkLoading>
     </ClerkProvider>
   )
 }

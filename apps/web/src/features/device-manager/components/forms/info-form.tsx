@@ -8,11 +8,11 @@ import { useAppForm } from '@workspace/form'
 import type { Device } from '@/entities/device/types'
 
 /**
- * Allow renaming a device.
+ * Form component to edit basic device information such as its name.
  * @note This will be expanded with more fields to edit the device properties when
  * we add them
  */
-export function DeviceForm({ device, onSubmitted }: { device: Device; onSubmitted?: () => void }) {
+export function DeviceInfoForm({ device, onSubmitted }: { device: Device; onSubmitted?: () => void }) {
   const rename = useMutation(api.devices.manage.rename)
 
   const form = useAppForm({

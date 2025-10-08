@@ -1,7 +1,6 @@
 import type { Doc, Id } from '../../_generated/dataModel'
 import type { QueryCtx } from '../../_generated/server'
 
-
 /**
  * Returns a device by its internal Convex ID or throws if not found
  */
@@ -11,10 +10,12 @@ export async function deviceById(ctx: QueryCtx, deviceId: Id<'devices'>) {
   return device
 }
 
-export async function addSettings(ctx: QueryCtx, device: Doc<'devices'>) {
-  const settings = await ctx.db
-    .query('deviceSettings')
-    .withIndex('by_deviceId', (q) => q.eq('deviceId', device._id))
+export async function embedSettings(ctx: QueryCtx, device: Doc<'devices'>) {
+  const options = await ctx.db
+    .query('deviceOptions')
+    .withIndex('device_mode', (q) => q.eq('deviceId', device._id).eq('mode', device.mode))
     .first()
-  return { ...device, settings: settings! }
+  // remove redundant fields for the consumer
+  const { _id, _creationTime, mode, deviceId, ...settings } = options!
+  return { ...device, settings }
 }

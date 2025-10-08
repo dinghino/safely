@@ -48,7 +48,7 @@ export const getColumns = ({ deviceBaseUrl }: { deviceBaseUrl: string }) => {
     //     </div>
     //   ),
     // }),
-    c.accessor('settings.trackingMode', {
+    c.accessor('mode', {
       id: 'trackingMode',
       header: 'Tracking',
       cell: ({ cell }) => (
@@ -57,12 +57,12 @@ export const getColumns = ({ deviceBaseUrl }: { deviceBaseUrl: string }) => {
         </div>
       ),
     }),
-    c.accessor('settings.updateIntervalMs', {
+    c.accessor('settings.location.timeout', {
       id: 'updateInterval',
       header: 'Tracking Interval',
       cell: ({ cell }) => <span>{dayjs.duration(cell.getValue(), 'ms').humanize(false)}</span>,
     }),
-    c.accessor('settings.heartbeatIntervalMs', {
+    c.accessor('settings.heartbeat.interval', {
       id: 'heartbeatInterval',
       header: 'Heartbeat Interval',
       cell: ({ cell }) => (
@@ -125,9 +125,9 @@ export function getDeviceFilters() {
       .build(),
     dtf
       .option()
-      .id('trackingMode')
+      .id('mode')
       .displayName('Tracking Mode')
-      .accessor((row) => row.settings.trackingMode)
+      .accessor((row) => row.mode)
       .icon(MapPinIcon)
       .build(),
   ]

@@ -1,0 +1,42 @@
+---
+title: Introduction
+description: Devices management and properties
+---
+
+Devices are one of the main entities of the platform. A device represents a physical
+object, owned by users, that can perform actions on the platform, receive and issue
+commands and allow the user to interact with the system.
+
+# Types of devices
+
+Generally speaking devices are divided into a few categories that reflect the
+different ways a user can use them, what they can do for the user and what
+capabilities they have to interact with the platform.
+
+- `web based` devices that allow a user to use the features of the platform,
+  monitor other devices and issue them requests to perform actions. These are
+  meant to run our web based application and are usually **static** devices.
+- `mobile` devices are devices that the user carry with them; they can be a
+  **smartphone** or smartwatch or similar devices.
+  These (will) allow about the same range of capabilities but have the added
+  functionalities related to **geolocation features** allowing, after giving
+  them permission, to tell the system their location and if needed be actively
+  tracked.
+  The main purpose of these is to allow users to receive timely notifications
+  regarding point of interests and provide a modern and comfortable platform
+  to have always with them.
+- `trackers` are dedicated devices, with GPS, mobile, bluetooth and/or other
+  type of connectivity, that are primarily used to keep track of pets and objects
+  that the user wants to know the position of.
+  The primary example of this in our application would be a pet tracker, capable
+  of recording and sending location data for the pet, using geofences, letting
+  the user know the state of the device and helping in case of need and emergency.
+
+## Device information
+
+Regardless of the type, each device have some information attached to them that,
+depending on the hardware can be information about the device, their location,
+status etc.
+
+Every piece of information that is collected is used to determine the capabilities
+of the device and for anonymous analytics and development purposes.

@@ -1,10 +1,10 @@
 import { createContext } from '@workspace/react-utils'
-import { useEffect, useState } from 'react'
-import BackgroundGeolocation, {
-  type Location,
-  type State as BGState,
-  type CurrentPositionRequest,
-} from 'react-native-background-geolocation'
+import { useCallback, useEffect, useState } from 'react'
+import BackgroundGeolocation from 'react-native-background-geolocation'
+import type { Location, State, CurrentPositionRequest } from 'react-native-background-geolocation'
+
+import { useDeviceContext } from './device-manager'
+import { transformGetLocationOptions, transformSettings } from '@/lib/geolocation'
 
 export namespace GeolocationContext {
   export type Value = {
@@ -12,7 +12,7 @@ export namespace GeolocationContext {
     enabled: boolean
     setEnabled: (enabled: boolean) => void
     location: Location | null
-    state: BGState | null
+    state: State | null
     getLocation: (options?: CurrentPositionRequest) => Promise<Location | null>
   }
   export type Props = {
@@ -33,36 +33,30 @@ export const GeolocationContext = ({ children }: GeolocationContext.Props) => {
   const [ready, setReady] = useState(false)
   const [enabled, setEnabled] = useState(false)
   const [location, setLocation] = useState<Location | null>(null)
-  const [state, setState] = useState<BGState | null>(null)
+  const [state, setState] = useState<State | null>(null)
+
+  const { device } = useDeviceContext()
 
   useEffect(() => {
     console.log('Adding BackgroundGeolocation listeners')
     const onLocation = BackgroundGeolocation.onLocation((location) => {
-      console.info('Location event', location)
+      console.info('🗺️ Location event', location)
       setLocation(location)
     })
     const onMotionChange = BackgroundGeolocation.onMotionChange((event) => {
-      console.info('Motion changed', event.isMoving, event.location)
+      console.info('🗺️ Motion changed', event.isMoving, event.location)
       setLocation(event.location)
     })
     const onActivityChange = BackgroundGeolocation.onActivityChange((event) => {
-      console.info('Activity changed', event)
+      console.info('🗺️ Activity changed', event)
     })
     const onProviderChange = BackgroundGeolocation.onProviderChange((event) => {
-      console.info('Provider changed', event.enabled, event.status)
+      console.info('🗺️ Provider changed', event.enabled, event.status)
     })
     const onHeartbeat = BackgroundGeolocation.onHeartbeat((event) => {
-      console.log('[onHeartbeat] ', event)
-
-      // You could request a new location if you wish.
-      BackgroundGeolocation.getCurrentPosition({
-        samples: 1,
-        persist: true,
-      }).then((location) => {
-        console.log('[getCurrentPosition] ', location)
-        setLocation(location)
-      })
+      console.log('[🗺️ onHeartbeat] ', event)
     })
+
     return () => {
       console.log('Removing BackgroundGeolocation listeners')
       onLocation.remove()
@@ -77,19 +71,10 @@ export const GeolocationContext = ({ children }: GeolocationContext.Props) => {
   useEffect(() => {
     setup(promise)
       .then(async (state) => {
-        console.info('🎉 BackgroundGeolocation is ready')
+        // todo: transform state in a reducer since we update a bunch of fields at once?
         setReady(true)
         setEnabled(state.enabled)
         setState(state)
-        console.log('📍 getting current position')
-        const data = await BackgroundGeolocation.getCurrentPosition({
-          timeout: 30, // 30 second timeout to fetch location
-          maximumAge: 5000, // Accept the last-known-location if not older than 5000 ms.
-          desiredAccuracy: 10, // Try to fetch a location with an accuracy of `10` meters.
-          samples: 3,
-        })
-        console.log('Current position', data)
-        setLocation(data)
       })
       .catch((error) => {
         console.error('🤬 BackgroundGeolocation failed to ready', error)
@@ -102,6 +87,13 @@ export const GeolocationContext = ({ children }: GeolocationContext.Props) => {
     }
   }, [])
 
+  useEffect(() => {
+    if (!device) return
+    if (!ready) return
+    const newConfig = transformSettings(device.settings)
+    BackgroundGeolocation.setConfig(newConfig)
+  }, [device, ready])
+
   // useEffect(() => {
   //   if (ready && enabled)
   //     BackgroundGeolocation.start().then((value) => {
@@ -110,16 +102,20 @@ export const GeolocationContext = ({ children }: GeolocationContext.Props) => {
   //   else BackgroundGeolocation.stop()
   // }, [enabled, ready])
 
-  const getLocation = async (options: CurrentPositionRequest = {}) => {
-    try {
-      const location = await BackgroundGeolocation.getCurrentPosition(options)
-      setLocation(location)
-      return location
-    } catch (error) {
-      console.error('Error getting location', error)
-      return null
-    }
-  }
+  const getLocation = useCallback(
+    async (options: CurrentPositionRequest = {}) => {
+      try {
+        const settings = transformGetLocationOptions({ ...options }, device)
+        const location = await BackgroundGeolocation.getCurrentPosition(settings)
+        setLocation(location)
+        return location
+      } catch (error) {
+        console.error('Error getting location', error)
+        return null
+      }
+    },
+    [device],
+  )
 
   const value: GeolocationContext.Value = {
     ready,

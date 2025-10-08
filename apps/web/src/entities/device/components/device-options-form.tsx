@@ -1,58 +1,21 @@
 'use client'
 
-import z from 'zod/v4'
 import { useAppForm } from '@workspace/form'
-import type { TrackingMode } from '@workspace/backend/types'
+
+import { Badge } from '@workspace/ui/components/badge'
+import dayjs from '@/lib/dayjs'
 
 import type { DeviceSettings } from '../types'
-import dayjs from '@/lib/dayjs'
-import { Badge } from '@workspace/ui/components/badge'
+import { Defaults, GPS_ACCURACY_OPTIONS } from '../constants'
+import { DeviceOptionsSchema } from '../schemas'
 
 export namespace DeviceOptionsForm {
   export type Props = {
     values: DeviceSettings
     onSubmit: (values: DeviceSettings) => Promise<void>
-    mode: TrackingMode // fixme: pointless
     className?: string
   }
 }
-
-const MIN_HEARTBEAT = 1000 * 60 // 1 minute
-const MAX_HEARTBEAT = 1000 * 60 * 60 // 1 hour
-
-const MIN_MAX_AGE = 1000 * 60 // 1 minute
-const MAX_MAX_AGE = 1000 * 60 * 60 // 1 hour
-
-const MIN_TIMEOUT = 1000 * 5 // 5 seconds
-const MAX_TIMEOUT = 1000 * 60 * 2 // 2 minutes
-
-/**
- * Validation schema for device options form
- * @todo setup convex to use zod directly.
- * @see https://stack.convex.dev/typescript-zod-function-validation#using-zod-for-argument-validation-server-side
- */
-const OptionsSchema = z.object({
-  heartbeat: z.object({
-    interval: z
-      .number()
-      .min(MIN_HEARTBEAT)
-      .max(MAX_HEARTBEAT)
-      .describe('Interval in ms between heartbeats'),
-  }),
-  location: z.object({
-    accuracy: z.enum(['VERY_LOW', 'LOW', 'MEDIUM', 'HIGH']), // maps to GPSAccuracy from backend
-    maximumAge: z
-      .number()
-      .min(MIN_MAX_AGE)
-      .max(MAX_MAX_AGE)
-      .describe('Maximum age in ms of a cached location'),
-    timeout: z
-      .number()
-      .min(MIN_TIMEOUT)
-      .max(MAX_TIMEOUT)
-      .describe('Timeout in ms to fetch a new location'),
-  }),
-})
 
 /**
  * Form to edit device options for a single operating `mode` for a device.
@@ -63,7 +26,7 @@ export const DeviceOptionsForm: React.FC<DeviceOptionsForm.Props> = (props) => {
   const { heartbeat, location } = values
   const form = useAppForm({
     defaultValues: { heartbeat, location },
-    validators: { onChange: OptionsSchema },
+    validators: { onChange: DeviceOptionsSchema },
     onSubmit: async ({ value }) => {
       await onSubmit(value)
     },
@@ -82,12 +45,7 @@ export const DeviceOptionsForm: React.FC<DeviceOptionsForm.Props> = (props) => {
           <field.SelectField
             label="Location Accuracy"
             trigger={{ className: 'w-full' }}
-            options={[
-              { label: 'Very Low', value: 'VERY_LOW' },
-              { label: 'Low', value: 'LOW' },
-              { label: 'Medium', value: 'MEDIUM' },
-              { label: 'High', value: 'HIGH' },
-            ]}
+            options={GPS_ACCURACY_OPTIONS}
           />
         )}
       />
@@ -97,8 +55,8 @@ export const DeviceOptionsForm: React.FC<DeviceOptionsForm.Props> = (props) => {
           children={(field) => (
             <field.SliderField
               label={<LabelBadge label="Maximum Age" value={field.state.value} />}
-              min={MIN_MAX_AGE}
-              max={MAX_MAX_AGE}
+              min={Defaults.MIN_MAX_AGE}
+              max={Defaults.MAX_MAX_AGE}
               step={1000}
             />
           )}
@@ -108,8 +66,8 @@ export const DeviceOptionsForm: React.FC<DeviceOptionsForm.Props> = (props) => {
           children={(field) => (
             <field.SliderField
               label={<LabelBadge label="Timeout" value={field.state.value} />}
-              min={MIN_TIMEOUT}
-              max={MAX_TIMEOUT}
+              min={Defaults.MIN_TIMEOUT}
+              max={Defaults.MAX_TIMEOUT}
               step={1}
             />
           )}
@@ -121,8 +79,8 @@ export const DeviceOptionsForm: React.FC<DeviceOptionsForm.Props> = (props) => {
         children={(field) => (
           <field.SliderField
             label={<LabelBadge label="Heartbeat Interval" value={field.state.value} />}
-            min={MIN_HEARTBEAT}
-            max={MAX_HEARTBEAT}
+            min={Defaults.MIN_HEARTBEAT}
+            max={Defaults.MAX_HEARTBEAT}
             step={1000}
           />
         )}

@@ -35,9 +35,8 @@ export const EditDeviceOptionsForm: React.FC<EditDeviceOptionsForm.Props> = (pro
           </CardHeader>
           <CardContent>
             <DeviceOptionsForm
-              className="space-y-4"
               values={group}
-              mode={group.mode}
+              className="space-y-4"
               onSubmit={makeHandleSubmit(group.mode)}
             />
           </CardContent>

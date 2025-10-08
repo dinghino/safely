@@ -1,6 +1,10 @@
 import { v } from 'convex/values'
 
-export const deviceType = v.union(v.literal('mobile'), v.literal('desktop'))
+export const deviceType = v.union(
+  v.literal('unknown'),
+  v.literal('mobile'),
+  v.literal('desktop')
+)
 
 /**
  * General status of a device

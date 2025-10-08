@@ -54,7 +54,7 @@ export const HeartbeatManager = () => {
           BackgroundGeolocation.getCurrentPosition({
             samples: 1,
             desiredAccuracy: BackgroundGeolocation.DESIRED_ACCURACY_MEDIUM,
-            timeout: device?.settings.heartbeatIntervalMs,
+            timeout: device?.settings.heartbeat.interval,
           }) //.then((loc) => sendBack({ type: 'locationUpdate', location: transformLocation(loc) }))
 
           return () => {
@@ -67,7 +67,7 @@ export const HeartbeatManager = () => {
       input: {
         geolocatorActor: null,
         deviceId: device?._id,
-        interval: device?.settings.heartbeatIntervalMs,
+        interval: device?.settings.heartbeat.interval,
       },
     },
   )
@@ -97,7 +97,7 @@ export const HeartbeatManager = () => {
   // update settings when they we get updated ones from the server.
   // todo: handle all the settings - for now we only do interval
   useEffect(() => {
-    const { heartbeatIntervalMs: interval } = device?.settings ?? {}
+    const { heartbeat: { interval } = {} } = device?.settings ?? {}
     if (!interval || interval === currentInterval) return
     send({ type: 'setInterval', interval })
   }, [send, currentInterval, device])

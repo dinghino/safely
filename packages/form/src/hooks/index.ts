@@ -1,5 +1,5 @@
 import { createFormHook, createFormHookContexts, formOptions } from '@tanstack/react-form'
-import { TextField, SubmitButton } from '../components'
+import { TextField, SubmitButton, SelectField, SliderField } from '../components'
 
 export { formOptions }
 
@@ -9,8 +9,9 @@ export const { fieldContext, useFieldContext, formContext, useFormContext } =
 export const { useAppForm, withForm } = createFormHook({
   fieldComponents: {
     TextField,
+    SelectField,
+    SliderField,
     // CheckboxField,
-    // SelectField,
   },
   formComponents: {
     SubmitButton,

@@ -5,9 +5,11 @@
  * ```
  */
 import type { Infer } from 'convex/values'
+import type { MutationCtx } from '../_generated/server'
+
 import type { DeviceType, TrackingMode } from '../../types'
-import { internalMutation, type MutationCtx } from '../_generated/server'
 import type { locatorOptions } from '../schemas/devices.schema'
+import { populateDeviceOptions } from '../lib/devices/options'
 
 type OptionKey = { type: DeviceType; mode: TrackingMode }
 type DefaultOptionsMap = Map<OptionKey, Infer<typeof locatorOptions>>
@@ -51,11 +53,20 @@ const desktopOptions: DefaultOptionsMap = new Map([
 ])
 
 // merge the two maps
-const defaultOptions: DefaultOptionsMap = new Map([...mobileOptions, ...desktopOptions])
+const defaultOptions: DefaultOptionsMap = new Map([
+  [
+    { type: 'unknown', mode: 'off' },
+    { accuracy: 'VERY_LOW', maximumAge: 60000, timeout: 30000 },
+  ],
+  ...mobileOptions,
+  ...desktopOptions,
+])
 
-// export const deviceOptions = internalMutation({
-// handler: async (ctx) => {
-export const deviceOptions = async (ctx: MutationCtx) => {
+/**
+ * Seeder function to create or update the default device settings available
+ * in the `defaultDeviceSettings` table.
+ */
+export const createOptions = async (ctx: MutationCtx) => {
   // determine if the given key already exists. if so we just need to replace the values
   const getExisting = (key: OptionKey) => {
     return ctx.db
@@ -69,13 +80,40 @@ export const deviceOptions = async (ctx: MutationCtx) => {
   for (const [key, options] of defaultOptions) {
     const exists = await getExisting(key)
     if (!exists) {
+      console.log('➕ Inserting new default device settings...', key)
       promises.push(ctx.db.insert('defaultDeviceSettings', { key, ...options }))
       continue
     }
+    console.log('🔄 Updating existing default device settings...', key)
     promises.push(ctx.db.replace(exists._id, { ...exists, ...options }))
   }
   await Promise.all(promises)
   console.log('✅ Default device settings seeded.')
 }
-//   },
-// })
+
+/**
+ * Utility seed to add the `mode` field to all existing devices
+ * and set it to 'off' if not already set.
+ */
+export async function addModeToAll(ctx: MutationCtx) {
+  const devices = await ctx.db.query('devices').collect()
+  const promises: Promise<unknown>[] = []
+  for (const device of devices) {
+    if (device.mode) continue
+    promises.push(ctx.db.patch(device._id, { mode: 'off' }))
+  }
+  console.log(`🌱 Adding mode 'off' to ${promises.length} devices`)
+  await Promise.all(promises)
+}
+
+/**
+ * Utility seed to populate device options for all existing devices from the
+ * global default options, based on device type.
+ */
+export async function populateOptions(ctx: MutationCtx) {
+  const devices = await ctx.db.query('devices').collect()
+  console.log(`🌱 Populating device options for ${devices.length} devices`)
+  const promises = devices.map((device) => populateDeviceOptions(ctx, device))
+  await Promise.all(promises)
+  console.log(`🌱 Populated device options for ${devices.length} devices`)
+}

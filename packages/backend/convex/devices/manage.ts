@@ -8,7 +8,6 @@ import { getCurrentUserOrThrow } from '../lib/auth'
 import { deviceStatus, trackingMode } from '../schemas/enums'
 
 import * as helpers from '../lib/devices'
-import { DEFAULT_HEARTBEAT_INTERVAL_MS, TRACKING_MODE_UPDATE_INTERVALS } from '../lib/constants'
 
 export const register = mutation({
   args: {
@@ -30,18 +29,20 @@ export const register = mutation({
 
       return args.deviceId
     }
+
+    // create new device
+
     const id = await ctx.db.insert('devices', {
       ...args,
       last_seen: Date.now(),
       status: 'unknown',
       owner: user._id,
+      type: helpers.determineDeviceType(args.platform),
+      mode: 'off',
     })
-    await ctx.db.insert('deviceSettings', {
-      deviceId: id,
-      trackingMode: 'off',
-      updateIntervalMs: DEFAULT_HEARTBEAT_INTERVAL_MS,
-      heartbeatIntervalMs: DEFAULT_HEARTBEAT_INTERVAL_MS,
-    })
+
+    const device = await ctx.db.get(id)
+    await helpers.options.populateDeviceOptions(ctx, device!)
 
     await ctx.runMutation(api.devices.heartbeat.send, { deviceId: id! })
     return id
@@ -113,17 +114,6 @@ export const setTrackingMode = mutation({
     if (device.owner !== user._id) {
       throw new Error('You do not own this device')
     }
-
-    const settings = await ctx.db
-      .query('deviceSettings')
-      .withIndex('by_deviceId', (q) => q.eq('deviceId', deviceId))
-      .unique()
-
-    if (!settings) throw new Error('Device settings not found')
-
-    await ctx.db.patch(settings._id, {
-      trackingMode: mode,
-      updateIntervalMs: TRACKING_MODE_UPDATE_INTERVALS[mode],
-    })
+    return await ctx.db.patch(device._id, { mode })
   },
 })

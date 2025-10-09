@@ -30,7 +30,7 @@ export const HeartbeatManager = () => {
 
   const geolocation = useGeolocation()
 
-  const [_state, send, actor] = useMachine(
+  const [state, send, actor] = useMachine(
     machine.provide({
       actors: {
         dispatcher: fromPromise(dispatcher),
@@ -74,16 +74,12 @@ export const HeartbeatManager = () => {
 
   const deviceId = useSelector(actor, (state) => state.context.deviceId)
   const currentInterval = useSelector(actor, (state) => state.context.interval)
-
   // when the geolocation system is ready tell the heartbeat machine that we can
   // geolocate and to start - start won't have effect if already started, but
   // the canGeolocate event will prompt the machine to query the location when
   // needed.
   useEffect(() => {
-    if (geolocation.ready) {
-      send({ type: 'canGeolocate' })
-      send({ type: 'start' })
-    }
+    if (geolocation.ready) send({ type: 'canGeolocate' })
   }, [geolocation.ready, send])
 
   // set the device ID when it becomes available - this should only happen once
@@ -91,6 +87,7 @@ export const HeartbeatManager = () => {
   useEffect(() => {
     if (!device?._id) return
     if (deviceId === device?._id) return
+    // this should also trigger the machine to start if it's not already working
     send({ type: 'setDeviceId', deviceId: device._id })
   }, [deviceId, device?._id, send])
 
@@ -105,7 +102,10 @@ export const HeartbeatManager = () => {
   // disconnect when unmounting
   // todo: we might want to NOT disconnect when the app is backgrounded
   // and instead run a background task or something, but they are unreliable
-  useEffect(() => () => send({ type: 'disconnect' }), [send])
+  useEffect(() => {
+    if (state.can({ type: 'start' })) send({ type: 'start' })
+    return () => send({ type: 'disconnect' })
+  }, [send, state.can])
 
   return null
 }

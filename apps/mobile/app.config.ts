@@ -1,7 +1,8 @@
 import 'tsx/cjs'
 import type { ExpoConfig } from 'expo/config'
+import { withPlugins } from '@expo/config-plugins'
 
-module.exports = ({ config }: { config: ExpoConfig }) => {
+const makeConfig = ({ config }: { config: ExpoConfig }) => {
   return {
     expo: {
       ...config,
@@ -34,19 +35,35 @@ module.exports = ({ config }: { config: ExpoConfig }) => {
       web: {
         favicon: './assets/favicon.png',
       },
-      plugins: [
-        './plugins/ninja-fix.ts',
-        ['expo-secure-store', {}],
-        'react-native-background-geolocation',
-        [
-          'expo-gradle-ext-vars',
-          { googlePlayServicesLocationVersion: '21.1.0', appCompatVersion: '1.4.2' },
-        ],
-        'react-native-background-fetch',
-      ],
+      // plugins: [
+      //   ['expo-secure-store', {}],
+      //   'react-native-background-geolocation',
+      //   'react-native-background-fetch',
+      //   [
+      //     'expo-gradle-ext-vars',
+      //     { googlePlayServicesLocationVersion: '21.1.0', appCompatVersion: '1.4.2' },
+      //   ],
+      //   './plugins/ninja-fix.ts', // MUST be absolute last
+      // ],
       experiments: {
         reactCanary: true,
       },
-    },
+    } satisfies ExpoConfig,
+  }
+}
+
+module.exports = ({ config }: { config: ExpoConfig }) => {
+  const step = makeConfig({ config })
+  return {
+    expo: withPlugins(step.expo, [
+      './plugins/ninja-fix.ts',
+      ['expo-secure-store', {}],
+      'react-native-background-geolocation',
+      'react-native-background-fetch',
+      [
+        'expo-gradle-ext-vars',
+        { googlePlayServicesLocationVersion: '21.1.0', appCompatVersion: '1.4.2' },
+      ],
+    ]),
   }
 }

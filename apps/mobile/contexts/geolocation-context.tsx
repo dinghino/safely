@@ -19,7 +19,10 @@ export namespace GeolocationContext {
     children: React.ReactNode
   }
 }
-
+/**
+ * Promise to be resolved once the component mounted to trigger the setup
+ * of the BackgroundGeolocation library.
+ */
 let resolver: (() => void) | null = null
 const promise = new Promise<void>((res) => {
   resolver = res

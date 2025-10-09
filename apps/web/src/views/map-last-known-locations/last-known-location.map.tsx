@@ -9,10 +9,11 @@ import { cn } from '@/lib/utils'
 
 import { LeafletMap, ZoomControls } from '@/shared/modules/maps'
 import { CenterMapButton, DeviceMarker, DeviceTooltip, UserLocation } from '@/widgets/maps'
+import { useMemo } from 'react'
+import { useDeviceContext } from '@/features/device-manager'
+import { FeatureGroup, LayersControl } from 'react-leaflet'
 
 export const LastKnownLocationMap = () => {
-  const devices = useQuery(api.devices.get.all)
-
   return (
     <LeafletMap className="h-full w-full bg-background" scrollWheelZoom zoomControl={false}>
       <div className={cn('leaflet-top leaflet-top pl-2')}>
@@ -24,11 +25,39 @@ export const LastKnownLocationMap = () => {
         </ButtonGroup>
       </div>
       <UserLocation />
-      {devices?.map((device) => (
+      <LayersControl position="topright" collapsed={false}>
+        <LayersControl.Overlay name="My Devices" checked>
+          <UserDevicesLayer includeCurrent />
+        </LayersControl.Overlay>
+      </LayersControl>
+    </LeafletMap>
+  )
+}
+
+export namespace UserDevicesLayer {
+  export type Props = {
+    includeCurrent?: boolean
+  }
+}
+
+function UserDevicesLayer(props: UserDevicesLayer.Props) {
+  const { includeCurrent = false } = props
+  const devices = useQuery(api.devices.get.all)
+  const { device } = useDeviceContext()
+
+  const items = useMemo(() => {
+    if (!devices) return []
+    if (includeCurrent) return devices
+    return devices.filter((d) => d._id !== device?._id)
+  }, [devices, includeCurrent, device?._id])
+
+  return (
+    <FeatureGroup>
+      {items?.map((device) => (
         <DeviceMarker key={device._id} device={device}>
-          <DeviceTooltip />
+          <DeviceTooltip sticky direction="top" />
         </DeviceMarker>
       ))}
-    </LeafletMap>
+    </FeatureGroup>
   )
 }

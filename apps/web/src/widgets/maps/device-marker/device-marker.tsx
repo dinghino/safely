@@ -90,16 +90,17 @@ function SharedContent() {
   )
 }
 
-export function DeviceTooltip() {
+export function DeviceTooltip(props: React.ComponentProps<typeof Tooltip>) {
   const clsname = cn(
     '!bg-card !border-0 !shadow-xl !text-foreground !border-muted',
     '!rounded-xl',
     // pointing arrow color overrides
     '!before:border-r-muted !before:border-l-muted',
     '!before:border-t-muted !before:border-b-muted',
+    props.children
   )
   return (
-    <Tooltip interactive permanent opacity={1} className={clsname}>
+    <Tooltip interactive opacity={1} {...props} className={clsname}>
       <SharedContent />
       {/* </Popup> */}
     </Tooltip>

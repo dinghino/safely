@@ -25,7 +25,6 @@ export namespace MapsLeaflet {
  * - https://alexurquhart.github.io/free-tiles/
  */
 export function BaseMap({ children, ...props }: MapsLeaflet.Props) {
-  const { theme } = useTheme()
 
   return (
     <MapContainer
@@ -35,22 +34,38 @@ export function BaseMap({ children, ...props }: MapsLeaflet.Props) {
       maxZoom={18}
       {...props}
     >
-      {theme === 'dark' ? (
-        <TileLayer
-          // attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          // url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}{r}.png"
-          url="http://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png"
-        />
-      ) : (
-        <TileLayer
-          // attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          // url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}{r}.png"
-          url="http://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png"
-        />
-      )}
+      <BaseLayer />
       {children}
     </MapContainer>
   )
 }
 
 export default BaseMap
+
+/**
+ * Dynamic base tiles layer that changes based on the current theme
+ * @todo: expand with more themes and options from user preferences
+ */
+const BaseLayer = () => {
+  const { theme, resolvedTheme } = useTheme()
+
+  const isDark = theme === 'dark' || resolvedTheme === 'dark'
+
+  if (isDark) {
+    return (
+      <TileLayer
+        // attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        // url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}{r}.png"
+        url="http://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}.png"
+      />
+    )
+  }
+
+  return (
+    <TileLayer
+      // attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      // url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}{r}.png"
+      url="http://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}.png"
+    />
+  )
+}

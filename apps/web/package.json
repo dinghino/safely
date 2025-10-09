@@ -18,6 +18,7 @@
     "@workspace/form": "workspace:*",
     "@workspace/geolocation": "workspace:*",
     "@workspace/heartbeat": "workspace:*",
+    "@workspace/maps": "workspace:*",
     "@workspace/nuqs": "workspace:*",
     "@workspace/react-utils": "workspace:*",
     "@workspace/ui": "workspace:*",

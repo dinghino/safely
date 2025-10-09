@@ -3,7 +3,7 @@
 import { formatLatLng } from '@/entities/location/lib/format-lat-lng'
 import { useGeolocationContext } from '@/features/geolocation'
 import { HeadingIndicator } from '@/shared/modules/maps'
-import { Circle } from 'react-leaflet'
+import { CircleMarker, Circle } from 'react-leaflet'
 
 /**
  * Current user location map indicator
@@ -17,7 +17,7 @@ export function UserLocation() {
   const center = formatLatLng(current.point)
 
   return (
-    <Circle
+    <CircleMarker
       center={center}
       data-role="user-coordinates"
       radius={2}
@@ -43,6 +43,6 @@ export function UserLocation() {
           data-role="user-accuracy"
         />
       )}
-    </Circle>
+    </CircleMarker>
   )
 }

@@ -1,7 +1,7 @@
 'use client'
 import { useQuery } from 'convex/react'
 import { MonitorIcon, SmartphoneIcon, type LucideIcon } from 'lucide-react'
-import { Circle, Tooltip, Popup } from 'react-leaflet'
+import { CircleMarker, Tooltip, Popup } from 'react-leaflet'
 import { toast } from 'sonner'
 
 import { api } from '@workspace/backend/api'
@@ -39,9 +39,9 @@ export function DeviceMarker({ device, children }: DeviceMarker.Props) {
 
   // const popoupTip = cn('[&_.leaflet-popup-tip-container]:!bg-card [&_.leaflet-popup-tip]:!border-muted')
   return (
-    <Circle center={formatLatLng(data.coordinates)} radius={2} color="red" interactive>
+    <CircleMarker center={formatLatLng(data.coordinates)} radius={2} color="red" interactive>
       <Provider value={{ device, data }}>{children}</Provider>
-    </Circle>
+    </CircleMarker>
   )
 }
 

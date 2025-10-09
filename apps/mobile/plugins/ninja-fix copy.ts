@@ -17,8 +17,8 @@ import path from 'node:path'
  * @see https://github.com/expo/expo/issues/36274
  */
 const withNinjaPathFix: ConfigPlugin = (config) => {
-  // return withAndroidManifest(config, config => {
-  // Patch root build.gradle
+  // Patch root build.gradle to apply to ALL subprojects with native builds
+  // Use withFinalizedMod so it runs AFTER expo-gradle-ext-vars
   const rootPatch = withFinalizedMod(config, [
     'android',
     async (config) => {
@@ -32,22 +32,26 @@ const withNinjaPathFix: ConfigPlugin = (config) => {
         return config
       }
 
-      // Find the allprojects block and add the afterEvaluate patch
-      const allProjectsBlockRegex = /(allprojects\s*\{[\s\S]*?repositories\s*\{[\s\S]*?\})\s*\}/
+      // Insert after allprojects block closes
+      const allProjectsBlockRegex = /(allprojects\s*\{[\s\S]*?\n\})/
 
       const ninjaPathPatch = `
 
-// Apply CMAKE_OBJECT_PATH_MAX globally to all subprojects with externalNativeBuild
-afterEvaluate { project ->
-  if (project.hasProperty('android')) {
-    project.android {
-      if (it.hasProperty('defaultConfig')) {
-        def projectRoot = rootDir.getAbsoluteFile().getParentFile().getAbsolutePath()
-        def ninjaPath = "\${projectRoot}/../../tools/ninja.exe".replace('\\\\', '/')
-        defaultConfig {
-          externalNativeBuild {
-            cmake {
-              arguments "-DCMAKE_MAKE_PROGRAM=\${ninjaPath}", "-DCMAKE_OBJECT_PATH_MAX=1024"
+// BEGIN NINJA-PATCH - Apply CMAKE_OBJECT_PATH_MAX globally to all subprojects
+subprojects {
+  afterEvaluate { project ->
+    if (project.hasProperty('android')) {
+      project.android {
+        if (project.android.hasProperty('defaultConfig')) {
+          def projectRoot = rootDir.getAbsoluteFile().getParentFile().getAbsolutePath()
+          def ninjaPath = "\${projectRoot}/tools/ninja.exe".replace('\\\\', '/')
+          project.android.defaultConfig {
+            if (it.hasProperty('externalNativeBuild')) {
+              externalNativeBuild {
+                cmake {
+                  arguments "-DCMAKE_MAKE_PROGRAM=\${ninjaPath}", "-DCMAKE_OBJECT_PATH_MAX=1024"
+                }
+              }
             }
           }
         }
@@ -55,7 +59,8 @@ afterEvaluate { project ->
     }
   }
 }
-}`
+// END NINJA-PATCH
+`
 
       buildGradleContent = buildGradleContent.replace(allProjectsBlockRegex, `$1${ninjaPathPatch}`)
 
@@ -64,9 +69,9 @@ afterEvaluate { project ->
 
       return config
     },
-  ]) // end of withFinalizedMod for root build.gradle
-  // }) // end of withAndroidManifest
+  ])
 
+  // Patch app/build.gradle only - this is where the native build happens
   const appPatch = withFinalizedMod(rootPatch, [
     'android',
     async (config) => {
@@ -79,22 +84,23 @@ afterEvaluate { project ->
       let appBuildGradleContent = fs.readFileSync(appBuildGradlePath, 'utf-8')
 
       // Check if already patched
-      if (appBuildGradleContent.includes('Workaround for Windows path length limitation')) {
+      if (appBuildGradleContent.includes('CMAKE_OBJECT_PATH_MAX')) {
         console.log('✓ android/app/build.gradle already patched with ninja fix')
         return config
       }
 
-      // Find the defaultConfig block and add the externalNativeBuild section
-      const defaultConfigRegex = /(defaultConfig\s*\{[\s\S]*?buildConfigField[^\n]*\n)/
+      // Find the defaultConfig block - look for versionName as anchor
+      const defaultConfigRegex = /(defaultConfig\s*\{[\s\S]*?versionName[^\n]*\n)/
 
       const appNinjaPathPatch = `
-        // Workaround for Windows path length limitation
+        // BEGIN NINJA-PATCH - Workaround for Windows path length limitation
         externalNativeBuild {
             cmake {
-                def ninjaPath = "\${projectRoot}/../../tools/ninja.exe".replace('\\\\', '/')
+                def ninjaPath = "\${projectRoot}/tools/ninja.exe".replace('\\\\', '/')
                 arguments "-DCMAKE_MAKE_PROGRAM=\${ninjaPath}", "-DCMAKE_OBJECT_PATH_MAX=1024"
             }
         }
+        // END NINJA-PATCH
 `
 
       appBuildGradleContent = appBuildGradleContent.replace(
@@ -103,7 +109,7 @@ afterEvaluate { project ->
       )
 
       fs.writeFileSync(appBuildGradlePath, appBuildGradleContent)
-      console.log('✓ Patched android/app/build.gradle with ninja path fix')
+      console.log('✓ Patched android/app/build.gradle with ninja fix')
 
       return config
     },

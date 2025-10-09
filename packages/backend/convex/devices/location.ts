@@ -26,6 +26,8 @@ export const setLast = mutation({
     const { deviceId, position } = args
     const device = await helpers.get.deviceById(ctx, deviceId)
 
+    // remove old position if set
+    await geospatial.remove(ctx, deviceId)
     // since we are indexing on device._id we are constantly updating one point
     // so we don't need to care about duplicates
     await Promise.all([

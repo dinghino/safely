@@ -1,6 +1,6 @@
 'use client'
 
-import { useTransition } from 'react'
+import { useCallback, useEffect, useTransition } from 'react'
 import { useMap } from 'react-leaflet'
 import { LocateIcon } from 'lucide-react'
 
@@ -12,10 +12,12 @@ import { useGeolocationContext } from '@/features/geolocation'
 import { cn } from '@/lib/utils'
 
 export namespace CenterMapButton {
-  export type Props = {} & Omit<
-    React.ComponentProps<typeof Button>,
-    'children' | 'onClick' | 'disabled'
-  >
+  export type Props = {
+    /**
+     * whether to trigger centering the map as soon as the component is mounted
+     */
+    autoCenter?: boolean
+  } & Omit<React.ComponentProps<typeof Button>, 'children' | 'onClick' | 'disabled'>
 }
 
 /**
@@ -30,7 +32,8 @@ export namespace CenterMapButton {
  * @todo we might want to use watchPosition to keep things up to date when
  *       showing the map
  */
-export const CenterMapButton: React.FC<CenterMapButton.Props> = (props) => {
+export const CenterMapButton: React.FC<CenterMapButton.Props> = (_props) => {
+  const { autoCenter = false, ...props } = _props
   const { getLocation, state, actor } = useGeolocationContext()
   const map = useMap()
 
@@ -39,26 +42,35 @@ export const CenterMapButton: React.FC<CenterMapButton.Props> = (props) => {
 
   const [loading, startRequest] = useTransition()
 
-  const requestPosition = async () => {
+  const requestPosition = useCallback(async () => {
     return new Promise<Locator.Data>((resolve) => {
       const subscription = actor.on('LOCATION_UPDATE', ({ data }) => {
         subscription.unsubscribe()
         resolve(data)
       })
 
-      getLocation({ enableHighAccuracy: true, timeout: 10_000, maximumAge: 500 })
+      getLocation({ enableHighAccuracy: true, timeout: 10_000, maximumAge: 60_000 })
     })
-  }
+  }, [actor, getLocation])
 
-  const handleClick = async () =>
-    startRequest(async () => {
-      const data = await requestPosition()
-      const { latitude, longitude } = data.point
-      map.setView([latitude, longitude], map.getZoom())
-    })
+  const handleClick = useCallback(
+    async () =>
+      startRequest(async () => {
+        const data = await requestPosition()
+        const { latitude, longitude } = data.point
+        map.setView([latitude, longitude], map.getZoom())
+      }),
+    [map, requestPosition],
+  )
 
   const disabled = !canLocate || loading || querying
   const Icon = querying || loading ? Spinner : LocateIcon
+
+  useEffect(() => {
+    if (!autoCenter) return
+    console.log('Auto-centering map on user location')
+    handleClick()
+  }, [autoCenter])
 
   return (
     <Button

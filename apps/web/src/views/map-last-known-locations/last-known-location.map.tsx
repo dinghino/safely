@@ -19,7 +19,7 @@ export const LastKnownLocationMap = () => {
         <ButtonGroup orientation="vertical">
           <ZoomControls orientation="vertical" variant="default" />
           <ButtonGroup orientation="vertical">
-            <CenterMapButton />
+            <CenterMapButton autoCenter />
           </ButtonGroup>
         </ButtonGroup>
       </div>

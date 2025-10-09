@@ -1,0 +1,10 @@
+{
+  "extends": "@workspace/typescript-config/react-library.json",
+  "compilerOptions": {
+    "module": "es2022",
+    "moduleResolution": "bundler",
+    "baseUrl": "./src",
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
+}

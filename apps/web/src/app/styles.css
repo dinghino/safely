@@ -1,1 +1,6 @@
 @import "@clerk/themes/shadcn.css";
+
+/* declare a new css variable --header-height */
+:root {
+  --header-height: 48px;
+}

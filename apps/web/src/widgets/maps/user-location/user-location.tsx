@@ -14,7 +14,7 @@ export function UserLocation() {
   if (!current) return null
 
   const { metadata } = current
-  const center = formatLatLng(current)
+  const center = formatLatLng(current.point)
 
   return (
     <Circle

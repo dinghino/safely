@@ -31,6 +31,7 @@ body {
     @apply bg-background text-foreground;
   }
 }
+@import './shad-leaflet.css';
 
 :root {
   --sidebar: hsl(0 0% 98%);

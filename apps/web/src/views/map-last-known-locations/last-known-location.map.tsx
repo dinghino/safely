@@ -17,7 +17,7 @@ import {
   MapTileLayer,
   MapZoomControl,
 } from '@/shared/modules/maps'
-import Layers from '@/shared/modules/maps/map-layers'
+import { MapTiles } from '@/shared/modules/maps/map-layers'
 import { ButtonGroup } from '@workspace/ui/components/button-group'
 
 const CENTER = [43.85857, 11.1422382] as [number, number]
@@ -25,15 +25,11 @@ const CENTER = [43.85857, 11.1422382] as [number, number]
 const ORIENTATION: 'vertical' | 'horizontal' = 'vertical'
 
 export const LastKnownLocationMap = () => {
-  const customLayers = useMemo(
-    () => Object.values(Layers).map((layer) => <MapTileLayer key={layer.name} {...layer} />),
-    [],
-  )
   return (
     <LeafletMap center={CENTER} className="h-full w-full bg-background" scrollWheelZoom>
       <MapLayers defaultTileLayer="Default" defaultLayerGroups={['devices']}>
         <MapTileLayer />
-        {customLayers}
+        <MapTiles layers={['mapnik', 'osm', 'topographic', 'worldStreet']} />
         <UserDevicesLayer name="devices" />
 
         <ButtonGroup

@@ -3,33 +3,52 @@
 import { useQuery } from 'convex/react'
 import { api } from '@workspace/backend/api'
 
-import { ButtonGroup } from '@workspace/ui/components/button-group'
+// import { cn } from '@/lib/utils'
 
-import { cn } from '@/lib/utils'
-
-import { LeafletMap, ZoomControls } from '@/shared/modules/maps'
-import { CenterMapButton, DeviceMarker, DeviceTooltip, UserLocation } from '@/widgets/maps'
+import { DeviceMarker, DevicePopup } from '@/widgets/maps'
 import { useMemo } from 'react'
 import { useDeviceContext } from '@/features/device-manager'
-import { FeatureGroup, LayersControl } from 'react-leaflet'
+import {
+  Map as LeafletMap,
+  MapLayerGroup,
+  MapLayers,
+  MapLayersControl,
+  MapLocateControl,
+  MapTileLayer,
+  MapZoomControl,
+} from '@/shared/modules/maps'
+import Layers from '@/shared/modules/maps/map-layers'
+import { ButtonGroup } from '@workspace/ui/components/button-group'
+
+const CENTER = [43.85857, 11.1422382] as [number, number]
+
+const ORIENTATION: 'vertical' | 'horizontal' = 'vertical'
 
 export const LastKnownLocationMap = () => {
+  const customLayers = useMemo(
+    () => Object.values(Layers).map((layer) => <MapTileLayer key={layer.name} {...layer} />),
+    [],
+  )
   return (
-    <LeafletMap className="h-full w-full bg-background" scrollWheelZoom zoomControl={false}>
-      <div className={cn('leaflet-top leaflet-top pl-2')}>
-        <ButtonGroup orientation="vertical">
-          <ZoomControls orientation="vertical" variant="default" />
-          <ButtonGroup orientation="vertical">
-            <CenterMapButton autoCenter />
+    <LeafletMap center={CENTER} className="h-full w-full bg-background" scrollWheelZoom>
+      <MapLayers defaultTileLayer="Default" defaultLayerGroups={['devices']}>
+        <MapTileLayer />
+        {customLayers}
+        <UserDevicesLayer name="devices" />
+
+        <ButtonGroup
+          orientation={ORIENTATION}
+          className="absolute top-1 left-1 z-1000 gap-1 rounded-lg bg-background/50 p-1"
+        >
+          <MapZoomControl orientation={ORIENTATION} className="static" />
+          <ButtonGroup orientation={ORIENTATION}>
+            <MapLocateControl className="static" />
+          </ButtonGroup>
+          <ButtonGroup orientation={ORIENTATION}>
+            <MapLayersControl className="static" />
           </ButtonGroup>
         </ButtonGroup>
-      </div>
-      <UserLocation />
-      <LayersControl position="topright" collapsed={false}>
-        <LayersControl.Overlay name="My Devices" checked>
-          <UserDevicesLayer includeCurrent />
-        </LayersControl.Overlay>
-      </LayersControl>
+      </MapLayers>
     </LeafletMap>
   )
 }
@@ -37,11 +56,12 @@ export const LastKnownLocationMap = () => {
 export namespace UserDevicesLayer {
   export type Props = {
     includeCurrent?: boolean
+    name: string
   }
 }
 
 function UserDevicesLayer(props: UserDevicesLayer.Props) {
-  const { includeCurrent = false } = props
+  const { name, includeCurrent = false } = props
   const devices = useQuery(api.devices.get.all)
   const { device } = useDeviceContext()
 
@@ -52,12 +72,12 @@ function UserDevicesLayer(props: UserDevicesLayer.Props) {
   }, [devices, includeCurrent, device?._id])
 
   return (
-    <FeatureGroup>
+    <MapLayerGroup name={name} eventHandlers={{ click: (e) => console.log(e) }}>
       {items?.map((device) => (
         <DeviceMarker key={device._id} device={device}>
-          <DeviceTooltip sticky direction="top" />
+          <DevicePopup />
         </DeviceMarker>
       ))}
-    </FeatureGroup>
+    </MapLayerGroup>
   )
 }

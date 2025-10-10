@@ -2,11 +2,14 @@
 
 import { formatLatLng } from '@/entities/location/lib/format-lat-lng'
 import { useGeolocationContext } from '@/features/geolocation'
-import { HeadingIndicator } from '@/shared/modules/maps'
+import { HeadingIndicator } from '@/shared/modules/maps/components'
 import { CircleMarker, Circle } from 'react-leaflet'
 
 /**
  * Current user location map indicator
+ * @deprecated in favor of shadcn-map Locator control that renders a
+ * a nicer map marker.
+ * we need to add the heading there but it's a better experience overall
  */
 export function UserLocation() {
   const { current } = useGeolocationContext()

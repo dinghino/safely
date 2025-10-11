@@ -62,6 +62,19 @@ export const unregister = mutation({
     if (device.owner !== user._id) {
       throw new Error('You do not own this device')
     }
+    // todo: move to separate functions
+    const cleanupMutations = []
+    // delete all options first
+    const options = await ctx.db
+      .query('deviceOptions')
+      .withIndex('device_mode', (q) => q.eq('deviceId', device._id))
+      .collect()
+    cleanupMutations.push(options?.map((opt) => ctx.db.delete(opt._id)))
+    // cleanup last known locations
+    cleanupMutations.push(helpers.location.deleteLastKnown({ ctx, deviceId: device._id }))
+
+    await Promise.all(cleanupMutations.flat())
+
     return await ctx.db.delete(device._id)
     // todo: soft delete, anonymize or cascade delete all device data?
   },

@@ -63,3 +63,10 @@ export async function getLastKnown(opts: { ctx: QueryCtx; deviceId: Id<'devices'
     coordinates: gis.coordinates,
   }
 }
+
+export async function deleteLastKnown(opts: { ctx: MutationCtx; deviceId: Id<'devices'> }) {
+  const { ctx, deviceId } = opts
+  const location = await getLastKnowndata({ ctx, deviceId })
+  if (!location) return
+  await Promise.all([ctx.db.delete(location._id), geospatial.remove(ctx, deviceId)])
+}

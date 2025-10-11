@@ -53,7 +53,12 @@ const desktopOptions: DefaultOptionsMap = new Map([
 ])
 
 // for unknown device we use the same options as desktop (static devices)
-const unknownTypeOptions: DefaultOptionsMap = desktopOptions
+const unknownTypeOptions: DefaultOptionsMap = new Map(
+  Array.from(desktopOptions).map(([key, value]) => [
+    { ...key, type: 'unknown' as DeviceType },
+    value,
+  ]),
+)
 
 // merge the two maps
 const defaultOptions: DefaultOptionsMap = new Map([
@@ -81,6 +86,7 @@ export const createOptions = async (ctx: MutationCtx, override?: boolean) => {
   const promises: Promise<unknown>[] = []
   console.log('🌱 Seeding default device settings...')
   for (const [key, options] of defaultOptions) {
+    console.log(`seeding default options for ${JSON.stringify(key)}`)
     const exists = await getExisting(key)
     if (!exists) {
       console.log('➕ Inserting new default device settings...', key)

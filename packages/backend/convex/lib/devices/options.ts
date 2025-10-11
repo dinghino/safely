@@ -22,7 +22,6 @@ export async function populateDeviceOptions(
   }
   const promises: Promise<unknown>[] = []
   for (const def of defaults) {
-    
     // if we are not overriding, check if options already exist for this device/mode
     // if it does skip the creation
     const exist = ctx.db

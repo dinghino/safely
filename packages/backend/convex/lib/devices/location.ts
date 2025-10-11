@@ -49,15 +49,17 @@ async function getLastKnowndata(opts: { ctx: QueryCtx; deviceId: Id<'devices'> }
 
 /**
  * Helper function to get a consistent last known location object for a device
- * @returns null if no location data or object if exists
+ * @returns null if no location data or coordinates, object if they exist
  */
 export async function getLastKnown(opts: { ctx: QueryCtx; deviceId: Id<'devices'> }) {
   const { ctx, deviceId } = opts
   const location = await getLastKnowndata({ ctx, deviceId })
   if (!location) return null
   const gis = await geospatial.get(ctx, deviceId)
+  if (!gis) return null
+
   return {
     ...location,
-    coordinates: gis?.coordinates,
+    coordinates: gis.coordinates,
   }
 }

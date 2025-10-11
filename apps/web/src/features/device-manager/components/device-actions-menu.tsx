@@ -14,7 +14,6 @@ import {
 import { DeleteDialogButton } from '@workspace/ui/components/delete-dialog-button'
 
 import { SessionButton } from '@/features/device-tracking/components'
-import { useIsCurrent } from '../hooks/use-is-current'
 
 import type { Device } from '@/entities/device/types'
 import { EditDeviceForm } from './forms'
@@ -33,7 +32,6 @@ export function ActionsCell({ device }: { device: Device }) {
 
 export function DeviceActionsMenu({ device }: { device: Device }) {
   const unregister = useMutation(api.devices.manage.unregister)
-  const isCurrent = useIsCurrent({ device })
 
   return (
     <DropdownMenu>
@@ -53,9 +51,7 @@ export function DeviceActionsMenu({ device }: { device: Device }) {
           description="Are you sure you want to unregister this device? This action cannot be undone."
           confirmText="Unregister"
         >
-          <DropdownMenuItem disabled={isCurrent} onSelect={(e) => e.preventDefault()}>
-            Unregister
-          </DropdownMenuItem>
+          <DropdownMenuItem onSelect={(e) => e.preventDefault()}>Unregister</DropdownMenuItem>
         </DeleteDialogButton>
         <EditDeviceForm
           trigger={<DropdownMenuItem onSelect={(e) => e.preventDefault()}>Edit</DropdownMenuItem>}

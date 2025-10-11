@@ -38,17 +38,21 @@ export const DeviceProvider: React.FC<DeviceProvider.Props> = ({ children }) => 
     if (deviceId) return // device already registered
     const { platform } = deviceInfo
     const id = await register({ platform })
-    return id ? setId(id) : clearId()
+    if (id) setId(id)
   }
 
+  /**
+   * Handle device registration state change from the server.
+   * If we unregister this device from another device we need
+   * to clear the local device id so we can register again.
+   */
   useEffect(() => {
     // waiting on query result
-    if (device === undefined) return console.log('device query loading')
+    if (device === undefined) return
     // we have a device, so all good
-    if (device) return console.log('device already registered')
-    
+    if (device) return
+
     // no device -> clean localstorage id for future registering
-    console.log('no device found, clearing local id')
     clearId()
   }, [device, clearId])
 

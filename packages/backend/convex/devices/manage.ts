@@ -27,7 +27,7 @@ export const register = mutation({
 
       await ctx.runMutation(api.devices.heartbeat.send, { deviceId: existing._id })
 
-      return args.deviceId
+      return existing._id
     }
 
     // create new device

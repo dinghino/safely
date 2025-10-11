@@ -1,1 +1,14 @@
 @import "@clerk/themes/shadcn.css";
+
+:root {
+  /**
+   * height of the main header of the app. this can be overridden by shadcn layouts
+   * and will be removed later on when we set up a more robust layout
+   */
+  --header-height: 48px;
+}
+
+/** override leaflet z-index to be in sync with our z-index values */
+.leaflet-pane {
+  z-index: 40 !important;
+}

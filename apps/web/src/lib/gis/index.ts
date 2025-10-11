@@ -15,3 +15,11 @@ export function nearby(c1: Position, c2: Position, radiusMeters = 5) {
   const distance = R * c // Distance in meters
   return distance <= radiusMeters
 }
+
+// Utility functions for geographic calculations
+export const toRadians = (degrees: number): number => (degrees * Math.PI) / 180
+
+export const metersToLat = (meters: number): number => meters / 111_111
+
+export const metersToLng = (meters: number, latitude: number): number => 
+  meters / (111_111 * Math.cos(toRadians(latitude)))

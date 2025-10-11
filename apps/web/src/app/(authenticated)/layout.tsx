@@ -1,13 +1,18 @@
 'use client'
 
+import Link from 'next/link'
+
 import { ClerkLoaded, ClerkLoading, RedirectToSignIn } from '@clerk/nextjs'
 import { Authenticated, AuthLoading, Unauthenticated } from 'convex/react'
 import Loader from '@/components/loader'
 // import { UserPresenceProvider } from '@/features/presence/contexts'
 // import { DeviceContextProvider } from '@/features/device-tracking'
 
-import { AuthenticatedProviders } from '@/components/providers'
+import { cn } from '@/lib/utils'
+import { Button } from '@workspace/ui/components/button'
+import { MapIcon } from 'lucide-react'
 
+import { AuthenticatedProviders } from '@/components/providers'
 import { LastGeoTime } from '@/features/geolocation/components'
 import { LastHeartbeatTime } from '@/features/heartbeat/components'
 
@@ -24,14 +29,23 @@ export default function AuthenticatedLayout({ children }: { children: React.Reac
           {/* <DeviceContextProvider> */}
 
           <AuthenticatedProviders>
-            <div>
-              <div className="inline-flex max-h-fit w-full gap-4 border-b p-2">
-                <div className="flex-1" />
-                <LastGeoTime />
-                <LastHeartbeatTime />
-              </div>
-              {children}
+            <div
+              className={cn(
+                'inline-flex max-h-fit w-full gap-4 border-b p-2',
+                'sticky top-[var(--header-height)] z-50 h-[var(--header-height)] w-full bg-background',
+              )}
+            >
+              <Button asChild variant="ghost" size="sm">
+                <Link<string> href="/maps">
+                  <MapIcon />
+                  <span className="max-md:sr-only">Maps</span>
+                </Link>
+              </Button>
+              <div className="flex-1" />
+              <LastGeoTime />
+              <LastHeartbeatTime />
             </div>
+            {children}
           </AuthenticatedProviders>
 
           {/* </DeviceContextProvider> */}

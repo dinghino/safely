@@ -48,7 +48,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <RootProviders>
           {/* <div className="grid h-svh grid-rows-[auto_1fr]"> */}
           <div className="h-svh">
-            <div className="sticky top-0 z-50 bg-background">
+            <div className="sticky top-0 z-50 min-h-[var(--header-height)] border-b bg-background">
               <Header links={links} />
             </div>
             {children}

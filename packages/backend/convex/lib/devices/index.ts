@@ -30,6 +30,9 @@ export function determineDeviceType(platform?: KnownDeviceTypes): DeviceType {
     case 'android':
       return 'mobile'
     case 'windows':
+    case 'Linux x86_64':
+    case 'MacIntel':
+    case 'Win32':
     case 'macos':
     case 'web':
       return 'desktop'

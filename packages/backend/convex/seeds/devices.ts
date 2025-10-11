@@ -52,12 +52,12 @@ const desktopOptions: DefaultOptionsMap = new Map([
   ],
 ])
 
+// for unknown device we use the same options as desktop (static devices)
+const unknownTypeOptions: DefaultOptionsMap = desktopOptions
+
 // merge the two maps
 const defaultOptions: DefaultOptionsMap = new Map([
-  [
-    { type: 'unknown', mode: 'off' },
-    { accuracy: 'VERY_LOW', maximumAge: 60000, timeout: 30000 },
-  ],
+  ...unknownTypeOptions,
   ...mobileOptions,
   ...desktopOptions,
 ])
@@ -65,8 +65,11 @@ const defaultOptions: DefaultOptionsMap = new Map([
 /**
  * Seeder function to create or update the default device settings available
  * in the `defaultDeviceSettings` table.
+ *
+ * @param ctx - Convex mutation context
+ * @param override - whether to override existing settings for existing devices (default: false)
  */
-export const createOptions = async (ctx: MutationCtx) => {
+export const createOptions = async (ctx: MutationCtx, override?: boolean) => {
   // determine if the given key already exists. if so we just need to replace the values
   const getExisting = (key: OptionKey) => {
     return ctx.db
@@ -82,6 +85,10 @@ export const createOptions = async (ctx: MutationCtx) => {
     if (!exists) {
       console.log('➕ Inserting new default device settings...', key)
       promises.push(ctx.db.insert('defaultDeviceSettings', { key, ...options }))
+      continue
+    }
+    if (!override) {
+      console.log('ℹ️  Default device settings already exist, skipping...', key)
       continue
     }
     console.log('🔄 Updating existing default device settings...', key)

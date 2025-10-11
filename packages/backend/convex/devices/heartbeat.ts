@@ -2,7 +2,7 @@ import { v } from 'convex/values'
 import { point } from '@convex-dev/geospatial'
 import { mutation } from '../_generated/server'
 
-import { trackLocationMetadata } from '../schemas/tracker.schema'
+import { locationMetadata } from '../schemas/shared'
 
 import { getCurrentUserOrThrow } from '../lib/auth'
 
@@ -17,7 +17,7 @@ export const send = mutation({
     location: v.optional(
       v.object({
         point: point,
-        metadata: v.optional(trackLocationMetadata),
+        metadata: v.optional(locationMetadata),
       }),
     ),
   },

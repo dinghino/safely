@@ -1,6 +1,7 @@
 import { defineTable } from 'convex/server'
 import { v } from 'convex/values'
 import { deviceStatus, trackingMode, gpsAccuracy, deviceType } from './enums'
+import { locationMetadata } from '../schemas/shared'
 
 /**
  * registered devices for a user
@@ -79,6 +80,12 @@ export const deviceOptions = defineTable({
   location: locatorOptions,
   heartbeat: heartbeatOptions,
 }).index('device_mode', ['deviceId', 'mode'])
+
+
+export const deviceLocations = defineTable({
+  deviceId: v.id('devices'),
+  metadata: locationMetadata,
+})
 
 /*
 type LocationOptions = {

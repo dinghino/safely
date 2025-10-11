@@ -3,7 +3,7 @@ import { point } from '@convex-dev/geospatial'
 
 import { api } from '../_generated/api'
 import { mutation, query } from '../_generated/server'
-import { trackLocationMetadata } from '../schemas/tracker.schema'
+import { locationMetadata } from '../schemas/shared'
 
 import { _getSession, geospatial, isSessionOfDevice, isSessionOpen } from './lib'
 
@@ -16,7 +16,7 @@ export const add = mutation({
   args: {
     sessionId: v.id('trackSession'),
     point: point,
-    metadata: v.optional(trackLocationMetadata),
+    metadata: v.optional(locationMetadata),
   },
   handler: async (ctx, args) => {
     const { sessionId, point, metadata } = args

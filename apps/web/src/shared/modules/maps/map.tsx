@@ -5,6 +5,49 @@
  * @see https://shadcn-map.vercel.app/docs for docs
  */
 
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  type Ref,
+  type ReactNode,
+} from 'react'
+import dynamic from 'next/dynamic'
+
+import { renderToString } from 'react-dom/server'
+import type {
+  CircleMarkerProps,
+  CircleProps,
+  LayerGroupProps,
+  MapContainerProps,
+  MarkerProps,
+  PolygonProps,
+  PolylineProps,
+  PopupProps,
+  RectangleProps,
+  TileLayerProps,
+  TooltipProps,
+} from 'react-leaflet'
+import { useMap, useMapEvents } from 'react-leaflet'
+
+import {
+  CircleIcon,
+  LayersIcon,
+  LoaderCircleIcon,
+  MapPinIcon,
+  MinusIcon,
+  NavigationIcon,
+  PenLineIcon,
+  PentagonIcon,
+  PlusIcon,
+  SquareIcon,
+  Trash2Icon,
+  Undo2Icon,
+  WaypointsIcon,
+} from 'lucide-react'
+
 import { cn } from '@workspace/ui/lib/utils'
 import { Button } from '@workspace/ui/components/button'
 import { ButtonGroup } from '@workspace/ui/components/button-group'
@@ -18,7 +61,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@workspace/ui/components/dropdown-menu'
-import type { CheckboxItem } from '@radix-ui/react-dropdown-menu'
+
 import type {
   Circle,
   CircleMarker,
@@ -44,49 +87,11 @@ import type {
   TileLayer,
   Tooltip,
 } from 'leaflet'
+
 import 'leaflet-draw/dist/leaflet.draw.css'
 import 'leaflet/dist/leaflet.css'
-import {
-  CircleIcon,
-  LayersIcon,
-  LoaderCircleIcon,
-  MapPinIcon,
-  MinusIcon,
-  NavigationIcon,
-  PenLineIcon,
-  PentagonIcon,
-  PlusIcon,
-  SquareIcon,
-  Trash2Icon,
-  Undo2Icon,
-  WaypointsIcon,
-} from 'lucide-react'
-import { useTheme } from 'next-themes'
-import dynamic from 'next/dynamic'
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-  type Ref,
-  type ReactNode,
-} from 'react'
-import { renderToString } from 'react-dom/server'
-import type {
-  CircleMarkerProps,
-  CircleProps,
-  LayerGroupProps,
-  MapContainerProps,
-  MarkerProps,
-  PolygonProps,
-  PolylineProps,
-  PopupProps,
-  RectangleProps,
-  TileLayerProps,
-  TooltipProps,
-} from 'react-leaflet'
-import { useMap, useMapEvents } from 'react-leaflet'
+
+import { useTheme } from '@workspace/ui/providers/theme-provider'
 
 const LeafletMapContainer = dynamic(async () => (await import('react-leaflet')).MapContainer, {
   ssr: false,
@@ -140,7 +145,8 @@ interface MapTileLayerOption {
   attribution?: string
 }
 
-interface MapLayerGroupOption extends Pick<React.ComponentProps<typeof CheckboxItem>, 'disabled'> {
+interface MapLayerGroupOption
+  extends Pick<React.ComponentProps<typeof DropdownMenuCheckboxItem>, 'disabled'> {
   name: string
 }
 
@@ -561,7 +567,12 @@ function MapTooltip({
   )
 }
 
-function MapZoomControl({ className, ...props }: React.ComponentProps<'div'> & { orientation?: React.ComponentProps<typeof ButtonGroup>['orientation'] }) {
+function MapZoomControl({
+  className,
+  ...props
+}: React.ComponentProps<'div'> & {
+  orientation?: React.ComponentProps<typeof ButtonGroup>['orientation']
+}) {
   const map = useMap()
   const [zoomLevel, setZoomLevel] = useState(map.getZoom())
 

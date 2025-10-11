@@ -37,9 +37,10 @@ export const one = query({
     // const device = await helpers.get.deviceByDeviceId(ctx, args.deviceId)
     // todo: better error handling - not found vs not owned
     // if (!device || device.owner !== user._id) throw new Error('Device not found')
-    if (!device || device.owner !== user._id) return undefined
-
-    return await helpers.get.embedSettings(ctx, device)
+    if (!device || device.owner !== user._id) return null
+    // embed current settings and return explicitly (no undefined)
+    const withSettings = await helpers.get.embedSettings(ctx, device)
+    return withSettings!
   },
 })
 

@@ -7,6 +7,7 @@ import { useDeviceId } from '@/shared/hooks/use-device-id'
 
 import type { Device } from '@/entities/device/types'
 import { useDeviceInfo } from '@/features/device-manager'
+import { useEffect } from 'react'
 
 export namespace DeviceProvider {
   export type Value = {
@@ -39,6 +40,17 @@ export const DeviceProvider: React.FC<DeviceProvider.Props> = ({ children }) => 
     const id = await register({ platform })
     return id ? setId(id) : clearId()
   }
+
+  useEffect(() => {
+    // waiting on query result
+    if (device === undefined) return console.log('device query loading')
+    // we have a device, so all good
+    if (device) return console.log('device already registered')
+    
+    // no device -> clean localstorage id for future registering
+    console.log('no device found, clearing local id')
+    clearId()
+  }, [device, clearId])
 
   const value = {
     device,

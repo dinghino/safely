@@ -42,13 +42,13 @@ async function getHeartbeatInterval(
 ) {
   const { interval, deviceId } = params
   if (interval) return interval
+  const device = await ctx.db.get(deviceId)
+  if (!device) return DEFAULT_HEARTBEAT_INTERVAL_MS
   const deviceSettings = await ctx.db
     .query('deviceOptions')
-    .withIndex('device_mode', (q) => q.eq('deviceId', deviceId))
+    .withIndex('device_mode', (q) => q.eq('deviceId', device._id).eq('mode', device.mode))
     .unique()
   if (!deviceSettings) return DEFAULT_HEARTBEAT_INTERVAL_MS
-  // const appSettings = await ctx.db.query('appSettings').unique()
-  // if (appSettings?.device.heartbeat.interval) return appSettings.device.heartbeat.interval
 
   return deviceSettings.heartbeat.interval
 }

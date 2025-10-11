@@ -50,7 +50,11 @@ export const register = mutation({
 })
 
 /**
- * Allow a user to delete one of their devices
+ * Allow a user to delete one of their devices, including most associated data
+ * for the device.
+ * @note this will be expanded in the future to cover more associated data,
+ * soft delete functionality and anonymization, as well as providing options
+ * to the user to decide what they want to delete or keep.
  * @throws no device or not owned by user
  */
 export const unregister = mutation({
@@ -72,6 +76,10 @@ export const unregister = mutation({
     cleanupMutations.push(options?.map((opt) => ctx.db.delete(opt._id)))
     // cleanup last known locations
     cleanupMutations.push(helpers.location.deleteLastKnown({ ctx, deviceId: device._id }))
+
+    // todo: stop active session is exists
+    // todo: cleanup sessions, tokens, timeouts etc
+    // todo: maybe (?) cleanup sessions location history
 
     await Promise.all(cleanupMutations.flat())
 

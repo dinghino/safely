@@ -6,13 +6,14 @@ import type { QueryCtx } from '../_generated/server'
 
 import { getCurrentUserOrThrow } from '../lib/auth'
 
-export const geospatial = new GeospatialIndex<
-  Id<'trackLocation'>,
-  {
-    session: Id<'trackSession'>
-    user: Id<'users'>
-  }
->(components.geospatial)
+type TrackingGisFilters = {
+  // allows to get all point of a session
+  session: Id<'trackSession'>
+}
+
+export const geospatial = new GeospatialIndex<Id<'trackLocation'>, TrackingGisFilters>(
+  components.geospatial,
+)
 
 export function isSessionOpen(session: { endedAt?: number }) {
   return session.endedAt === undefined
@@ -32,7 +33,7 @@ export function isSessionOfDevice(session: Doc<'trackSession'>, device: Doc<'dev
  * Retrieve a session and verify it belongs to the current user
  * @throws if no session or not owned by current user
  */
-export async function _getSession(options: { ctx: QueryCtx; sessionId: Id<'trackSession'> }) {
+export async function getSession(options: { ctx: QueryCtx; sessionId: Id<'trackSession'> }) {
   const { ctx, sessionId } = options
   const user = await getCurrentUserOrThrow(ctx)
   const session = await ctx.db.get(sessionId)

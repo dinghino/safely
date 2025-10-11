@@ -1,7 +1,10 @@
 import { v } from 'convex/values'
 import { query } from '../_generated/server'
+import type { Id } from '../_generated/dataModel'
+
 import { getCurrentUserOrThrow } from '../lib/auth'
-import * as helpers from '../lib/devices'
+
+import { helpers } from '../lib/devices'
 
 /**
  * Get devices for the current user
@@ -37,5 +40,34 @@ export const one = query({
     if (!device || device.owner !== user._id) return undefined
 
     return await helpers.get.embedSettings(ctx, device)
+  },
+})
+
+/**
+ * Get all devices known on the platform
+ * @unsafe for development only. there is no auth check or privacy guard on this
+ *         procedure.
+ * @todo remove before production or add admin auth check
+ */
+export const unsafe_dev = query({
+  args: {},
+  handler: async (ctx) => {
+    const devices = await ctx.db.query('devices').collect()
+
+    async function owner(deviceId: Id<'users'>) {
+      const user = await ctx.db.get(deviceId)
+      const { name, username, image } = user!
+      return { name, username, image }
+    }
+
+    return await Promise.all(
+      devices.map(async (device) => {
+        const { _id: deviceId } = device
+        const withSettings = await helpers.get.embedSettings(ctx, device)
+        const location = await helpers.location.getLastKnown({ ctx, deviceId })
+        const user = await owner(device.owner)
+        return { ...withSettings, user, location }
+      }),
+    )
   },
 })

@@ -3,7 +3,7 @@ import { api } from '../_generated/api'
 import { internalMutation, mutation, query } from '../_generated/server'
 
 import { getCurrentUserOrThrow } from '../lib/auth'
-import { _getActiveSession, _getSession, geospatial, isSessionOpen } from './lib'
+import { _getActiveSession, getSession, geospatial, isSessionOpen } from './lib'
 
 /**
  * Get a tracking session by its ID
@@ -11,7 +11,7 @@ import { _getActiveSession, _getSession, geospatial, isSessionOpen } from './lib
  */
 export const get = query({
   args: { sessionId: v.id('trackSession') },
-  handler: async (ctx, args) => _getSession({ ctx, ...args }),
+  handler: async (ctx, args) => getSession({ ctx, ...args }),
 })
 
 /**
@@ -185,7 +185,7 @@ export const stop = mutation({
   args: { sessionId: v.id('trackSession') },
   handler: async (ctx, args) => {
     const { sessionId } = args
-    const session = await _getSession({ ctx, sessionId })
+    const session = await getSession({ ctx, sessionId })
 
     if (!session) throw new Error('Session not found')
     if (!isSessionOpen(session)) throw new Error('Session already closed')
@@ -208,7 +208,7 @@ export const remove = mutation({
   args: { sessionId: v.id('trackSession') },
   handler: async (ctx, args) => {
     const { sessionId } = args
-    const session = await _getSession({ ctx, sessionId })
+    const session = await getSession({ ctx, sessionId })
     if (!session) throw new Error('Session not found')
     if (isSessionOpen(session)) throw new Error('Cannot delete an open session')
 

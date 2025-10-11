@@ -19,7 +19,7 @@ export const add = mutation({
     metadata: v.optional(locationMetadata),
   },
   handler: async (ctx, args) => {
-    const { sessionId, point, metadata } = args
+    const { sessionId, point, metadata = {} } = args
     const session = await lib.getSession({ ctx, sessionId })
     if (!session || !lib.isSessionOpen(session)) {
       throw new Error('Session not found or closed')
@@ -40,7 +40,7 @@ export const add = mutation({
     const locationId = await ctx.db.insert('trackLocation', {
       session: session._id,
       user: session.owner,
-      metadata: metadata || {},
+      metadata: metadata,
     })
 
     /**
@@ -54,7 +54,8 @@ export const add = mutation({
      */
     const updateLastKnown = ctx.runMutation(api.devices.location.setLast, {
       deviceId: device._id,
-      position: point,
+      point,
+      metadata,
     })
 
     // update session data

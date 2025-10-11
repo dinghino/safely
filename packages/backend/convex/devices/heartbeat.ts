@@ -6,8 +6,8 @@ import { locationMetadata } from '../schemas/shared'
 
 import { getCurrentUserOrThrow } from '../lib/auth'
 
-import { geospatial } from './location'
-import * as helpers from '../lib/devices'
+import { helpers } from '../lib/devices'
+import { api } from '../_generated/api'
 
 export const send = mutation({
   args: {
@@ -60,20 +60,10 @@ export const send = mutation({
     const last_seen = Date.now()
     await ctx.db.patch(deviceId, { last_seen, status: 'online' })
 
-    // handle location data if provided
-    // todo: move to /lib as helper to encapsulate all logic and flatten it
+    // handle location data if provided by dispatching a last known location update.
+    //
     if (location) {
-      await geospatial.insert(ctx, deviceId, location.point, { deviceId: device._id })
-      // fixme: we are deciding if we want heartbeat to also handle tracking sessions
-      // for now this is disabled here. we'll see
-      // // update tracking session if location data provided and session is open
-      // const activeSession = await ctx.runQuery(api.tracking.getActiveSession, { deviceId })
-      // if (activeSession) {
-      //   await ctx.runMutation(api.tracking.addLocationPoint, {
-      //     sessionId: activeSession._id,
-      //     ...location,
-      //   })
-      // }
+      await ctx.runMutation(api.devices.location.setLast, { deviceId, ...location })
     }
 
     ///

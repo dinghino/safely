@@ -85,7 +85,7 @@ export const deviceOptions = defineTable({
 export const deviceLocations = defineTable({
   deviceId: v.id('devices'),
   metadata: locationMetadata,
-})
+}).index('device', ['deviceId'])
 
 /*
 type LocationOptions = {

@@ -7,7 +7,7 @@ import { getCurrentUserOrThrow } from '../lib/auth'
 
 import { deviceStatus, trackingMode } from '../schemas/enums'
 
-import * as helpers from '../lib/devices'
+import { helpers } from '../lib/devices'
 
 export const register = mutation({
   args: {

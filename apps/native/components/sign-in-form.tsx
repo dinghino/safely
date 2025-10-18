@@ -1,25 +1,26 @@
-import { SocialConnections } from '@/components/social-connections';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
-import { Text } from '@/components/ui/text';
-import { useSignIn } from '@clerk/clerk-expo';
-import { Link, router } from 'expo-router';
-import * as React from 'react';
-import { type TextInput, View } from 'react-native';
+/** biome-ignore-all lint/correctness/useUniqueElementIds: form ids */
+import { SocialConnections } from '@/components/social-connections'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Separator } from '@/components/ui/separator'
+import { Text } from '@/components/ui/text'
+import { useSignIn } from '@clerk/clerk-expo'
+import { Link } from 'expo-router'
+import * as React from 'react'
+import { type TextInput, View } from 'react-native'
 
 export function SignInForm() {
-  const { signIn, setActive, isLoaded } = useSignIn();
-  const [email, setEmail] = React.useState('');
-  const [password, setPassword] = React.useState('');
-  const passwordInputRef = React.useRef<TextInput>(null);
-  const [error, setError] = React.useState<{ email?: string; password?: string }>({});
+  const { signIn, setActive, isLoaded } = useSignIn()
+  const [email, setEmail] = React.useState('')
+  const [password, setPassword] = React.useState('')
+  const passwordInputRef = React.useRef<TextInput>(null)
+  const [error, setError] = React.useState<{ email?: string; password?: string }>({})
 
   async function onSubmit() {
     if (!isLoaded) {
-      return;
+      return
     }
 
     // Start the sign-in process using the email and password provided
@@ -27,37 +28,37 @@ export function SignInForm() {
       const signInAttempt = await signIn.create({
         identifier: email,
         password,
-      });
+      })
 
       // If sign-in process is complete, set the created session as active
       // and redirect the user
       if (signInAttempt.status === 'complete') {
-        setError({ email: '', password: '' });
-        await setActive({ session: signInAttempt.createdSessionId });
-        return;
+        setError({ email: '', password: '' })
+        await setActive({ session: signInAttempt.createdSessionId })
+        return
       }
       // TODO: Handle other statuses
-      console.error(JSON.stringify(signInAttempt, null, 2));
+      console.error(JSON.stringify(signInAttempt, null, 2))
     } catch (err) {
       // See https://go.clerk.com/mRUDrIe for more info on error handling
       if (err instanceof Error) {
         const isEmailMessage =
           err.message.toLowerCase().includes('identifier') ||
-          err.message.toLowerCase().includes('email');
-        setError(isEmailMessage ? { email: err.message } : { password: err.message });
-        return;
+          err.message.toLowerCase().includes('email')
+        setError(isEmailMessage ? { email: err.message } : { password: err.message })
+        return
       }
-      console.error(JSON.stringify(err, null, 2));
+      console.error(JSON.stringify(err, null, 2))
     }
   }
 
   function onEmailSubmitEditing() {
-    passwordInputRef.current?.focus();
+    passwordInputRef.current?.focus()
   }
 
   return (
     <View className="gap-6">
-      <Card className="border-border/0 shadow-none sm:border-border sm:shadow-sm sm:shadow-black/5">
+      <Card className="border-border/0 shadow-none sm:border-border sm:shadow-black/5 sm:shadow-sm">
         <CardHeader>
           <CardTitle className="text-center text-xl sm:text-left">Sign in to safely.pet</CardTitle>
           <CardDescription className="text-center sm:text-left">
@@ -80,7 +81,7 @@ export function SignInForm() {
                 submitBehavior="submit"
               />
               {error.email ? (
-                <Text className="text-sm font-medium text-destructive">{error.email}</Text>
+                <Text className="font-medium text-destructive text-sm">{error.email}</Text>
               ) : null}
             </View>
             <View className="gap-1.5">
@@ -90,7 +91,8 @@ export function SignInForm() {
                   <Button
                     variant="link"
                     size="sm"
-                    className="ml-auto h-4 px-1 py-0 web:h-fit sm:h-4">
+                    className="ml-auto h-4 web:h-fit px-1 py-0 sm:h-4"
+                  >
                     <Text className="font-normal leading-4">Forgot your password?</Text>
                   </Button>
                 </Link>
@@ -104,7 +106,7 @@ export function SignInForm() {
                 onSubmitEditing={onSubmit}
               />
               {error.password ? (
-                <Text className="text-sm font-medium text-destructive">{error.password}</Text>
+                <Text className="font-medium text-destructive text-sm">{error.password}</Text>
               ) : null}
             </View>
             <Button className="w-full" onPress={onSubmit}>
@@ -119,12 +121,12 @@ export function SignInForm() {
           </Text>
           <View className="flex-row items-center">
             <Separator className="flex-1" />
-            <Text className="px-4 text-sm text-muted-foreground">or</Text>
+            <Text className="px-4 text-muted-foreground text-sm">or</Text>
             <Separator className="flex-1" />
           </View>
           <SocialConnections />
         </CardContent>
       </Card>
     </View>
-  );
+  )
 }

@@ -1,24 +1,23 @@
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
-import { useSSO, type StartSSOFlowParams } from '@clerk/clerk-expo';
-import * as AuthSession from 'expo-auth-session';
-import { router } from 'expo-router';
-import * as WebBrowser from 'expo-web-browser';
-import { useColorScheme } from 'nativewind';
-import * as React from 'react';
-import { Image, Platform, View, type ImageSourcePropType } from 'react-native';
+import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
+import { useSSO, type StartSSOFlowParams } from '@clerk/clerk-expo'
+import * as AuthSession from 'expo-auth-session'
+import * as WebBrowser from 'expo-web-browser'
+import { useColorScheme } from 'nativewind'
+import * as React from 'react'
+import { Image, Platform, View, type ImageSourcePropType } from 'react-native'
 
-WebBrowser.maybeCompleteAuthSession();
+WebBrowser.maybeCompleteAuthSession()
 
 type SocialConnectionStrategy = Extract<
   StartSSOFlowParams['strategy'],
   'oauth_google' | 'oauth_github' | 'oauth_apple'
->;
+>
 
 const SOCIAL_CONNECTION_STRATEGIES: {
-  type: SocialConnectionStrategy;
-  source: ImageSourcePropType;
-  useTint?: boolean;
+  type: SocialConnectionStrategy
+  source: ImageSourcePropType
+  useTint?: boolean
 }[] = [
   {
     type: 'oauth_apple',
@@ -35,29 +34,29 @@ const SOCIAL_CONNECTION_STRATEGIES: {
     source: { uri: 'https://img.clerk.com/static/github.png?width=160' },
     useTint: true,
   },
-];
+]
 
 export function SocialConnections() {
-  useWarmUpBrowser();
-  const { colorScheme } = useColorScheme();
-  const { startSSOFlow } = useSSO();
+  useWarmUpBrowser()
+  const { colorScheme } = useColorScheme()
+  const { startSSOFlow } = useSSO()
 
   function onSocialLoginPress(strategy: SocialConnectionStrategy) {
     return async () => {
       try {
         // Start the authentication process by calling `startSSOFlow()`
-        const { createdSessionId, setActive, signIn } = await startSSOFlow({
+        const { createdSessionId, setActive } = await startSSOFlow({
           strategy,
           // For web, defaults to current path
           // For native, you must pass a scheme, like AuthSession.makeRedirectUri({ scheme, path })
           // For more info, see https://docs.expo.dev/versions/latest/sdk/auth-session/#authsessionmakeredirecturioptions
           redirectUrl: AuthSession.makeRedirectUri(),
-        });
+        })
 
         // If sign in was successful, set the active session
         if (createdSessionId && setActive) {
-          setActive({ session: createdSessionId });
-          return;
+          setActive({ session: createdSessionId })
+          return
         }
 
         // TODO: Handle other statuses
@@ -67,9 +66,9 @@ export function SocialConnections() {
         // to handle next steps
       } catch (err) {
         // See https://go.clerk.com/mRUDrIe for more info on error handling
-        console.error(JSON.stringify(err, null, 2));
+        console.error(JSON.stringify(err, null, 2))
       }
-    };
+    }
   }
 
   return (
@@ -81,7 +80,8 @@ export function SocialConnections() {
             variant="outline"
             size="sm"
             className="sm:flex-1"
-            onPress={onSocialLoginPress(strategy.type)}>
+            onPress={onSocialLoginPress(strategy.type)}
+          >
             <Image
               className={cn('size-4', strategy.useTint && Platform.select({ web: 'dark:invert' }))}
               tintColor={Platform.select({
@@ -90,10 +90,10 @@ export function SocialConnections() {
               source={strategy.source}
             />
           </Button>
-        );
+        )
       })}
     </View>
-  );
+  )
 }
 
 const useWarmUpBrowser = Platform.select({
@@ -102,11 +102,11 @@ const useWarmUpBrowser = Platform.select({
     React.useEffect(() => {
       // Preloads the browser for Android devices to reduce authentication load time
       // See: https://docs.expo.dev/guides/authentication/#improving-user-experience
-      void WebBrowser.warmUpAsync();
+      void WebBrowser.warmUpAsync()
       return () => {
         // Cleanup: closes browser when component unmounts
-        void WebBrowser.coolDownAsync();
-      };
-    }, []);
+        void WebBrowser.coolDownAsync()
+      }
+    }, [])
   },
-});
+})

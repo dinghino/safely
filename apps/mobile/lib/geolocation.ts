@@ -47,6 +47,17 @@ function getAccuracy(requested: ServerAccuracy | undefined): LocationAccuracy {
   return accuracyMap[requested]
 }
 
+function getDistanceFilter(requested: ServerAccuracy | undefined): number {
+  const distanceMap = {
+    HIGH: 10, // meters
+    MEDIUM: 50,
+    LOW: 200,
+    VERY_LOW: 1000,
+  }
+  if (!requested) return 50
+  return distanceMap[requested]
+}
+
 /**
  * Transforms a device settings object into something `react-native-background-geolocation`
  * can digest as configuration.
@@ -69,7 +80,7 @@ export function transformSettings(settings: Device['settings'] | undefined): Con
     desiredAccuracy: getAccuracy(accuracy),
     fastestLocationUpdateInterval: timeout / 2,
     heartbeatInterval,
-    // Android only
+    distanceFilter: getDistanceFilter(accuracy),
   }
 }
 

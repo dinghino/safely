@@ -43,7 +43,7 @@ afterEvaluate { project ->
     project.android {
       if (it.hasProperty('defaultConfig')) {
         def projectRoot = rootDir.getAbsoluteFile().getParentFile().getAbsolutePath()
-        def ninjaPath = "\${projectRoot}/../../tools/ninja.exe".replace('\\\\', '/')
+        def ninjaPath = "\${projectRoot}/tools/ninja.exe".replace('\\\\', '/')
         defaultConfig {
           externalNativeBuild {
             cmake {
@@ -91,7 +91,7 @@ afterEvaluate { project ->
         // Workaround for Windows path length limitation
         externalNativeBuild {
             cmake {
-                def ninjaPath = "\${projectRoot}/../../tools/ninja.exe".replace('\\\\', '/')
+                def ninjaPath = "\${projectRoot}/tools/ninja.exe".replace('\\\\', '/')
                 arguments "-DCMAKE_MAKE_PROGRAM=\${ninjaPath}", "-DCMAKE_OBJECT_PATH_MAX=1024"
             }
         }

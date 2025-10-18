@@ -59,11 +59,12 @@ module.exports = ({ config }: { config: ExpoConfig }) => {
       './plugins/ninja-fix.ts',
       ['expo-secure-store', {}],
       'react-native-background-geolocation',
-      'react-native-background-fetch',
       [
         'expo-gradle-ext-vars',
         { googlePlayServicesLocationVersion: '21.1.0', appCompatVersion: '1.4.2' },
       ],
+      'react-native-background-fetch',
+      ['react-native-maps', {}]
     ]),
   }
 }

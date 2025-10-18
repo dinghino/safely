@@ -45,15 +45,7 @@ const SignInWithOAuth = () => {
   }, [])
 
   return (
-    <View
-      style={{
-        padding: 16,
-        display: 'flex',
-        justifyContent: 'center',
-        alignContent: 'center',
-        flex: 1,
-      }}
-    >
+    <View style={{ padding: 16 }}>
       <Button title="Sign in with Google" onPress={onPress} />
     </View>
   )

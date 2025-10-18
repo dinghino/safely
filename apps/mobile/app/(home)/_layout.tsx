@@ -1,31 +1,57 @@
-import { HeartbeatManager } from '@/components/heartbeat'
 import { SignOutButton } from '@/components/sign-out-button'
-import { DeviceManager } from '@/contexts/device-manager'
-import GeolocationContext from '@/contexts/geolocation-context'
 import { SignedIn, SignedOut } from '@clerk/clerk-expo'
-import { Link } from 'expo-router'
-import { Stack } from 'expo-router/stack'
-import { Button } from 'react-native'
+import { Redirect, Tabs } from 'expo-router'
+import { StatusBar } from 'expo-status-bar'
+import { CodeIcon, CogIcon, HomeIcon } from 'lucide-react-native'
 
-export default function Layout() {
+export default function HomeLayout() {
   return (
-    <DeviceManager>
-      <GeolocationContext>
-        <HeartbeatManager />
-        <Stack
+    <>
+      <SignedIn>
+      <StatusBar style="inverted" />
+
+        <Tabs
           screenOptions={{
-            headerStyle: { backgroundColor: '#2a2a2a' },
-            contentStyle: { backgroundColor: '#efefef' },
+            tabBarShowLabel: false,
+            tabBarActiveBackgroundColor: '#333',
+            tabBarInactiveBackgroundColor: '#1a1a1a',
+            tabBarActiveTintColor: '#fff',
+            tabBarInactiveTintColor: '#888',
+            tabBarStyle: { backgroundColor: '#1a1a1a' },
+            tabBarLabelPosition: 'beside-icon',
+            headerStyle: { backgroundColor: '#1a1a1a' },
             headerTintColor: '#fff',
-            headerTitleStyle: { fontWeight: 'bold' },
+            headerRightContainerStyle: { paddingRight: 8 },
             headerRight: () => <HeaderRight />,
           }}
         >
-          <Stack.Screen name="index" options={{ title: 'Home' }} />
-          <Stack.Screen name="tabs" options={{ headerTitle: 'Tabs' }} />
-        </Stack>
-      </GeolocationContext>
-    </DeviceManager>
+          <Tabs.Screen
+            name="index"
+            options={{
+              title: 'Home',
+              tabBarIcon: ({ color, size }) => <HomeIcon size={size} color={color} />,
+            }}
+          />
+          <Tabs.Screen
+            name="gps"
+            options={{
+              title: 'GPS',
+              tabBarIcon: ({ color, size }) => <CodeIcon size={size} color={color} />,
+            }}
+          />
+          <Tabs.Screen
+            name="settings"
+            options={{
+              title: 'Settings',
+              tabBarIcon: ({ color, size }) => <CogIcon size={size} color={color} />,
+            }}
+          />
+        </Tabs>
+      </SignedIn>
+      <SignedOut>
+        <Redirect href="/sign-in" />
+      </SignedOut>
+    </>
   )
 }
 
@@ -36,9 +62,10 @@ function HeaderRight() {
         <SignOutButton />
       </SignedIn>
       <SignedOut>
-        <Link href="/sign-in" asChild>
+        <Redirect href="/sign-in" />
+        {/* <Link href="/sign-in" asChild>
           <Button title="Sign in" />
-        </Link>
+        </Link> */}
       </SignedOut>
     </>
   )

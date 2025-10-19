@@ -39,7 +39,7 @@
   },
   "devDependencies": {
     "@expo/config-plugins": "^54.0.2",
-    "@types/bun": "^1.2.23",
+    
     "@types/node": "^24.6.2",
     "@types/react": "~19.1.13",
     "@workspace/typescript-config": "workspace:*",

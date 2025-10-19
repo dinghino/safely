@@ -1,5 +1,5 @@
 import type { ConfigPlugin } from 'expo/config-plugins'
-import { withFinalizedMod } from '@expo/config-plugins'
+import { withFinalizedMod } from 'expo/config-plugins'
 import fs from 'node:fs'
 import path from 'node:path'
 

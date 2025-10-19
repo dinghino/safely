@@ -1,6 +1,6 @@
 import 'tsx/cjs'
 import type { ExpoConfig } from 'expo/config'
-import { withPlugins } from '@expo/config-plugins'
+import { withPlugins } from 'expo/config-plugins'
 
 const makeConfig = ({ config }: { config: ExpoConfig }) => {
   return {

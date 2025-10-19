@@ -1,11 +1,13 @@
-import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
+import * as React from 'react'
+import { Image, Platform, View, type ImageSourcePropType } from 'react-native'
 import { useSSO, type StartSSOFlowParams } from '@clerk/clerk-expo'
 import * as AuthSession from 'expo-auth-session'
 import * as WebBrowser from 'expo-web-browser'
 import { useColorScheme } from 'nativewind'
-import * as React from 'react'
-import { Image, Platform, View, type ImageSourcePropType } from 'react-native'
+
+import { cn } from '@/lib/utils'
+
+import { Button } from '@/components/ui/button'
 
 WebBrowser.maybeCompleteAuthSession()
 
@@ -19,11 +21,11 @@ const SOCIAL_CONNECTION_STRATEGIES: {
   source: ImageSourcePropType
   useTint?: boolean
 }[] = [
-  {
-    type: 'oauth_apple',
-    source: { uri: 'https://img.clerk.com/static/apple.png?width=160' },
-    useTint: true,
-  },
+  // {
+  //   type: 'oauth_apple',
+  //   source: { uri: 'https://img.clerk.com/static/apple.png?width=160' },
+  //   useTint: true,
+  // },
   {
     type: 'oauth_google',
     source: { uri: 'https://img.clerk.com/static/google.png?width=160' },
@@ -50,7 +52,7 @@ export function SocialConnections() {
           // For web, defaults to current path
           // For native, you must pass a scheme, like AuthSession.makeRedirectUri({ scheme, path })
           // For more info, see https://docs.expo.dev/versions/latest/sdk/auth-session/#authsessionmakeredirecturioptions
-          redirectUrl: AuthSession.makeRedirectUri(),
+          redirectUrl: AuthSession.makeRedirectUri({ scheme: 'safelypet', path: 'sso-callback' }),
         })
 
         // If sign in was successful, set the active session

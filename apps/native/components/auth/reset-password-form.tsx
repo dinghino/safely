@@ -1,11 +1,12 @@
+import * as React from 'react'
+import { type TextInput, View } from 'react-native'
+import { useSignIn } from '@clerk/clerk-expo'
+
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Text } from '@/components/ui/text'
-import { useSignIn } from '@clerk/clerk-expo'
-import * as React from 'react'
-import { type TextInput, View } from 'react-native'
 
 export function ResetPasswordForm() {
   const { signIn, setActive, isLoaded } = useSignIn()

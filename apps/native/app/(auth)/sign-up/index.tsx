@@ -1,4 +1,4 @@
-import { SignUpForm } from '@/components/sign-up-form'
+import { SignUpForm } from '@/components/auth/sign-up-form'
 import { ScrollView, View } from 'react-native'
 
 export default function SignUpScreen() {

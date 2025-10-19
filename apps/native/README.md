@@ -8,6 +8,15 @@ It was initialized using the following command:
 npx @react-native-reusables/cli@latest init -t safely.pet
 ```
 
+## ⚠️ Important
+
+run this in the project to reinstall without shared dependencies from the monorepo root
+to avoid potential issues:a
+
+```bash
+bun install --no-workspaces --force --no-cache --linked=isolate
+```
+
 ## Getting Started
 
 Before running the app, make sure to:

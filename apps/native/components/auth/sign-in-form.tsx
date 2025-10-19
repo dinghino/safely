@@ -1,15 +1,18 @@
 /** biome-ignore-all lint/correctness/useUniqueElementIds: form ids */
-import { SocialConnections } from '@/components/social-connections'
+import * as React from 'react'
+import { type TextInput, View } from 'react-native'
+import { Link } from 'expo-router'
+import { useSignIn } from '@clerk/clerk-expo'
+
+
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { Text } from '@/components/ui/text'
-import { useSignIn } from '@clerk/clerk-expo'
-import { Link } from 'expo-router'
-import * as React from 'react'
-import { type TextInput, View } from 'react-native'
+
+import { SocialConnections } from '@/components/auth/social-connections'
 
 export function SignInForm() {
   const { signIn, setActive, isLoaded } = useSignIn()

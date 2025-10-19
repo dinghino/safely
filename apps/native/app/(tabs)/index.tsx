@@ -8,8 +8,6 @@ import { MoonStarIcon, XIcon, SunIcon } from 'lucide-react-native'
 import { useColorScheme } from 'nativewind'
 import { Image, type ImageStyle, View } from 'react-native'
 
-import { SafeAreaView } from 'react-native-safe-area-context'
-
 const LOGO = {
   light: require('@/assets/images/react-native-reusables-light.png'),
   dark: require('@/assets/images/react-native-reusables-dark.png'),
@@ -62,12 +60,34 @@ export default function Screen() {
           </Text>
         </View>
         <View className="gap-2">
-          <Link href="https://go.clerk.com/8e6CCee" asChild>
+          <Link href="/" asChild>
             <Button size="sm">
-              <Text>Explore Clerk Docs</Text>
+              <Text>Go home</Text>
             </Button>
           </Link>
         </View>
+        <Link href="/modal">
+          <Link.Trigger>
+            <Text>Explore</Text>
+          </Link.Trigger>
+          <Link.Preview />
+          <Link.Menu>
+            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
+            <Link.MenuAction
+              title="Share"
+              icon="square.and.arrow.up"
+              onPress={() => alert('Share pressed')}
+            />
+            <Link.Menu title="More" icon="ellipsis">
+              <Link.MenuAction
+                title="Delete"
+                icon="trash"
+                destructive
+                onPress={() => alert('Delete pressed')}
+              />
+            </Link.Menu>
+          </Link.Menu>
+        </Link>
       </View>
     </>
   )

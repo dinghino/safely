@@ -1,13 +1,14 @@
 /** biome-ignore-all lint/correctness/useUniqueElementIds: form ids */
+import * as React from 'react'
+import { type TextStyle, View } from 'react-native'
+import { useSignUp } from '@clerk/clerk-expo'
+import { router, useLocalSearchParams } from 'expo-router'
+
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Text } from '@/components/ui/text'
-import { useSignUp } from '@clerk/clerk-expo'
-import { router, useLocalSearchParams } from 'expo-router'
-import * as React from 'react'
-import { type TextStyle, View } from 'react-native'
 
 const RESEND_CODE_INTERVAL_SECONDS = 30
 

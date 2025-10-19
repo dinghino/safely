@@ -1,10 +1,10 @@
-import { type ConfigPlugin, withGradleProperties } from 'expo/config-plugins';
+import { type ConfigPlugin, withGradleProperties } from 'expo/config-plugins'
 
 interface PathLengthProps {
   /** Custom path to ninja executable (optional) */
-  ninjaPath?: string;
+  ninjaPath?: string
   /** Maximum object path length (default: 1024) */
-  maxPathLength?: number;
+  maxPathLength?: number
 }
 
 /**
@@ -21,7 +21,7 @@ interface PathLengthProps {
  * @see https://github.com/expo/expo/issues/36274
  */
 const withPathLengthFix: ConfigPlugin<PathLengthProps> = (config, props = {}) => {
-  const { ninjaPath = '../tools/ninja.exe', maxPathLength = 1024 } = props;
+  const { ninjaPath = '../tools/ninja.exe', maxPathLength = 1024 } = props
 
   // Use gradle.properties to set CMAKE options that gradle will pick up automatically
   // This is the cleanest approach - no string injection anywhere!
@@ -31,25 +31,25 @@ const withPathLengthFix: ConfigPlugin<PathLengthProps> = (config, props = {}) =>
       type: 'property',
       key: 'android.cmake.arguments',
       value: `-DCMAKE_MAKE_PROGRAM=\${projectDir}/${ninjaPath.replace(/\\/g, '/')}, -DCMAKE_OBJECT_PATH_MAX=${maxPathLength}`,
-    });
+    })
 
     // Also set individual properties for reference
     config.modResults.push({
       type: 'property',
       key: 'cmake.ninja.path',
       value: ninjaPath,
-    });
+    })
 
     config.modResults.push({
       type: 'property',
       key: 'cmake.object.path.max',
       value: maxPathLength.toString(),
-    });
+    })
 
-    console.log('✓ Path length fix configured via gradle.properties (no string injection)');
+    console.log('✓ Path length fix configured via gradle.properties (no string injection)')
 
-    return config;
-  });
-};
+    return config
+  })
+}
 
-export default withPathLengthFix;
+export default withPathLengthFix

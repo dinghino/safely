@@ -5,9 +5,11 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Text } from '@/components/ui/text'
 import { useAuth, useUser } from '@clerk/clerk-expo'
 import type { TriggerRef } from '@rn-primitives/popover'
-import { LogOutIcon, PlusIcon, SettingsIcon } from 'lucide-react-native'
+import { LogOutIcon, PlusIcon, SettingsIcon, UserIcon } from 'lucide-react-native'
 import * as React from 'react'
 import { View } from 'react-native'
+
+type User = ReturnType<typeof useUser>['user']
 
 export function UserMenu() {
   const { user } = useUser()
@@ -22,21 +24,19 @@ export function UserMenu() {
   return (
     <Popover>
       <PopoverTrigger asChild ref={popoverTriggerRef}>
-        <Button variant="ghost" size="icon" className="size-8 rounded-full">
+        <Button variant="secondary" size="icon" className="size-8 rounded-full">
           <UserAvatar />
         </Button>
       </PopoverTrigger>
       <PopoverContent align="end" side="bottom" className="w-80 p-0">
-        <View className="gap-3 border-border border-b p-3">
+        <View className="z-50 gap-3 border-border border-b bg-background p-3">
           <View className="flex-row items-center gap-3">
             <UserAvatar className="size-10" />
             <View className="flex-1">
-              <Text className="font-medium leading-5">
-                {user?.fullName || user?.emailAddresses[0]?.emailAddress}
-              </Text>
+              <Text className="font-medium leading-5">{getFullName(user)}</Text>
               {user?.fullName?.length ? (
                 <Text className="font-normal text-muted-foreground text-sm leading-4">
-                  {user?.username || user?.emailAddresses[0]?.emailAddress}
+                  {getUsername(user)}
                 </Text>
               ) : null}
             </View>
@@ -82,22 +82,41 @@ function UserAvatar(props: Omit<React.ComponentProps<typeof Avatar>, 'alt'>) {
   const { user } = useUser()
 
   const { initials, imageSource, userName } = React.useMemo(() => {
-    const userName = user?.fullName || user?.emailAddresses[0]?.emailAddress || 'Unknown'
-    const initials = userName
-      .split(' ')
-      .map((name) => name[0])
-      .join('')
-
-    const imageSource = user?.imageUrl ? { uri: user.imageUrl } : undefined
+    const userName = getFullName(user)
+    const initials = getInitials(userName)
+    const imageSource = getUserImageSource(user)
     return { initials, imageSource, userName }
-  }, [user?.imageUrl, user?.fullName, user?.emailAddresses[0]?.emailAddress])
+  }, [user])
 
   return (
     <Avatar alt={`${userName}'s avatar`} {...props}>
-      <AvatarImage source={imageSource} />
-      <AvatarFallback>
-        <Text>{initials}</Text>
+      {/* <AvatarImage source={imageSource} /> */}
+      <AvatarFallback className="bg-red-500">
+        {/* <Text>{initials}</Text> */}
+        <Icon as={UserIcon} className="size-4 text-white" />
       </AvatarFallback>
     </Avatar>
   )
+}
+
+function getFullName(user: User) {
+  if (!user) return 'Unknown'
+  return user?.fullName || user?.emailAddresses[0]?.emailAddress || 'Unknown'
+}
+
+function getUsername(user: User) {
+  if (!user) return 'unknown'
+  return user?.username || 'unknown'
+}
+
+function getUserImageSource(user: User) {
+  if (!user?.imageUrl) return undefined
+  return { uri: user.imageUrl }
+}
+
+function getInitials(name: string) {
+  return name
+    .split(' ')
+    .map((part) => part[0])
+    .join('')
 }

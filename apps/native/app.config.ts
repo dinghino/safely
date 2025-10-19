@@ -1,6 +1,6 @@
-import 'tsx/cjs';
-import type { ExpoConfig } from 'expo/config';
-import { withPlugins } from 'expo/config-plugins';
+import 'tsx/cjs'
+import type { ExpoConfig } from 'expo/config'
+import { withPlugins } from 'expo/config-plugins'
 
 const baseConfig = ({ config }: { config: ExpoConfig }): { expo: ExpoConfig } => ({
   expo: {
@@ -10,7 +10,7 @@ const baseConfig = ({ config }: { config: ExpoConfig }): { expo: ExpoConfig } =>
     version: '1.0.0',
     orientation: 'portrait',
     icon: './assets/images/icon.png',
-    scheme: 'safely.pet',
+    scheme: 'safelypet',
     userInterfaceStyle: 'automatic',
     newArchEnabled: true,
     splash: {
@@ -24,6 +24,7 @@ const baseConfig = ({ config }: { config: ExpoConfig }): { expo: ExpoConfig } =>
     },
     android: {
       edgeToEdgeEnabled: true,
+      predictiveBackGestureEnabled: true,
       adaptiveIcon: {
         foregroundImage: './assets/images/adaptive-icon.png',
         backgroundColor: '#ffffff',
@@ -37,18 +38,17 @@ const baseConfig = ({ config }: { config: ExpoConfig }): { expo: ExpoConfig } =>
     },
     experiments: {
       typedRoutes: true,
+      reactCompiler: true,
     },
   },
-});
+})
 
 export default function ({ config }: { config: ExpoConfig }) {
-  const base = baseConfig({ config });
+  const base = baseConfig({ config })
   return {
     expo: withPlugins(base.expo, [
-      ['./plugins/path-length.ts', {
-        maxPathLength: 1024,
-        ninjaPath: '../tools/ninja.exe',
-      }],
+      // './plugins/path-length.ts',
+      './plugins/ninja-fix.ts',
       'expo-router',
       'expo-secure-store',
       'expo-web-browser',
@@ -64,7 +64,9 @@ export default function ({ config }: { config: ExpoConfig }) {
           },
         },
       ],
-      ['react-native-background-geolocation', {}],
+      ['react-native-background-geolocation', {
+        // api key and such
+      }],
       [
         'expo-gradle-ext-vars',
         {
@@ -74,5 +76,5 @@ export default function ({ config }: { config: ExpoConfig }) {
       ],
       'react-native-background-fetch',
     ]),
-  };
+  }
 }

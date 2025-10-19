@@ -1,62 +1,97 @@
 import { useEffect } from 'react'
 import type { Subscription } from 'react-native-background-geolocation'
 import BackgroundGeolocation from 'react-native-background-geolocation'
-import { GeolocationContext, useGeolocationReducer } from './geolocation.context'
+import { GeolocationContext, useGeolocationReducer, action } from './geolocation.context'
 
 type GeolocationProviderProps = {
   children: React.ReactNode
 }
 
-let initialized = false
-
 function GeolocationProvider({ children }: GeolocationProviderProps) {
   const [state, dispatch] = useGeolocationReducer()
 
+  /**
+   * Sets up ALL event listeners for `react-native-background-geolocation`
+   * and dispatches actions to the provided dispatcher for the reducer.
+   * It is up to us in the reducer and parent component to decide what to do
+   * with the dispatched events.
+   *
+   * @param dispatch The dispatcher from `useReducer` to dispatch actions to.
+   * @returns A cleanup function to remove all listeners.
+   */
   // biome-ignore lint/correctness/useExhaustiveDependencies: useReducer dispatch is stable
   useEffect(() => {
-    const subscriptions: Subscription[] = []
-
-    function addEvent<T = any>(type: string, data: T) {
-      dispatch({ type: 'add_event', payload: { timestamp: Date.now(), type, data } })
+    function addEvent<T = any>(name: string, data: T) {
+      dispatch(action.event({ name, data }))
     }
-    console.log('[BGL] Setting up Geolocation subscriptions')
-
-    subscriptions.push(
-      BackgroundGeolocation.onEnabledChange((enabled) => {
-        console.log('[BGL::onEnabledChange]', enabled)
-        dispatch({ type: 'update', payload: { enabled } })
-        addEvent('enabled_change', enabled)
+    console.info('⚙️ Initializing GeolocationContext')
+    console.info('♻️ Setting up event listeners')
+    listeners.add(
+      BackgroundGeolocation.onLocation(
+        (location) => {
+          if (location.sample) return
+          console.log('[BGL::onLocation]', location)
+          dispatch(action.location(location))
+          addEvent('location', location)
+        },
+        (error) => console.warn('[onLocation] ERROR:', error),
+      ),
+    )
+    listeners.add(
+      BackgroundGeolocation.onProviderChange((event) => {
+        console.log('[BGL::onProviderChange]', event.enabled, event.status)
+        addEvent('provider changed', event)
       }),
     )
-    subscriptions.push(
-      BackgroundGeolocation.onLocation((location) => {
-        if (location.sample) return
-        console.log('[BGL::onLocation]', location)
-        dispatch({ type: 'location', payload: location })
-        addEvent('location', location)
+    listeners.add(
+      BackgroundGeolocation.onMotionChange((event) => {
+        console.log('[BGL::onMotionChange]', event.isMoving, event.location)
+        addEvent('motion changed', event)
+        if (event.location.sample) return
+        dispatch(action.location(event.location))
       }),
     )
-    subscriptions.push(
-      BackgroundGeolocation.onHeartbeat(async () => {
-        console.log('[BGL::onHeartbeat] - Heartbeat event - querying current position')
-        addEvent('heartbeat', { ping: 'pong' })
+    listeners.add(
+      BackgroundGeolocation.onActivityChange((event) => {
+        console.log('[BGL::onActivityChange]', event)
+        addEvent('activity changed', event)
+      }),
+    )
+    listeners.add(
+      BackgroundGeolocation.onGeofence((event) => {
+        console.log('[BGL::onGeofence]', event)
+        addEvent('geofence', event)
+      }),
+    )
+    listeners.add(
+      BackgroundGeolocation.onHttp((event) => {
+        console.log('[BGL::onHttp]', event)
+        addEvent('http', event)
+      }),
+    )
+    listeners.add(
+      BackgroundGeolocation.onHeartbeat(async (event) => {
+        console.log('[BGL::onHeartbeat] - Heartbeat event')
+        addEvent('heartbeat', { ping: 'pong', lastLocation: event.location })
         const location = await BackgroundGeolocation.getCurrentPosition({
           samples: 1,
           persist: false,
           timeout: 30,
         })
         console.log('[BGL::onHeartbeat] - Current position:', location)
-        dispatch({ type: 'location', payload: location })
+        dispatch(action.location(location))
         addEvent('location', location)
       }),
     )
+    listeners.add(
+      BackgroundGeolocation.onEnabledChange((enabled) => {
+        console.log('[BGL::onEnabledChange]', enabled)
+        addEvent('enabled changed', enabled)
+        dispatch(action.update({ enabled }))
+      }),
+    )
+    console.info(`✅ Event listeners set up: ${listeners.count}`)
 
-    function cleanup() {
-      console.log('[BGL] Cleaning up Geolocation subscriptions')
-      subscriptions.forEach((sub) => {
-        sub.remove()
-      })
-    }
     console.log('[BGL] calling BackgroundGeolocation.ready')
 
     // if (initialized) return cleanup
@@ -75,17 +110,22 @@ function GeolocationProvider({ children }: GeolocationProviderProps) {
         // biome-ignore lint/style/noParameterAssign: reassigning state parameter is intentional here
         state = await BackgroundGeolocation.start()
       }
-      console.log('[BGL] [ready] is ready:', state.enabled)
       const { enabled, debug } = state
-      dispatch({ type: 'update', payload: { enabled, debug } })
+      dispatch(action.event({ name: 'ready', data: state }))
+      dispatch(action.update({ enabled, debug }))
       // initialized = true
     })
+
+    const cleanup = () => {
+      console.log('[BGL] Cleaning up Geolocation subscriptions')
+      listeners.clear()
+    }
 
     return cleanup
   }, [])
 
-  const clearLocations = () => dispatch({ type: 'clear' })
-  const clearEvents = () => dispatch({ type: 'clear_events' })
+  const clearLocations = () => dispatch(action.clear())
+  const clearEvents = () => dispatch(action.clearEvents())
 
   const value = { ...state, dispatch, clearLocations, clearEvents }
 
@@ -93,3 +133,22 @@ function GeolocationProvider({ children }: GeolocationProviderProps) {
 }
 
 export default GeolocationProvider
+
+class Listeners {
+  private listeners: Array<Subscription> = []
+
+  add(sub: Subscription) {
+    this.listeners.push(sub)
+  }
+  clear() {
+    this.listeners.forEach((sub) => {
+      sub.remove()
+    })
+    this.listeners = []
+  }
+  get count() {
+    return this.listeners.length
+  }
+}
+
+const listeners = new Listeners()

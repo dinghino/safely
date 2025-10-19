@@ -1,12 +1,10 @@
-import { useCallback, useEffect, useId, useMemo, useState } from 'react'
+import { useCallback, useId, useMemo } from 'react'
 import { Stack } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
 import { ScrollView, View } from 'react-native'
 import * as Haptics from 'expo-haptics'
 
 import BackgroundGeolocation from 'react-native-background-geolocation'
-
-import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { Text } from '@/components/ui/text'
 import { Label } from '@/components/ui/label'
@@ -15,11 +13,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { Button } from '@/components/ui/button'
 
-import { type ContextEvent, type Location, useGeolocation } from '@/components/contexts/geolocation'
+import { type Geolocation, type Location, useGeolocation } from '@/components/contexts/geolocation'
 
 import { cn } from '@/lib/utils'
 import { Icon } from '@/components/ui/icon'
 import { BellMinusIcon, ChevronDown, MapPinMinus } from 'lucide-react-native'
+import { useColorScheme } from 'nativewind'
 
 export default function AppSettings() {
   const geo = useGeolocation()
@@ -72,14 +71,8 @@ export default function AppSettings() {
       <StatusBar style="auto" translucent />
       <Stack.Screen options={{ title: 'Settings' }} />
       <View className="gap-2 px-4">
-        <Text className="mb-4 text-xl font-bold">Geolocation debugging</Text>
+        {/* <Text className="mb-4 font-bold text-xl">Geolocation debugging</Text> */}
         <View className="flex-row justify-stretch gap-2">
-          {/* <SwitchControl
-            className="flex-1"
-            label={enabled ? 'Stop' : 'Start'}
-            active={!!enabled}
-            action={toggleLocator}
-          /> */}
           {enabled ? (
             <Control className="flex-1" variant="destructive" label="Stop" action={stop} />
           ) : (
@@ -87,43 +80,48 @@ export default function AppSettings() {
           )}
           <Button
             disabled={!locations.length}
-            // className="flex-1"
             size="icon"
             variant="destructive"
             onPress={() => {
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft)
               geo.clearLocations()
-            }}>
+            }}
+          >
             <Icon as={MapPinMinus} className="size-4" />
-            {/* <Text>Clear Locations</Text> */}
           </Button>
           <Button
             disabled={!events.length}
-            // className="flex-1"
             size="icon"
             variant="destructive"
             onPress={() => {
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft)
               geo.clearEvents()
-            }}>
+            }}
+          >
             <Icon as={BellMinusIcon} className="size-4" />
-            {/* <Text>Clear Events</Text> */}
           </Button>
-          <SwitchControl
+          <Control
+            className="flex-1"
+            label={`${debug ? 'Disable' : 'Enable'} Debug`}
+            active={!!debug}
+            variant="secondary"
+            action={toggleDebug}
+          />
+          {/* <SwitchControl
             className="flex-1"
             // variant="outline"
             label="Debug Mode"
             active={!!debug}
             action={toggleDebug}
-          />
+          /> */}
         </View>
       </View>
 
       <ScrollView className="m-4 min-h-48" contentContainerClassName="gap-4">
         <View className="gap-2 rounded-md bg-gray-100 p-2 dark:bg-neutral-900">
-          <Text className="mb-2 ml-4 text-lg font-bold">Events</Text>
+          <Text className="mb-2 ml-4 font-bold text-lg">Events</Text>
           {!events.length && (
-            <Text className="pl-4 text-start text-lg text-foreground/75">
+            <Text className="pl-4 text-start text-foreground/75 text-lg">
               No events received yet.
             </Text>
           )}
@@ -146,9 +144,9 @@ export default function AppSettings() {
           )}
         </View>
         <View className="gap-2 rounded-md bg-gray-100 p-2 dark:bg-neutral-900">
-          <Text className="mb-2 ml-4 text-lg font-bold">Locations</Text>
+          <Text className="mb-2 ml-4 font-bold text-lg">Locations</Text>
           {!locations.length && (
-            <Text className="pl-4 text-start text-lg text-foreground/75">
+            <Text className="pl-4 text-start text-foreground/75 text-lg">
               No locations recorded yet.
             </Text>
           )}
@@ -185,12 +183,78 @@ function Control(props: ControlProps) {
         className="w-full"
         variant={variant ?? (active ? 'destructive' : 'default')}
         onPress={onPress}
-        id={id}>
+        id={id}
+      >
         <Text>{label}</Text>
       </Button>
     </View>
   )
 }
+
+const Trigger = ({ children, ...props }: { children: React.ReactNode }) => {
+  const { colorScheme } = useColorScheme()
+
+  return (
+    <Button
+      variant={colorScheme === 'dark' ? 'secondary' : 'default'}
+      className="w-full justify-start gap-2"
+      {...props}
+    >
+      <Icon
+        as={ChevronDown}
+        className="size-6 transition-transform duration-200 data-[state=open]:rotate-180"
+      />
+      {children}
+    </Button>
+  )
+}
+function EventCard({ event }: { event: Geolocation.Event }) {
+  return (
+    <Collapsible className="gap-2">
+      <CollapsibleTrigger asChild>
+        <Trigger>
+          <View className="flex flex-row justify-between gap-8">
+            <Text className="">{new Date(event.timestamp).toLocaleString()}</Text>
+            <Text>{event.name}</Text>
+          </View>
+        </Trigger>
+      </CollapsibleTrigger>
+      <CollapsibleContent>
+        <Card className="p-4">
+          <CardContent>
+            <Text className="text-xs">{JSON.stringify(event.data, null, 2)}</Text>
+          </CardContent>
+        </Card>
+      </CollapsibleContent>
+    </Collapsible>
+  )
+}
+
+function LocationCard({ location }: { location: Location }) {
+  return (
+    <Collapsible className="gap-2">
+      <CollapsibleTrigger asChild>
+        <Trigger>
+          <Text>{new Date(location.timestamp).toLocaleString()}</Text>
+        </Trigger>
+      </CollapsibleTrigger>
+      <CollapsibleContent>
+        <Card key={location.timestamp} className="py-2">
+          <CardHeader>
+            <CardTitle>
+              {location.coords.latitude}, {location.coords.longitude}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Text className="text-xs">{JSON.stringify(location, null, 2)}</Text>
+          </CardContent>
+        </Card>
+      </CollapsibleContent>
+    </Collapsible>
+  )
+}
+
+// biome-ignore lint/correctness/noUnusedVariables: playground component
 namespace SwitchControl {
   export type Props = {
     active: boolean
@@ -199,6 +263,7 @@ namespace SwitchControl {
     className?: string
   }
 }
+// biome-ignore lint/correctness/noUnusedVariables: playground component
 function SwitchControl({ active, action, label, className }: SwitchControl.Props) {
   function onPress() {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
@@ -224,59 +289,5 @@ function SwitchControl({ active, action, label, className }: SwitchControl.Props
         {label}
       </Label>
     </View>
-  )
-}
-
-function EventCard({ event }: { event: ContextEvent }) {
-  return (
-    <Collapsible className="gap-2">
-      <CollapsibleTrigger asChild>
-        <Button variant="secondary" className="w-full justify-start gap-2">
-          <Icon
-            as={ChevronDown}
-            className="size-6 transition-transform duration-200 data-[state=open]:rotate-180"
-          />
-          <View className="flex flex-row justify-between gap-8">
-            <Text className="">{new Date(event.timestamp).toLocaleString()}</Text>
-            <Text>{event.type}</Text>
-          </View>
-        </Button>
-      </CollapsibleTrigger>
-      <CollapsibleContent>
-        <Card className="p-4">
-          <CardContent>
-            <Text className="text-xs">{JSON.stringify(event.data, null, 2)}</Text>
-          </CardContent>
-        </Card>
-      </CollapsibleContent>
-    </Collapsible>
-  )
-}
-
-function LocationCard({ location }: { location: Location }) {
-  return (
-    <Collapsible className="gap-2">
-      <CollapsibleTrigger asChild>
-        <Button variant="secondary" className="w-full justify-start gap-2">
-          <Icon
-            as={ChevronDown}
-            className="size-6 transition-transform duration-200 data-[state=open]:rotate-180"
-          />
-          <Text>{new Date(location.timestamp).toLocaleString()}</Text>
-        </Button>
-      </CollapsibleTrigger>
-      <CollapsibleContent>
-        <Card key={location.timestamp} className="py-2">
-          <CardHeader>
-            <CardTitle>
-              {location.coords.latitude}, {location.coords.longitude}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Text className="text-xs">{JSON.stringify(location, null, 2)}</Text>
-          </CardContent>
-        </Card>
-      </CollapsibleContent>
-    </Collapsible>
   )
 }

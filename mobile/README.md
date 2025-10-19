@@ -3,7 +3,7 @@
 This is the mobile app for safely.pet, built with expo and react-native-background-geolocation,
 clerk, convex and react reusables (shadcn for native) on top nativewind with tailwind v3.
 
-## Note
+## Why not in /apps
 
 This app **should** be inside the `/apps` folder like the rest of the apps, BUT
 we are having issues with the geolocation plugin events if we run this along
@@ -12,3 +12,23 @@ deduplicated modules that don't match up and we are unable to respond to events.
 
 For now the app lives inside the repository BUT as a standalone project that needs
 to be managed separately
+
+### Issues resolution
+
+Since we are not technically in the monorepo workspace, we may encounter issues
+where we need to use internal packages but they look like they are not available.
+
+To solve this we need to `bun link` the package we want, add it as a dependency linked,
+and update the `metro.config.js` to be able to resolve our imports during build.
+
+```bash
+# go to the package
+cd packages/<name>
+bun link
+
+cd ../mobile
+# add dependency
+```
+
+in `/mobile/metro.config.js` we need to add the aliases for the imports and,
+optionally, the watch for changes so we are able to do HMR

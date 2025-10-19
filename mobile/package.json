@@ -23,6 +23,7 @@
     "@rn-primitives/separator": "^1.2.0",
     "@rn-primitives/slot": "^1.2.0",
     "@rn-primitives/switch": "^1.2.0",
+    "@workspace/backend": "link:@workspace/backend",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "connect": "^3.7.0",
@@ -55,14 +56,11 @@
     "react-native-worklets": "0.5.1",
     "tailwind-merge": "3.3.1",
     "tailwindcss": "3.4.14",
-    "tailwindcss-animate": "1.0.7",
-    "@workspace/backend": "../packages/backend"
-    
+    "tailwindcss-animate": "1.0.7"
   },
   "devDependencies": {
     "@babel/core": "^7.26.0",
     "@babel/plugin-transform-react-jsx": "^7.27.1",
-    
     "@types/node": "^24.6.2",
     "@types/react": "~19.1.10",
     "babel-preset-expo": "^54.0.4",

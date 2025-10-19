@@ -1,6 +1,6 @@
 {
   "name": "native-safely-pet",
-  "main": "expo-router/entry",
+  "main": "index.ts",
   "version": "1.0.0",
   "scripts": {
     "dev": "expo start -c",

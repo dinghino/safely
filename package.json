@@ -26,14 +26,5 @@
   "workspaces": [
     "apps/*",
     "packages/*"
-  ],
-  "bun": {
-    "install": {
-      "scopes": {
-        "apps/native": {
-          "tailwindcss": "^3.4.14"
-        }
-      }
-    }
-  }
+  ]
 }

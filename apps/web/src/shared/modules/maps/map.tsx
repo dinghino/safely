@@ -620,8 +620,8 @@ function MapZoomControl({
 function MapLocatePulseIcon() {
   return (
     <div className="-top-1 -right-1 absolute flex size-3 rounded-full">
-      <div className="absolute inline-flex size-full animate-ping rounded-full bg-primary opacity-75" />
-      <div className="relative inline-flex size-3 rounded-full bg-primary" />
+      <div className="absolute inline-flex size-full animate-ping rounded-full bg-blue-500 opacity-75" />
+      <div className="relative inline-flex size-3 rounded-full bg-blue-500" />
     </div>
   )
 }

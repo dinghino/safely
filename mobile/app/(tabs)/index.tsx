@@ -1,3 +1,5 @@
+import { RegisterDeviceButton } from '@/components/register-device-button'
+import { ServerHealthcheck } from '@/components/server-healthcheck'
 import { Button } from '@/components/ui/button'
 import { Icon } from '@/components/ui/icon'
 import { Text } from '@/components/ui/text'
@@ -59,6 +61,8 @@ export default function Screen() {
             Update the screens and components to match your design and logic.
           </Text>
         </View>
+        <ServerHealthcheck />
+        <RegisterDeviceButton />
         <View className="gap-2">
           <Link href="/" asChild>
             <Button size="sm">

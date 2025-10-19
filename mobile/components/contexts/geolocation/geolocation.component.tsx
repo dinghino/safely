@@ -69,7 +69,7 @@ function GeolocationProvider({ children }: GeolocationProviderProps) {
       startOnBoot: true,
       logLevel: BackgroundGeolocation.LOG_LEVEL_VERBOSE,
       heartbeatInterval: 60,
-      debug: false,
+      debug: true,
     }).then(async (state) => {
       if (!state.enabled) {
         // biome-ignore lint/style/noParameterAssign: reassigning state parameter is intentional here

@@ -2,8 +2,11 @@ import '@/global.css'
 
 import * as React from 'react'
 
-import { ClerkProvider, useAuth } from '@clerk/clerk-expo'
+import { ClerkLoaded, ClerkLoading, ClerkProvider, useAuth } from '@clerk/clerk-expo'
 import { tokenCache } from '@clerk/clerk-expo/token-cache'
+
+import { ConvexProviderWithClerk } from 'convex/react-clerk'
+import { ConvexReactClient } from 'convex/react'
 
 import { Stack } from 'expo-router'
 import * as SplashScreen from 'expo-splash-screen'
@@ -21,16 +24,28 @@ export {
   ErrorBoundary,
 } from 'expo-router'
 
+const convex = new ConvexReactClient(process.env.EXPO_PUBLIC_CONVEX_URL!, {
+  unsavedChangesWarning: false,
+})
+
 export default function RootLayout() {
   const { colorScheme } = useColorScheme()
 
   return (
     <ClerkProvider tokenCache={tokenCache}>
-      <ThemeProvider value={NAV_THEME[colorScheme ?? 'light']}>
+      <ClerkLoaded>
+        <ConvexProviderWithClerk client={convex} useAuth={useAuth}>
+          <ThemeProvider value={NAV_THEME[colorScheme ?? 'light']}>
+            <StatusBar animated style={colorScheme === 'dark' ? 'light' : 'dark'} />
+            <Routes />
+            <PortalHost />
+          </ThemeProvider>
+        </ConvexProviderWithClerk>
+      </ClerkLoaded>
+      <ClerkLoading>
         <StatusBar animated style={colorScheme === 'dark' ? 'light' : 'dark'} />
-        <Routes />
-        <PortalHost />
-      </ThemeProvider>
+        {/* loading / splash / something */}
+      </ClerkLoading>
     </ClerkProvider>
   )
 }

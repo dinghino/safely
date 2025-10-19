@@ -54,28 +54,28 @@ function Routes() {
   }
 
   return (
-      <Stack
-        screenOptions={{
-          header: () => <AppHeader />,
-        }}
-      >
-        {/* Screens only shown when the user is NOT signed in */}
-        <Stack.Protected guard={!isSignedIn}>
-          <Stack.Screen name="(auth)/sign-in" options={SIGN_IN_SCREEN_OPTIONS} />
-          <Stack.Screen name="(auth)/sign-up" options={SIGN_UP_SCREEN_OPTIONS} />
-          <Stack.Screen name="(auth)/reset-password" options={DEFAULT_AUTH_SCREEN_OPTIONS} />
-          <Stack.Screen name="(auth)/forgot-password" options={DEFAULT_AUTH_SCREEN_OPTIONS} />
-        </Stack.Protected>
+    <Stack
+      screenOptions={{
+        header: () => <AppHeader />,
+        // headerShown: true,
+      }}>
+      {/* Screens only shown when the user is NOT signed in */}
+      <Stack.Protected guard={!isSignedIn}>
+        <Stack.Screen name="(auth)/sign-in" options={SIGN_IN_SCREEN_OPTIONS} />
+        <Stack.Screen name="(auth)/sign-up" options={SIGN_UP_SCREEN_OPTIONS} />
+        <Stack.Screen name="(auth)/reset-password" options={DEFAULT_AUTH_SCREEN_OPTIONS} />
+        <Stack.Screen name="(auth)/forgot-password" options={DEFAULT_AUTH_SCREEN_OPTIONS} />
+      </Stack.Protected>
 
-        {/* Screens only shown when the user IS signed in */}
-        <Stack.Protected guard={isSignedIn}>
-          {/* <Stack.Screen name="index" /> */}
-          <Stack.Screen name="(tabs)" />
-          <Stack.Screen name="modal" options={{ presentation: 'modal', headerShown: false }} />
-        </Stack.Protected>
+      {/* Screens only shown when the user IS signed in */}
+      <Stack.Protected guard={isSignedIn}>
+        {/* <Stack.Screen name="index" /> */}
+        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="modal" options={{ presentation: 'modal', headerShown: false }} />
+      </Stack.Protected>
 
-        {/* Screens outside the guards are accessible to everyone (e.g. not found) */}
-      </Stack>
+      {/* Screens outside the guards are accessible to everyone (e.g. not found) */}
+    </Stack>
   )
 }
 

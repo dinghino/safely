@@ -32,9 +32,9 @@ export function AppHeader() {
       <View
         className={cn(
           'flex-row justify-between px-4 py-2',
-          'absolute top-safe right-0 left-0 web:mx-2 pt-12',
+          // 'absolute top-safe right-0 left-0 web:mx-2 pt-12',
           // 'bg-indigo-700',
-          'border-border border-b'
+          // 'border-border border-b',
         )}
       >
         {/* <StatusBar style="auto" /> */}

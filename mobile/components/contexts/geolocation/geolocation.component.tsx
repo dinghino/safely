@@ -37,9 +37,17 @@ function GeolocationProvider({ children }: GeolocationProviderProps) {
       }),
     )
     subscriptions.push(
-      BackgroundGeolocation.onHeartbeat(() => {
-        console.log('[BGL::onHeartbeat] - Heartbeat event')
-        addEvent('heartbeat', null)
+      BackgroundGeolocation.onHeartbeat(async () => {
+        console.log('[BGL::onHeartbeat] - Heartbeat event - querying current position')
+        addEvent('heartbeat', { ping: 'pong' })
+        const location = await BackgroundGeolocation.getCurrentPosition({
+          samples: 1,
+          persist: false,
+          timeout: 30,
+        })
+        console.log('[BGL::onHeartbeat] - Current position:', location)
+        dispatch({ type: 'location', payload: location })
+        addEvent('location', location)
       }),
     )
 
@@ -51,25 +59,26 @@ function GeolocationProvider({ children }: GeolocationProviderProps) {
     }
     console.log('[BGL] calling BackgroundGeolocation.ready')
 
-    if (initialized) return cleanup
+    // if (initialized) return cleanup
 
     BackgroundGeolocation.ready({
       desiredAccuracy: BackgroundGeolocation.DESIRED_ACCURACY_HIGH,
-      distanceFilter: 10,
+      distanceFilter: 25,
       stopOnTerminate: false,
+      enableHeadless: true,
       startOnBoot: true,
       logLevel: BackgroundGeolocation.LOG_LEVEL_VERBOSE,
       heartbeatInterval: 60,
-      debug: true,
+      debug: false,
     }).then(async (state) => {
-      // if (!state.enabled) {
-      //   // biome-ignore lint/style/noParameterAssign: reassigning state parameter is intentional here
-      //   state = await BackgroundGeolocation.start()
-      // }
+      if (!state.enabled) {
+        // biome-ignore lint/style/noParameterAssign: reassigning state parameter is intentional here
+        state = await BackgroundGeolocation.start()
+      }
       console.log('[BGL] [ready] is ready:', state.enabled)
       const { enabled, debug } = state
       dispatch({ type: 'update', payload: { enabled, debug } })
-      initialized = true
+      // initialized = true
     })
 
     return cleanup

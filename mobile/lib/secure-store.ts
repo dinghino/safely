@@ -4,7 +4,7 @@ export async function save(key: string, value: string) {
   await SecureStore.setItemAsync(key, value)
 }
 
-type GetValueOptions<T> = {
+export type GetValueOptions<T> = {
   key: string
   parser?: (value: string) => T
   defaultValue?: T
@@ -18,3 +18,11 @@ export async function load<T>(options: GetValueOptions<T>): Promise<T | undefine
 export async function clear(key: string) {
   await SecureStore.deleteItemAsync(key)
 }
+
+const store = {
+  save,
+  load,
+  clear,
+}
+
+export default store

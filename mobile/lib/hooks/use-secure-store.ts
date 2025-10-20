@@ -15,7 +15,13 @@ function defaultTransformer<T>(value: T): string {
   return typeof value === 'string' ? value : JSON.stringify(value)
 }
 
-export function useSecureStore<T>(options: UseStoreOptions<T>) {
+type UseSecureStoreReturn<T> = readonly [
+  T | undefined,
+  (value: T) => Promise<void>,
+  () => Promise<void>,
+]
+
+export function useSecureStore<T>(options: UseStoreOptions<T>): UseSecureStoreReturn<T> {
   const {
     key,
     loader = defaultLoader,
@@ -24,10 +30,7 @@ export function useSecureStore<T>(options: UseStoreOptions<T>) {
   } = options
 
   const [value, setValue] = useState<T | undefined>(defaultValue)
-  // const value = use(store.load({ key, defaultValue, parser: loader }))
-  // const setValue = (v: T | undefined) => {
-  //   v ? store.save(key, transformer(v)) : store.clear(key)
-  // }
+
   useEffect(() => {
     store.load({ key, defaultValue, parser: loader }).then(
       (v) => v && setValue(v as T),

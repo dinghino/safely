@@ -2,6 +2,8 @@ import { useEffect } from 'react'
 import type { Subscription } from 'react-native-background-geolocation'
 import BackgroundGeolocation from 'react-native-background-geolocation'
 import { GeolocationContext, useGeolocationReducer, action } from './geolocation.context'
+import { useDeviceContext } from '../device-manager'
+import * as helpers from '@/lib/geolocation'
 
 type GeolocationProviderProps = {
   children: React.ReactNode
@@ -9,6 +11,17 @@ type GeolocationProviderProps = {
 
 function GeolocationProvider({ children }: GeolocationProviderProps) {
   const [state, dispatch] = useGeolocationReducer()
+
+  // server heartbeat -- todo: move business logic to device manager context
+  // and just get the heartbeat function in here to register it
+  const { device, heartbeat } = useDeviceContext()
+
+  const sendEvent = (name: string) => {
+    return <T,>(data: T) => {
+      console.log('[BGL::event] ⏱️', name)
+      dispatch(action.event({ name, data }))
+    }
+  }
 
   /**
    * Sets up ALL event listeners for `react-native-background-geolocation`
@@ -21,81 +34,76 @@ function GeolocationProvider({ children }: GeolocationProviderProps) {
    */
   // biome-ignore lint/correctness/useExhaustiveDependencies: useReducer dispatch is stable
   useEffect(() => {
-    function addEvent<T = any>(name: string, data: T) {
-      dispatch(action.event({ name, data }))
-    }
-    console.info('⚙️ Initializing GeolocationContext')
-    console.info('♻️ Setting up event listeners')
+    console.log('⚙️ [BGL::events] ----------------------------------------------')
+    console.log('⚙️ [BGL::events] Initializing GeolocationContext')
+    console.log('♻️ [BGL::events] Setting up event listeners')
+
     listeners.add(
       BackgroundGeolocation.onLocation(
-        (location) => {
+        async (location) => {
           if (location.sample) return
-          console.log('[BGL::onLocation]', location)
+          console.log('📍 [BGL::onLocation]')
           dispatch(action.location(location))
-          addEvent('location', location)
+          await heartbeat(location)
         },
         (error) => console.warn('[onLocation] ERROR:', error),
       ),
     )
     listeners.add(
-      BackgroundGeolocation.onProviderChange((event) => {
-        console.log('[BGL::onProviderChange]', event.enabled, event.status)
-        addEvent('provider changed', event)
-      }),
-    )
-    listeners.add(
-      BackgroundGeolocation.onMotionChange((event) => {
-        console.log('[BGL::onMotionChange]', event.isMoving, event.location)
-        addEvent('motion changed', event)
-        if (event.location.sample) return
-        dispatch(action.location(event.location))
-      }),
-    )
-    listeners.add(
-      BackgroundGeolocation.onActivityChange((event) => {
-        console.log('[BGL::onActivityChange]', event)
-        addEvent('activity changed', event)
-      }),
-    )
-    listeners.add(
-      BackgroundGeolocation.onGeofence((event) => {
-        console.log('[BGL::onGeofence]', event)
-        addEvent('geofence', event)
-      }),
-    )
-    listeners.add(
-      BackgroundGeolocation.onHttp((event) => {
-        console.log('[BGL::onHttp]', event)
-        addEvent('http', event)
-      }),
-    )
-    listeners.add(
       BackgroundGeolocation.onHeartbeat(async (event) => {
-        console.log('[BGL::onHeartbeat] - Heartbeat event')
-        addEvent('heartbeat', { ping: 'pong', lastLocation: event.location })
-        const location = await BackgroundGeolocation.getCurrentPosition({
-          samples: 1,
-          persist: false,
-          timeout: 30,
-        })
-        console.log('[BGL::onHeartbeat] - Current position:', location)
-        dispatch(action.location(location))
-        addEvent('location', location)
+        console.log('💓 [BGL::onHeartbeat] - Heartbeat event')
+        sendEvent('heartbeat')({ ping: 'pong', lastLocation: event.location })
+
+        // this gets caught in onLocation so we don't need to do anything else here
+        // we COULD send the last known location in event.location without querying
+        // the device again since we technically are not moving, but...
+        const options = helpers.transformGetLocationOptions(device, {})
+        await BackgroundGeolocation.getCurrentPosition(options)
+
+        // const location = await BackgroundGeolocation.getCurrentPosition(options)
+        // console.log('💓 [BGL::onHeartbeat] - Current position:', location)
+        // // these should already be handled by onLocation listener
+        // // dispatch(action.location(location))
+        // // addEvent('location', location)
+        // await heartbeat(location)
       }),
     )
     listeners.add(
       BackgroundGeolocation.onEnabledChange((enabled) => {
-        console.log('[BGL::onEnabledChange]', enabled)
-        addEvent('enabled changed', enabled)
+        sendEvent('🔌 enabled changed')(enabled)
         dispatch(action.update({ enabled }))
       }),
     )
-    console.info(`✅ Event listeners set up: ${listeners.count}`)
 
-    console.log('[BGL] calling BackgroundGeolocation.ready')
+    listeners.add(BackgroundGeolocation.onMotionChange(sendEvent('🏃 motion changed')))
+    //   BackgroundGeolocation.onMotionChange((event) => {
+    //     dispatchEvent('🏃 motion changed')(event)
+    //     if (event.location.sample) return
+    //     dispatch(action.location(event.location))
+    //   }),
+    // )
+    listeners.add(BackgroundGeolocation.onProviderChange(sendEvent('📱 provider changed')))
+    listeners.add(BackgroundGeolocation.onActivityChange(sendEvent('🎭 activity changed')))
+    listeners.add(BackgroundGeolocation.onGeofence(sendEvent('🧸 geofence')))
+    listeners.add(BackgroundGeolocation.onHttp(sendEvent('🌐 http')))
+
+    console.log(`✅ [BGL::events] Event listeners set up: ${listeners.count}`)
+
+    const cleanup = () => {
+      console.log('⚙️ [BGL::events] Cleaning up Geolocation subscriptions')
+      listeners.clear()
+    }
+
+    return cleanup
+  }, [heartbeat, device])
+
+  // initialize background geolocation on mount
+  // biome-ignore lint/correctness/useExhaustiveDependencies: useReducer dispatch is stable
+  useEffect(() => {
+    console.log('⚙️ [BGL::setup] calling BackgroundGeolocation.ready')
 
     // if (initialized) return cleanup
-
+    // todo: merge initial device settings
     BackgroundGeolocation.ready({
       desiredAccuracy: BackgroundGeolocation.DESIRED_ACCURACY_HIGH,
       distanceFilter: 25,
@@ -110,19 +118,20 @@ function GeolocationProvider({ children }: GeolocationProviderProps) {
         // biome-ignore lint/style/noParameterAssign: reassigning state parameter is intentional here
         state = await BackgroundGeolocation.start()
       }
-      const { enabled, debug } = state
-      dispatch(action.event({ name: 'ready', data: state }))
-      dispatch(action.update({ enabled, debug }))
-      // initialized = true
+      dispatch(action.update(state))
+      sendEvent('🎉 geolocation ready')(state)
     })
-
-    const cleanup = () => {
-      console.log('[BGL] Cleaning up Geolocation subscriptions')
-      listeners.clear()
-    }
-
-    return cleanup
+    console.log('🎉 [BGL::setup] BackgroundGeolocation initialized')
+    // return cleanup
   }, [])
+
+  useEffect(() => {
+    if (!device?.settings) return
+    console.log('🛠️ [BGL::setup] Device settings changed, updating config', device.settings)
+    BackgroundGeolocation.setConfig(helpers.transformSettings(device.settings)).then(() => {
+      console.log('🛠️ [BGL::setup] config updated')
+    })
+  }, [device?.settings])
 
   const clearLocations = () => dispatch(action.clear())
   const clearEvents = () => dispatch(action.clearEvents())

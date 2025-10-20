@@ -32,3 +32,26 @@ cd ../mobile
 
 in `/mobile/metro.config.js` we need to add the aliases for the imports and,
 optionally, the watch for changes so we are able to do HMR
+
+## Running the app
+
+The app needs `prebuild` due to native dependencies and run on device through expo
+
+To run on device you need to have your device visible from `adb` connecting either
+through USB or wifi
+
+```bash
+adb connect <device-ip>:5555
+```
+
+```bash
+npx expo prebuild
+npx expo run:android
+```
+
+or from package.json
+
+```bash
+bun prebuild
+bun android
+```

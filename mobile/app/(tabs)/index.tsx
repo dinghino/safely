@@ -1,14 +1,18 @@
-import { RegisterDeviceButton } from '@/components/register-device-button'
-import { ServerHealthcheck } from '@/components/server-healthcheck'
+import { Link, Stack } from 'expo-router'
+import { useUser } from '@clerk/clerk-expo'
+import { useColorScheme } from 'nativewind'
+import { MoonStarIcon, XIcon, SunIcon } from 'lucide-react-native'
+import { Image, type ImageStyle, View } from 'react-native'
+
 import { Button } from '@/components/ui/button'
 import { Icon } from '@/components/ui/icon'
 import { Text } from '@/components/ui/text'
 import { UserMenu } from '@/components/user-menu'
-import { useUser } from '@clerk/clerk-expo'
-import { Link, Stack } from 'expo-router'
-import { MoonStarIcon, XIcon, SunIcon } from 'lucide-react-native'
-import { useColorScheme } from 'nativewind'
-import { Image, type ImageStyle, View } from 'react-native'
+import { DeviceStatusBadge } from '@/components/device-status-badge'
+import { RegisterDeviceButton } from '@/components/register-device-button'
+import { ServerHealthcheck } from '@/components/server-healthcheck'
+
+import { useDeviceContext } from '@/components/contexts/device-manager'
 
 const LOGO = {
   light: require('@/assets/images/react-native-reusables-light.png'),
@@ -39,7 +43,7 @@ const SCREEN_OPTIONS = {
 export default function Screen() {
   const { colorScheme } = useColorScheme()
   const { user } = useUser()
-
+  const { device } = useDeviceContext()
   return (
     <>
       <Stack.Screen options={SCREEN_OPTIONS} />
@@ -61,9 +65,12 @@ export default function Screen() {
             Update the screens and components to match your design and logic.
           </Text>
         </View>
-        <ServerHealthcheck />
+        <View className="flex-row gap-4">
+          {device && <DeviceStatusBadge device={device} label />}
+          <ServerHealthcheck />
+        </View>
         <RegisterDeviceButton />
-        <View className="gap-2">
+        <View className="flex-row gap-2">
           <Link href="/" asChild>
             <Button size="sm">
               <Text>Go home</Text>

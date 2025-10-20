@@ -12,13 +12,16 @@ import { Switch } from '@/components/ui/switch'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 
 import { type Geolocation, type Location, useGeolocation } from '@/components/contexts/geolocation'
 
 import { cn } from '@/lib/utils'
 import { Icon } from '@/components/ui/icon'
-import { BellMinusIcon, ChevronDown, MapPinMinus } from 'lucide-react-native'
+import { BellMinusIcon, MapPinMinus } from 'lucide-react-native'
 import { useColorScheme } from 'nativewind'
+import { useDeviceContext } from '@/components/contexts/device-manager'
+import { DeviceStatusBadge } from '@/components/device-status-badge'
 
 export default function AppSettings() {
   const geo = useGeolocation()
@@ -116,8 +119,12 @@ export default function AppSettings() {
           /> */}
         </View>
       </View>
+      <View className="px-4 py-2">
+        <StatusBadges />
+      </View>
 
       <ScrollView className="m-4 min-h-48" contentContainerClassName="gap-4">
+        <GeolocationState />
         <View className="gap-2 rounded-md bg-gray-100 p-2 dark:bg-neutral-900">
           <Text className="mb-2 ml-4 font-bold text-lg">Events</Text>
           {!events.length && (
@@ -200,21 +207,49 @@ const Trigger = ({ children, ...props }: { children: React.ReactNode }) => {
       className="w-full justify-start gap-2"
       {...props}
     >
-      <Icon
-        as={ChevronDown}
-        className="size-6 transition-transform duration-200 data-[state=open]:rotate-180"
-      />
       {children}
     </Button>
   )
 }
+
+const StatusBadges = () => {
+  const { device } = useDeviceContext()
+  const { state } = useGeolocation()
+
+  return (
+    <View className="flex-row gap-2">
+      {device ? (
+        <>
+          <DeviceStatusBadge device={device} />
+          <Badge>
+            <Text>Mode</Text>
+            <Text>{device.mode}</Text>
+          </Badge>
+          <Badge>
+            <Text>Heartbeat</Text>
+            <Text>{device.settings.heartbeat.interval / 1000}s</Text>
+          </Badge>
+        </>
+      ) : (
+        <Badge variant="destructive">Device data unavailable</Badge>
+      )}
+      <Badge>
+        <Text>BGL Heartbeat</Text>
+        <Text>{state.heartbeatInterval}s</Text>
+      </Badge>
+    </View>
+  )
+}
+
 function EventCard({ event }: { event: Geolocation.Event }) {
   return (
     <Collapsible className="gap-2">
       <CollapsibleTrigger asChild>
         <Trigger>
-          <View className="flex flex-row justify-between gap-8">
-            <Text className="">{new Date(event.timestamp).toLocaleString()}</Text>
+          <View className="flex flex-row justify-between gap-4">
+            <Text className="text-muted-foreground">
+              {new Date(event.timestamp).toLocaleString()}
+            </Text>
             <Text>{event.name}</Text>
           </View>
         </Trigger>
@@ -254,6 +289,49 @@ function LocationCard({ location }: { location: Location }) {
   )
 }
 
+function GeolocationState() {
+  const { state } = useGeolocation()
+  const data = useMemo(() => flatten(state), [state])
+  const { device } = useDeviceContext()
+
+  const info = useMemo(() => {
+    if (!device) return []
+    return flatten(device)
+  }, [device])
+
+  return (
+    <View className="gap-2 rounded-md bg-gray-100 p-2 dark:bg-neutral-900">
+      <Collapsible>
+        <CollapsibleTrigger asChild>
+          <Button variant="outline" className="w-full">
+            <Text className="sticky top-0"> Current states</Text>
+          </Button>
+        </CollapsibleTrigger>
+        <CollapsibleContent>
+          {data.map(([key, value]) => (
+            <View key={key} className="flex-row justify-between px-4 py-1">
+              <Text className="font-medium">{key}</Text>
+              <Text className="text-xs">{JSON.stringify(value, null, 2)}</Text>
+            </View>
+          ))}
+          {device && (
+            <>
+              <View className="my-2 border-foreground/10 border-t" />
+              <Text className="mb-2 ml-4 font-bold text-lg">Device info</Text>
+              {info.map(([key, value]) => (
+                <View key={key} className="flex-row justify-between px-4 py-1">
+                  <Text className="font-medium">{key}</Text>
+                  <Text className="text-xs">{JSON.stringify(value, null, 2)}</Text>
+                </View>
+              ))}
+            </>
+          )}
+        </CollapsibleContent>
+      </Collapsible>
+    </View>
+  )
+}
+
 // biome-ignore lint/correctness/noUnusedVariables: playground component
 namespace SwitchControl {
   export type Props = {
@@ -290,4 +368,20 @@ function SwitchControl({ active, action, label, className }: SwitchControl.Props
       </Label>
     </View>
   )
+}
+
+/**
+ * recursive function to flatten an object in [key, value] pairs
+ */
+function flatten(obj: Record<string, any>, prefix = ''): [string, any][] {
+  const result: [string, any][] = []
+  for (const [key, value] of Object.entries(obj).sort((a, b) => a[0].localeCompare(b[0]))) {
+    const newKey = prefix ? `${prefix}.${key}` : key
+    if (typeof value === 'object' && value !== null) {
+      result.push(...flatten(value, newKey))
+    } else {
+      result.push([newKey, value])
+    }
+  }
+  return result
 }

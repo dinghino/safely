@@ -1,6 +1,6 @@
 import { Stack, Tabs } from 'expo-router'
 
-import { CogIcon, HomeIcon } from 'lucide-react-native'
+import { CogIcon, HomeIcon, MapIcon } from 'lucide-react-native'
 // import { SafeAreaView } from 'react-native-safe-area-context'
 import { useColorScheme } from 'nativewind'
 
@@ -23,7 +23,7 @@ export default function TabLayout() {
               tabBarActiveTintColor: colorScheme === 'dark' ? 'white' : 'black',
               headerShown: false,
               header: () => <AppHeader />,
-              // tabBarShowLabel: false,
+              tabBarShowLabel: false,
               tabBarLabelPosition: 'beside-icon',
               // tabBarButton: HapticTab, // from default expo template
             }}>
@@ -41,13 +41,13 @@ export default function TabLayout() {
                 tabBarIcon: ({ color }) => <CogIcon size={28} color={color} />,
               }}
             />
-            {/* <Tabs.Screen
+            <Tabs.Screen
             name="map"
             options={{
               title: 'Map',
               tabBarIcon: ({ color }) => <MapIcon size={28} color={color} />,
             }}
-          /> */}
+          />
           </Tabs>
         </GeolocationProvider>
       </DeviceManager>

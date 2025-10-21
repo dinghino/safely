@@ -78,6 +78,7 @@ export default function ({ config }: { config: ExpoConfig }) {
         },
       ],
       'react-native-background-fetch',
+      ['@maplibre/maplibre-react-native', {}],
     ]),
   }
 }

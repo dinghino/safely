@@ -10,11 +10,15 @@ export async function deviceById(ctx: QueryCtx, deviceId: Id<'devices'>) {
   return device
 }
 
-export async function embedSettings(ctx: QueryCtx, device: Doc<'devices'>) {
-  const options = await ctx.db
+export async function getSettings(ctx: QueryCtx, device: Doc<'devices'>) {
+  return await ctx.db
     .query('deviceOptions')
     .withIndex('device_mode', (q) => q.eq('deviceId', device._id).eq('mode', device.mode))
     .first()
+}
+
+export async function embedSettings(ctx: QueryCtx, device: Doc<'devices'>) {
+  const options = await getSettings(ctx, device)
   // remove redundant fields for the consumer
   const { _id, _creationTime, mode, deviceId, ...settings } = options!
   return { ...device, settings }

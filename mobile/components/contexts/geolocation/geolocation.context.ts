@@ -9,7 +9,7 @@ export namespace Geolocation {
     data: T
   }
   export type State = Partial<BGState>
-  // export type State = { enabled: boolean; debug: boolean | undefined }
+
   export type InternalState = {
     state: State
     locations: Location[]
@@ -74,15 +74,24 @@ function reducer(
       return {
         ...prev,
         state: { ...prev.state, ...payload },
-        events: [...prev.events, makeEvent('🛠️ update', payload)],
+        events: [...prev.events,
+          // makeEvent('🛠️ update', payload)
+        ],
       }
-    case 'location':
+    case 'location': {
+      // avoid duplicate locations in case of multiple samples with same uuid
+      const uuid = payload.uuid
+      const exists = prev.locations.find((loc) => loc.uuid === uuid)
+      if (exists) {
+        return { ...prev }
+      }
       return {
         ...prev,
         locations: [...prev.locations, payload],
         lastLocation: payload,
         events: [...prev.events, makeEvent('📍 location', payload)],
       }
+    }
     case 'event': {
       const { name, data } = payload
       return {

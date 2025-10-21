@@ -6,7 +6,8 @@
  */
 
 // Import side effects first and services
-import BackgroundGeolocation, { type HeadlessEvent } from 'react-native-background-geolocation'
+import BackgroundGeolocation from 'react-native-background-geolocation'
+import type { Location, HeadlessEvent } from 'react-native-background-geolocation'
 import { ConvexHttpClient } from 'convex/browser'
 import { api } from '@workspace/backend/api'
 
@@ -18,34 +19,43 @@ import * as helpers from '@/lib/geolocation'
 // import * as dotenv from 'dotenv'
 // dotenv.config({ path: '.env' })
 async function createConvexClient() {
-  const CONVEX_URL = process.env.CONVEX_URL
+  // FIXME: dotenv not working with expo - need to get the env var from process.env directly
+  const CONVEX_URL = process.env.EXPO_PUBLIC_CONVEX_URL ?? 'https://cool-eagle-370.convex.cloud'
   if (!CONVEX_URL) {
     throw new Error('CONVEX_URL is not defined in environment variables')
   }
   const jwt = await store.load<string>({ key: STORE_KEY.CLERK_JWT })
 
-  return new ConvexHttpClient(process.env.CONVEX_URL!, {
+  return new ConvexHttpClient(CONVEX_URL, {
     auth: jwt,
     logger: true,
   })
 }
 
-async function sendHeartbeat(device: Device | undefined) {
-  if (!device) {
-    console.log('😶‍🌫️ No device found in secure store, skipping headless heartbeat')
-    return
-  }
-
+// during a heartbeat event we dispatch a new request for the current position
+async function handleHeartbeat(device: Device | undefined) {
   const options = helpers.transformGetLocationOptions(device, {
     samples: 3,
-    extras: { headless: true, deviceId: device._id },
+    extras: { headless: true },
   })
-  const location = await BackgroundGeolocation.getCurrentPosition(options)
+  await BackgroundGeolocation.getCurrentPosition(options)
+}
 
-  console.log('😶‍🌫️ 💓 Sending heartbeat with location')
-  const client = await createConvexClient()
+let sendingHeartbeat = false
+async function handleLocationEvent(opts: { device: Device; location: Location }) {
+  const { device, location } = opts
+
+  if (location.sample) return console.log('😶‍🌫️ 📍 Ignoring sample location event')
+
+  if (sendingHeartbeat)
+    return console.log('😶‍🌫️ 💓 Already sending heartbeat, skipping location event handling')
+
+  console.log('😶‍🌫️ 📍 Handling headless location event')
+  sendingHeartbeat = true
 
   try {
+    console.log('😶‍🌫️ 💓 Sending heartbeat with location')
+    const client = await createConvexClient()
     // todo: store session token for when we're back in the foreground?
     const { sessionToken } = await client.mutation(api.devices.heartbeat.send, {
       deviceId: device._id,
@@ -55,7 +65,9 @@ async function sendHeartbeat(device: Device | undefined) {
     await store.save(STORE_KEY.DEVICE_SESSION_TOKEN, sessionToken)
     console.log('😶‍🌫️ 💓 Heartbeat sent successfully')
   } catch (error) {
-    console.error('😶‍🌫️ 💓 Error sending heartbeat:', error)
+    console.error('😶🤬 💓 Error sending heartbeat:', error)
+  } finally {
+    sendingHeartbeat = false
   }
 }
 
@@ -82,14 +94,21 @@ const HeadlessTask = async (event: HeadlessEvent) => {
   switch (event.name) {
     case 'heartbeat': {
       console.log('😶‍🌫️ 💓 [heartbeat]', { device })
-      return await sendHeartbeat(device)
+      await handleHeartbeat(device)
+      return
+    }
+    case 'location': {
+      const location = event.params as unknown as Location
+      const data = { device, location }
+      console.log('😶‍🌫️ 📍 [location]', data)
+      await handleLocationEvent(data)
+      return
     }
     // Handle other headless events if needed
     default:
-      console.log(`😶‍🌫️ [${event.name}]`)
+      console.log(`😶‍🌫️ [${event.name}]`, event.params)
     // console.log(`😶‍🌫️ [${event.name}] -`, event.params)
   }
-  return Promise.resolve()
 }
 
 ////

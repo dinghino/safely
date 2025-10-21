@@ -76,23 +76,23 @@ export const DeviceManager = ({ children }: DeviceManager.Props) => {
     return id ? saveId(id) : clearId()
   }
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: mutation is stable
   const heartbeat = useCallback(
-    async (location: Location) => {
-      if (!device) {
+    async (data: Location) => {
+      if (!deviceId) {
         console.log('💔 [Manager::heartbeat] No device registered, skipping heartbeat')
         return
       }
       // we need to extract the timestamp to avoid sending it to the server for now
       // todo: make server accept location timestamp
-      const { timestamp, ...transformedLocation } = helpers.transformLocation(location)
+      const { timestamp, ...location } = helpers.transformLocation(data)
       console.log('💓 [Manager::heartbeat] Sending heartbeat with location')
-      const deviceId = device._id
-      const response = await heartbeatMutation({ deviceId, location: transformedLocation })
+      const response = await heartbeatMutation({ deviceId, location })
 
       const token = response.sessionToken
       if (token && token !== sessionToken) setSessionToken(token)
     },
-    [device, sessionToken, setSessionToken, heartbeatMutation],
+    [deviceId, sessionToken, setSessionToken],
   )
 
   // --------------------------------------------------------------------------

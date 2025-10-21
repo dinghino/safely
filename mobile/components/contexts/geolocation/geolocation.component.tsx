@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import BackgroundGeolocation from 'react-native-background-geolocation'
 
 import * as helpers from '@/lib/geolocation'
@@ -13,21 +13,24 @@ type GeolocationProviderProps = {
 
 function GeolocationProvider({ children }: GeolocationProviderProps) {
   const [state, dispatch] = useGeolocationReducer()
-  const { device, heartbeat } = useDeviceContext()
+  const { device, settings, heartbeat } = useDeviceContext()
   // last location sent to the server to avoid duplicate calls
   const lastLocationId = useRef<string | null>(null)
   // const initialized = useRef(false)
-  const listeners = useListenersController(true)
+  const listeners = useListenersController(false)
 
   // useSetupGeolocation()
 
   // --------------------------------------------------------------------------
   // reset all event listeners on mount/unmount
-  // useEffect(() => {
-  //   console.log('⚙️ [BGL::events] Cleaning up GeolocationContext')
-  //   BackgroundGeolocation.removeAllListeners()
-  //   console.log('✅ [BGL::events] Cleaned up all previous')
-  // }, [])
+  useEffect(
+    () => () => {
+      console.log('⚙️ [BGL::events] Cleaning up GeolocationContext')
+      BackgroundGeolocation.removeAllListeners()
+      console.log('✅ [BGL::events] Cleaned up all previous')
+    },
+    [],
+  )
 
   /**
    * Sets up ALL event listeners for `react-native-background-geolocation`
@@ -162,7 +165,7 @@ function GeolocationProvider({ children }: GeolocationProviderProps) {
     // todo: merge initial device settings + secure store from unmount
     BackgroundGeolocation.ready({
       desiredAccuracy: BackgroundGeolocation.DESIRED_ACCURACY_HIGH,
-      distanceFilter: 25,
+      distanceFilter: 10,
       stopOnTerminate: false,
       enableHeadless: true,
       startOnBoot: true,
@@ -183,13 +186,18 @@ function GeolocationProvider({ children }: GeolocationProviderProps) {
 
   // fixme: this is broken and causes multiple config updates even though device.settings
   // hasn't changed - need to isolate just the settings object
-  // useEffect(() => {
-  //   if (!device?.settings) return
-  //   console.log('🛠️ [BGL::setup ] Device settings changed, updating config', device.settings)
-  //   BackgroundGeolocation.setConfig(helpers.transformSettings(device.settings)).then(() => {
-  //     console.log('🛠️ [BGL::setup ] config updated')
-  //   })
-  // }, [device?.settings])
+  useEffect(() => {
+    if (!settings) return
+    console.log('🛠️ [BGL::setup ] Device settings changed, updating config')
+    const config = helpers.transformSettings(settings)
+    console.log(settings)
+    console.log(config)
+    BackgroundGeolocation.setConfig(config).then(() => {
+      console.log('🛠️ [BGL::setup ] config updated')
+      dispatch(action.event({ name: '🛠️ config updated', data: { settings, config } }))
+      dispatch(action.update(config))
+    })
+  }, [settings, dispatch])
 
   const clearLocations = () => dispatch(action.clear())
   const clearEvents = () => dispatch(action.clearEvents())

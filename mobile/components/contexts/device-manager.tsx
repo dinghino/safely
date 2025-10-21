@@ -15,6 +15,7 @@ import * as helpers from '@/lib/geolocation'
 export namespace DeviceManager {
   export type Value = {
     device: Device | null | undefined
+    settings: Device['settings'] | null | undefined
     register: () => Promise<void>
     deviceId: Id<'devices'> | undefined
     isRegistered: boolean
@@ -64,6 +65,7 @@ export const DeviceManager = ({ children }: DeviceManager.Props) => {
   // --------------------------------------------------------------------------
   // db stuff
   const device = useQuery(api.devices.get.one, { deviceId })
+  const settings = useQuery(api.devices.get.settings, { deviceId })
   const registerMutation = useMutation(api.devices.manage.register)
   const heartbeatMutation = useMutation(api.devices.heartbeat.send)
 
@@ -92,7 +94,7 @@ export const DeviceManager = ({ children }: DeviceManager.Props) => {
       const token = response.sessionToken
       if (token && token !== sessionToken) setSessionToken(token)
     },
-    [deviceId, sessionToken, setSessionToken],
+    [deviceId, sessionToken],
   )
 
   // --------------------------------------------------------------------------
@@ -127,6 +129,7 @@ export const DeviceManager = ({ children }: DeviceManager.Props) => {
 
   const value: DeviceManager.Value = {
     device,
+    settings,
     deviceId,
     register,
     heartbeat,

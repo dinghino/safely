@@ -7,6 +7,7 @@ import { useColorScheme } from 'nativewind'
 import { AppHeader } from '@/components/app-header'
 import GeolocationProvider from '@/components/contexts/geolocation'
 import { DeviceManager } from '@/components/contexts/device-manager'
+import { RequestsManager } from '@/components/contexts/requests-manager'
 
 export default function TabLayout() {
   const { colorScheme } = useColorScheme()
@@ -15,6 +16,7 @@ export default function TabLayout() {
     <>
       <Stack.Screen options={{ title: 'Main tabs layout' }} />
       <DeviceManager>
+        <RequestsManager />
         <GeolocationProvider>
           <Tabs
             screenOptions={{

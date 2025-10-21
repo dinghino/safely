@@ -23,6 +23,7 @@ import { useColorScheme } from 'nativewind'
 import { useDeviceContext } from '@/components/contexts/device-manager'
 import { DeviceStatusBadge } from '@/components/device-status-badge'
 import { action } from '@/components/contexts/geolocation/geolocation.context'
+import SessionButton from '@/components/session-requests'
 
 export default function AppSettings() {
   const geo = useGeolocation()
@@ -87,7 +88,7 @@ export default function AppSettings() {
       <View className="px-4 py-2">
         <StatusBadges />
       </View>
-      <View className="gap-2 px-4">
+      <View className="flex-wrap gap-2 px-4">
         {/* <Text className="mb-4 font-bold text-xl">Geolocation debugging</Text> */}
         <View className="flex-row justify-stretch gap-2">
           {enabled ? (
@@ -111,6 +112,7 @@ export default function AppSettings() {
           <Button disabled={!enabled} size="icon" variant="secondary" onPress={togglePace}>
             {isMoving ? <Icon as={CircleX} /> : <Icon as={FootprintsIcon} />}
           </Button>
+          <SessionButton />
         </View>
       </View>
 
@@ -401,7 +403,6 @@ function SwitchControl({ active, action, label, className }: SwitchControl.Props
     </View>
   )
 }
-
 
 /**
  * recursive function to flatten an object in [key, value] pairs

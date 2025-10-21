@@ -81,7 +81,7 @@ export const DeviceOptionsForm: React.FC<DeviceOptionsForm.Props> = (props) => {
             label={<LabelBadge label="Heartbeat Interval" value={field.state.value} />}
             min={Defaults.MIN_HEARTBEAT}
             max={Defaults.MAX_HEARTBEAT}
-            step={1000}
+            step={10_000}
           />
         )}
       />

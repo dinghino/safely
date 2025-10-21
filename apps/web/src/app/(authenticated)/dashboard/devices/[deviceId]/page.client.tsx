@@ -9,8 +9,9 @@
  */
 
 import { useEffect, useMemo, useState } from 'react'
+import Link from 'next/link'
 import { useMutation, useQuery } from 'convex/react'
-import { ChevronDown, Trash2Icon } from 'lucide-react'
+import { ChevronDown, MapIcon, Trash2Icon } from 'lucide-react'
 
 import { api } from '@workspace/backend/api'
 import type { Doc, Id } from '@workspace/backend/dataModel'
@@ -28,6 +29,7 @@ import { cn } from '@/lib/utils'
 import { DeviceName, DeviceStatusBadge } from '@/entities/device/components'
 import { SessionLocationsTable } from '@/widgets/geospatial-table'
 import { SessionButton } from '@/features/device-tracking'
+import { ButtonGroup } from '@workspace/ui/components/button-group'
 
 function isSessionOpen(
   session: { endedAt?: number } | null | undefined,
@@ -100,7 +102,17 @@ function SessionItem({ session }: { session: Doc<'trackSession'> }) {
         'data-[state=open]:[&>div>button]:rounded-b-none',
       )}
     >
-      <div className="inline-flex w-full">
+      <ButtonGroup className="w-full">
+        {/* <div className="inline-flex w-full"> */}
+        <Button size="icon" variant="default" className="">
+          <Link
+            href={{
+              pathname: `/maps/sessions/${session._id}`,
+            }}
+          >
+            <MapIcon />
+          </Link>
+        </Button>
         <CollapsibleTrigger
           className={cn(
             buttonVariants({ variant: 'outline', size: 'default' }),
@@ -133,7 +145,8 @@ function SessionItem({ session }: { session: Doc<'trackSession'> }) {
         >
           <Trash2Icon />
         </Button>
-      </div>
+        {/* </div> */}
+      </ButtonGroup>
       <CollapsibleContent className="space-y-4 rounded-b-lg border border-t-0 p-2">
         <header className="space-y-1 rounded-lg bg-card p-2">
           <p>Started at {dayjs(session.startedAt).format('YYYY-MM-DD HH:mm:ss')}</p>

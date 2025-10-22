@@ -8,33 +8,20 @@
  * Most of it is going to be removed completely once we have mapping, probably.
  */
 
-import { Suspense, useEffect, useMemo, useState } from 'react'
-import Link from 'next/link'
-import { useMutation, useQuery } from 'convex/react'
-import { ChevronDown, MapIcon } from 'lucide-react'
-
+import { Suspense, useEffect, useState } from 'react'
+import { useQuery } from 'convex/react'
 import { api } from '@workspace/backend/api'
 import type { Doc, Id } from '@workspace/backend/dataModel'
-import { Button } from '@workspace/ui/components/button'
-import {
-  Collapsible,
-  CollapsibleTrigger,
-  CollapsibleContent,
-} from '@workspace/ui/components/collapsible'
 import { Badge } from '@workspace/ui/components/badge'
-import { ButtonGroup } from '@workspace/ui/components/button-group'
-import { DeleteDialogButton } from '@workspace/ui/components/delete-dialog-button'
 
 import dayjs from '@/lib/dayjs'
-import { cn } from '@/lib/utils'
-
-import { TimerBadge } from '@/components/timer-badge'
 
 import { DeviceName, DeviceStatusBadge } from '@/entities/device/components'
 import { SessionLocationsTable } from '@/widgets/geospatial-table'
 import { SessionButton } from '@/features/device-tracking'
 import { SessionMap } from '@/views/session-map'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@workspace/ui/components/tabs'
+import { Duration, SessionCollapsible } from '@/widgets/sessions'
 
 function isSessionOpen(
   session: { endedAt?: number } | null | undefined,
@@ -93,93 +80,46 @@ export function DevicePageClient({ deviceId }: { deviceId: Id<'devices'> }) {
 }
 
 function SessionItem({ session }: { session: Doc<'trackSession'> }) {
-  const deleteSession = useMutation(api.tracking.sessions.remove)
   return (
-    <Collapsible
-      defaultOpen={isSessionOpen(session)}
-      className={cn(
-        'data-[state=open]:[&_[data-role=chevron]]:rotate-180',
-        'data-[state=open]:[&>div>button]:rounded-b-none',
-      )}
+    <SessionCollapsible
+      session={session}
+      mapLink={{ pathname: `/dashboard/sessions/${session._id}/map` }}
     >
-      <ButtonGroup className="w-full">
-        <CollapsibleTrigger
-          asChild
-          className={cn('flex flex-1', 'max-w-full overflow-x-auto overflow-y-hidden')}
-        >
-          <Button
-            variant="outline"
-            className={cn('inline-flex w-full cursor-pointer items-center gap-2 px-4')}
-          >
-            {/* collapse indicator */}
-            <ChevronDown
-              data-role="chevron"
-              className="h-4 w-4 transition-transform duration-200 ease-in-out"
-            />
-            {/* activity icon */}
-            <span
-              className={cn(
-                'h-3 w-3 rounded',
-                isSessionOpen(session) ? 'bg-green-500' : 'bg-gray-500',
-              )}
-            />
-            {/* dynamic title */}
-            <SessionTitle session={session} />
-          </Button>
-        </CollapsibleTrigger>
-        <Button size="icon" variant="default" asChild className="">
-          <Link href={{ pathname: `/dashboard/sessions/${session._id}/map` }}>
-            <MapIcon />
-          </Link>
-        </Button>
-        <DeleteDialogButton
-          title="Delete Session"
-          description="Are you sure you want to delete this session? This action cannot be undone."
-          confirmText="Delete"
-          className="cursor-pointer"
-          disabled={session.endedAt === undefined}
-          onClick={async () => {
-            await deleteSession({ sessionId: session._id })
-          }}
-        />
-      </ButtonGroup>
-      <CollapsibleContent className="space-y-4 rounded-b-lg border border-t-0 p-2">
-        <header className="inline-flex w-full items-start justify-between rounded-lg bg-card p-2">
-          <div className="flex flex-col gap-2">
+      <header className="inline-flex w-full items-start justify-between rounded-lg bg-card p-2">
+        <div className="flex flex-col gap-2">
+          <p className="font-mono text-xs">
+            Started at {dayjs(session.startedAt).format('YYYY-MM-DD HH:mm:ss')}
+          </p>
+          {session.endedAt && (
             <p className="font-mono text-xs">
-              Started at {dayjs(session.startedAt).format('YYYY-MM-DD HH:mm:ss')}
+              Ended at {dayjs(session.endedAt).format('YYYY-MM-DD HH:mm:ss')}
             </p>
-            {session.endedAt && (
-              <p className="font-mono text-xs">
-                Ended at {dayjs(session.endedAt).format('YYYY-MM-DD HH:mm:ss')}
-              </p>
-            )}
+          )}
+        </div>
+        <div className="inline-flex items-center gap-2">
+          <Badge>
+            Duration <Duration session={session} />
+          </Badge>
+          <Badge>Points {session.pointsCount}</Badge>
+        </div>
+      </header>
+      <Tabs defaultValue="map">
+        <TabsList>
+          <TabsTrigger value="map">Map View</TabsTrigger>
+          <TabsTrigger value="data">Data View</TabsTrigger>
+        </TabsList>
+        <TabsContent value="map">
+          <div className="h-full max-h-[600px] flex-1 overflow-hidden rounded-lg">
+            <Suspense fallback={<div>Loading map...</div>}>
+              <SessionMap sessionId={session._id} />
+            </Suspense>
           </div>
-          <div className="inline-flex items-center gap-2">
-            <Badge>
-              Duration <Duration session={session} />
-            </Badge>
-            <Badge>Points {session.pointsCount}</Badge>
-          </div>
-        </header>
-        <Tabs defaultValue="map">
-          <TabsList>
-            <TabsTrigger value="map">Map View</TabsTrigger>
-            <TabsTrigger value="data">Data View</TabsTrigger>
-          </TabsList>
-          <TabsContent value="map">
-            <div className="h-full max-h-[600px] flex-1 overflow-hidden rounded-lg">
-              <Suspense fallback={<div>Loading map...</div>}>
-                <SessionMap sessionId={session._id} />
-              </Suspense>
-            </div>
-          </TabsContent>
-          <TabsContent value="data">
-            <SessionDataTable sessionId={session._id} />
-          </TabsContent>
-        </Tabs>
-      </CollapsibleContent>
-    </Collapsible>
+        </TabsContent>
+        <TabsContent value="data">
+          <SessionDataTable sessionId={session._id} />
+        </TabsContent>
+      </Tabs>
+    </SessionCollapsible>
   )
 }
 
@@ -189,61 +129,6 @@ function SessionDataTable({ sessionId }: { sessionId: Id<'trackSession'> }) {
   if (data.length === 0) return <div>No location data for this session</div>
   return <SessionLocationsTable locations={data} />
   // return <pre>{JSON.stringify(data, null, 2)}</pre>
-}
-
-function Duration({ session }: { session: { startedAt: number; endedAt?: number } }) {
-  const start = useMemo(() => dayjs(session.startedAt), [session.startedAt])
-  const end = useMemo(() => (session.endedAt ? dayjs(session.endedAt) : null), [session.endedAt])
-
-  const [diff, setDiff] = useState(end ? end.diff(start) : dayjs().diff(start))
-
-  useEffect(() => {
-    if (session.endedAt) return
-
-    const interval = setInterval(() => setDiff(dayjs().diff(start)), 10_000)
-    return () => clearInterval(interval)
-  }, [session.endedAt, start])
-
-  return <span>{dayjs.duration(diff).humanize()}</span>
-  // return <span>{dayjs.duration(diff).format('HH:mm:ss')}</span>
-}
-
-function SessionTitle({ session }: { session: Doc<'trackSession'> }) {
-  const start = useMemo(() => dayjs(session.startedAt), [session.startedAt])
-  const end = useMemo(() => (session.endedAt ? dayjs(session.endedAt) : null), [session.endedAt])
-
-  const started = useMemo(() => {
-    const value = start.isSame(dayjs(), 'day')
-      ? start.format('HH:mm')
-      : start.format('YYYY-MM-DD HH:mm')
-    return <span className="font-bold">{value}</span>
-  }, [start])
-
-  const ended = useMemo(() => {
-    if (!end) return null
-    const isSameDay = start.isSame(end, 'day')
-    const value = isSameDay ? end.format('HH:mm') : end.format('YYYY-MM-DD HH:mm')
-    return <span className="font-bold">{value}</span>
-  }, [start, end])
-
-  const duration = useMemo(() => {
-    if (!end) return <TimerBadge label="active">{session._creationTime}</TimerBadge>
-    const diff = end.diff(start)
-    return (
-      <Badge variant="secondary" className="min-w-[96px] text-xs">
-        {dayjs.duration(diff).humanize()}
-      </Badge>
-    )
-  }, [start, end, session])
-
-  return (
-    <h3 className="inline-flex w-full items-center gap-0.5 text-start text-xs">
-      from {started}
-      {ended && <span>to</span>}
-      {ended}
-      {duration}
-    </h3>
-  )
 }
 
 function UpdatedTimer({ session }: { session: Doc<'trackSession'> }) {

@@ -2,8 +2,11 @@
 
 import { useEffect, useMemo } from 'react'
 import { useQuery } from 'convex/react'
-import { api } from '@workspace/backend/api'
 
+import { Circle, useMap } from 'react-leaflet'
+import { Polyline } from 'react-leaflet/Polyline'
+
+import { api } from '@workspace/backend/api'
 import type { Id } from '@workspace/backend/types'
 import type { FunctionReturnType } from 'convex/server'
 
@@ -16,14 +19,13 @@ import {
   MapTileLayer,
   MapZoomControl,
 } from '@/shared/modules/maps'
+
+import { formatLatLng } from '@/entities/location/lib'
+
 import { MapTiles } from '@/shared/modules/maps/map-layers'
 import { MapMarker, MapTooltip } from '@/shared/modules/maps'
 
-import { Polyline } from 'react-leaflet/Polyline'
-
 import { ButtonGroup } from '@workspace/ui/components/button-group'
-import { formatLatLng } from '@/entities/location/lib'
-import { Circle, useMap } from 'react-leaflet'
 import { DeviceMarker, DevicePopup } from '@/widgets/maps'
 
 export namespace SessionMap {
@@ -44,6 +46,8 @@ export const SessionMap: React.FC<SessionMap.Props> = ({ sessionId }) => {
         <MapTileLayer />
         <MapTiles layers={['mapnik', 'osm', 'topographic', 'worldStreet']} />
         <SessionLayer name="session" locations={locations} />
+        <AccuracyLayer name="accuracy" locations={locations} />
+
         <MapLayerGroup name="device">
           {device && (
             <DeviceMarker device={device}>
@@ -114,16 +118,30 @@ const SessionLayer = (props: { locations?: Location[]; name: string }) => {
           <MapTooltip>{id === ends[0]?.id ? 'Start' : 'End'}</MapTooltip>
         </MapMarker>
       ))}
-      {coordinates
-        .filter(({ accuracy }) => accuracy !== undefined)
-        .map(({ id, coordinates, accuracy }) => (
-          <Circle key={id} center={coordinates} radius={accuracy} color="blue" />
-        ))}
       <Polyline
         positions={coordinates.map(({ coordinates }) => coordinates)}
         color="red"
         weight={2}
       />
+    </MapLayerGroup>
+  )
+}
+
+const AccuracyLayer = (props: { locations: Location[] | undefined; name: string }) => {
+  const { locations, name } = props
+  if (!locations) return null
+  return (
+    <MapLayerGroup name={name}>
+      {locations
+        .filter((loc) => loc.metadata?.accuracy !== undefined)
+        .map((loc) => (
+          <Circle
+            key={loc._id.toString()}
+            center={formatLatLng(loc.coordinates!)}
+            radius={loc.metadata!.accuracy!}
+            color="blue"
+          />
+        ))}
     </MapLayerGroup>
   )
 }

@@ -12,7 +12,7 @@
     "check-types": "tsup --noEmit"
   },
   "dependencies": {
-    "nuqs": "^2.6.0"
+    "nuqs": "^2.7.2"
   },
   "peerDependencies": {
     "react": "^19.1.1",

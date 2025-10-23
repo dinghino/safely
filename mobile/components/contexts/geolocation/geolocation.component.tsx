@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import BackgroundGeolocation from 'react-native-background-geolocation'
 
 import * as helpers from '@/lib/geolocation'
@@ -85,12 +85,23 @@ function GeolocationProvider({ children }: GeolocationProviderProps) {
       'heartbeat',
       BackgroundGeolocation.onHeartbeat(async (event) => {
         console.log('💓 [BGL::onHeartbeat] - Heartbeat event')
-        send('💓 plugin heartbeat')({ ...event.location })
-        // this gets caught in onLocation so we don't need to do anything else here
-        // we COULD send the last known location in event.location without querying
-        // the device again since we technically are not moving, but...
-        const options = helpers.transformGetLocationOptions(device, {})
-        await BackgroundGeolocation.getCurrentPosition(options)
+        /**
+         * Handle async tasks in background.
+         * @see {@link https://github.com/transistorsoft/react-native-background-geolocation/blob/9ce1d4496ecf8ad37b1d4062322f152af1879407/CHANGELOG.md#L184-L195}
+         */
+        const taskid = await BackgroundGeolocation.startBackgroundTask()
+        try {
+          send('💓 plugin heartbeat')({ ...event.location })
+          // this gets caught in onLocation so we don't need to do anything else here
+          // we COULD send the last known location in event.location without querying
+          // the device again since we technically are not moving, but...
+          const options = helpers.transformGetLocationOptions(device, {})
+          await BackgroundGeolocation.getCurrentPosition(options)
+        } catch (error) {
+          console.warn('[onHeartbeat] ERROR:', error)
+        } finally {
+          BackgroundGeolocation.stopBackgroundTask(taskid)
+        }
       }),
     )
     listeners.register(
@@ -103,7 +114,10 @@ function GeolocationProvider({ children }: GeolocationProviderProps) {
 
     listeners.register(
       'motion_change',
-      BackgroundGeolocation.onMotionChange(send('🏃 motion changed')),
+      BackgroundGeolocation.onMotionChange((state) => {
+        send('🏃 motion changed')({ isMoving: state.isMoving })
+        dispatch(action.update({ isMoving: state.isMoving }))
+      }),
     )
 
     listeners.register(
@@ -160,28 +174,40 @@ function GeolocationProvider({ children }: GeolocationProviderProps) {
   // biome-ignore lint/correctness/useExhaustiveDependencies: useReducer dispatch is stable
   useEffect(() => {
     // if (initialized.current) return console.log('⚙️ [BGL::setup ] already initialized, skipping')
-    BackgroundGeolocation.on
-    console.log('⚙️ [BGL::setup ] calling BackgroundGeolocation.ready')
-    // todo: merge initial device settings + secure store from unmount
-    BackgroundGeolocation.ready({
-      desiredAccuracy: BackgroundGeolocation.DESIRED_ACCURACY_HIGH,
-      distanceFilter: 10,
-      stopOnTerminate: false,
-      enableHeadless: true,
-      startOnBoot: true,
-      logLevel: BackgroundGeolocation.LOG_LEVEL_VERBOSE,
-      heartbeatInterval: 60,
-      debug: false,
-    }).then(async (state) => {
-      if (!state.enabled) {
-        // biome-ignore lint/style/noParameterAssign: reassigning state parameter is intentional here
-        state = await BackgroundGeolocation.start()
-      }
-      dispatch(action.event({ name: '🎉 geolocation ready', data: state }))
+    setup().then((state) => {
       dispatch(action.update(state))
+      dispatch(action.event({ name: '🎉 geolocation ready', data: state }))
       // initialized.current = true
       console.log('🎉 [BGL::setup ] BackgroundGeolocation initialized')
     })
+    resolver?.()
+
+    console.log('⚙️ [BGL::setup ] calling BackgroundGeolocation.ready')
+    // todo: merge initial device settings + secure store from unmount
+    // BackgroundGeolocation.ready({
+    //   desiredAccuracy: BackgroundGeolocation.DESIRED_ACCURACY_HIGH,
+    //   distanceFilter: 10,
+    //   stopOnTerminate: false,
+    //   enableHeadless: true,
+    //   startOnBoot: true,
+    //   logLevel: BackgroundGeolocation.LOG_LEVEL_VERBOSE,
+    //   heartbeatInterval: 60,
+    //   debug: false,
+    //   foregroundService: true, // <-- CRITICAL for Android
+    //   notification: {
+    //     title: 'Your App',
+    //     text: 'Tracking location',
+    //   },
+    // }).then(async (state) => {
+    //   if (!state.enabled) {
+    //     // biome-ignore lint/style/noParameterAssign: reassigning state parameter is intentional here
+    //     state = await BackgroundGeolocation.start()
+    //   }
+    //   dispatch(action.event({ name: '🎉 geolocation ready', data: state }))
+    //   dispatch(action.update(state))
+    //   // initialized.current = true
+    //   console.log('🎉 [BGL::setup ] BackgroundGeolocation initialized')
+    // })
   }, [])
 
   // fixme: this is broken and causes multiple config updates even though device.settings
@@ -190,12 +216,10 @@ function GeolocationProvider({ children }: GeolocationProviderProps) {
     if (!settings) return
     console.log('🛠️ [BGL::setup ] Device settings changed, updating config')
     const config = helpers.transformSettings(settings)
-    console.log(settings)
-    console.log(config)
     BackgroundGeolocation.setConfig(config).then(() => {
       console.log('🛠️ [BGL::setup ] config updated')
-      dispatch(action.event({ name: '🛠️ config updated', data: { settings, config } }))
       dispatch(action.update(config))
+      dispatch(action.event({ name: '🛠️ config updated', data: { settings, config } }))
     })
   }, [settings, dispatch])
 
@@ -208,3 +232,29 @@ function GeolocationProvider({ children }: GeolocationProviderProps) {
 }
 
 export default GeolocationProvider
+
+let resolver: (() => void) | null = null
+const initPromise: Promise<void> = new Promise((resolve) => {
+  resolver = resolve
+})
+
+async function setup() {
+  await initPromise
+  console.log('❓ [BGL::setup ] setup called after component mount')
+  return BackgroundGeolocation.ready({
+    desiredAccuracy: BackgroundGeolocation.DESIRED_ACCURACY_HIGH,
+    distanceFilter: 10,
+    stopOnTerminate: false,
+    enableHeadless: true,
+    startOnBoot: true,
+    logLevel: BackgroundGeolocation.LOG_LEVEL_VERBOSE,
+    heartbeatInterval: 60,
+    debug: false,
+    notification: {
+      title: 'Your App',
+      text: 'Tracking location',
+    },
+  }).then(() => {
+    return BackgroundGeolocation.start()
+  })
+}

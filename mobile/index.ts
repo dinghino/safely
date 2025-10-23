@@ -16,6 +16,9 @@ import store from '@/lib/secure-store'
 import { STORE_KEY } from './constants'
 import * as helpers from '@/lib/geolocation'
 
+// temporary flag to disable headless heartbeat until we figure out auth issues
+const ENABLED = false
+
 // import * as dotenv from 'dotenv'
 // dotenv.config({ path: '.env' })
 async function createConvexClient() {
@@ -44,6 +47,9 @@ async function handleHeartbeat(device: Device | undefined) {
 let sendingHeartbeat = false
 async function handleLocationEvent(opts: { device: Device; location: Location }) {
   const { device, location } = opts
+
+  if (!ENABLED)
+    return console.log('😶‍🌫️ 💓 Headless heartbeat disabled, skipping location event handling')
 
   if (location.sample) return console.log('😶‍🌫️ 📍 Ignoring sample location event')
 

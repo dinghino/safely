@@ -30,32 +30,30 @@ export default function AppSettings() {
   const { state, dispatch, events, locations } = geo
   const { enabled, debug, isMoving } = state
 
-  const start = useCallback(() => {
+  const start = useCallback(async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
-    BackgroundGeolocation.start().then((state) => {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy)
-      dispatch(action.update({ enabled: state.enabled }))
-    })
+    const state = await BackgroundGeolocation.start()
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy)
+    dispatch(action.update({ enabled: state.enabled }))
   }, [dispatch])
 
-  const stop = useCallback(() => {
+  const stop = useCallback(async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
-    BackgroundGeolocation.stop().then((state) => {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy)
-      dispatch(action.update({ enabled: state.enabled }))
-    })
+    const state = await BackgroundGeolocation.stop()
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy)
+    dispatch(action.update({ enabled: state.enabled }))
   }, [dispatch])
 
-  const togglePace = useCallback(() => {
+  const togglePace = useCallback(async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
-    BackgroundGeolocation.getState().then(({ isMoving, enabled }) => {
-      if (!enabled) return
-      BackgroundGeolocation.changePace(!isMoving, async () => {
-        const payload = await BackgroundGeolocation.getState()
-        dispatch(action.event({ name: '🚶‍♂️ toggle pace', data: { isMoving: payload.isMoving } }))
-        dispatch(action.update(payload))
-      })
-    })
+    const state = await BackgroundGeolocation.getState()
+    const { enabled, isMoving } = state
+    if (!enabled) return
+
+    await BackgroundGeolocation.changePace(!isMoving)
+    const payload = await BackgroundGeolocation.getState()
+    dispatch(action.event({ name: '🚶‍♂️ toggle pace', data: { isMoving: payload.isMoving } }))
+    dispatch(action.update(payload))
   }, [dispatch])
 
   // const toggleLocator = useCallback(() => {

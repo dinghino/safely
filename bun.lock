@@ -7,6 +7,7 @@
         "@biomejs/biome": "^2.2.4",
         "@workspace/eslint-config": "workspace:*",
         "@workspace/typescript-config": "workspace:*",
+        "nuqs": "^2.7.2",
         "tsup": "^8.5.0",
         "turbo": "^2.5.6",
         "typescript": "^5.9.3",

@@ -55,3 +55,7 @@ or from package.json
 bun prebuild
 bun android
 ```
+
+## Useful links
+
+- [react-native-action-sheets](https://rnas.vercel.app/) to bottom sheets globally

@@ -17,6 +17,7 @@ import { ThemeProvider } from '@react-navigation/native'
 
 import { useColorScheme } from 'nativewind'
 import { NAV_THEME } from '@/lib/theme'
+
 import { AppHeader } from '@/components/app-header'
 
 export {
@@ -69,11 +70,7 @@ function Routes() {
   }
 
   return (
-    <Stack
-      screenOptions={{
-        header: () => <AppHeader />,
-        // headerShown: true,
-      }}>
+    <Stack screenOptions={{ header: () => <AppHeader /> }}>
       {/* Screens only shown when the user is NOT signed in */}
       <Stack.Protected guard={!isSignedIn}>
         <Stack.Screen name="(auth)/sign-in" options={SIGN_IN_SCREEN_OPTIONS} />

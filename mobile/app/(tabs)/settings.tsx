@@ -1,14 +1,13 @@
-import { useCallback, useId, useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { Stack } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
 import { ScrollView, View } from 'react-native'
 import * as Haptics from 'expo-haptics'
 
+import { SheetManager } from 'react-native-actions-sheet'
 import BackgroundGeolocation from 'react-native-background-geolocation'
 
 import { Text } from '@/components/ui/text'
-import { Label } from '@/components/ui/label'
-import { Switch } from '@/components/ui/switch'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { Button } from '@/components/ui/button'
@@ -18,7 +17,13 @@ import { type Geolocation, type Location, useGeolocation } from '@/components/co
 
 import { cn } from '@/lib/utils'
 import { Icon } from '@/components/ui/icon'
-import { BellMinusIcon, CircleX, CodeIcon, FootprintsIcon, MapPinMinus } from 'lucide-react-native'
+import {
+  BellMinusIcon,
+  CircleX,
+  FootprintsIcon,
+  MapPinMinus,
+  SettingsIcon,
+} from 'lucide-react-native'
 import { useColorScheme } from 'nativewind'
 import { useDeviceContext } from '@/components/contexts/device-manager'
 import { DeviceStatusBadge } from '@/components/device-status-badge'
@@ -28,21 +33,7 @@ import SessionButton from '@/components/session-requests'
 export default function AppSettings() {
   const geo = useGeolocation()
   const { state, dispatch, events, locations } = geo
-  const { enabled, debug, isMoving } = state
-
-  const start = useCallback(async () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
-    const state = await BackgroundGeolocation.start()
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy)
-    dispatch(action.update({ enabled: state.enabled }))
-  }, [dispatch])
-
-  const stop = useCallback(async () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
-    const state = await BackgroundGeolocation.stop()
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy)
-    dispatch(action.update({ enabled: state.enabled }))
-  }, [dispatch])
+  const { enabled, isMoving } = state
 
   const togglePace = useCallback(async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
@@ -56,21 +47,6 @@ export default function AppSettings() {
     dispatch(action.update(payload))
   }, [dispatch])
 
-  // const toggleLocator = useCallback(() => {
-  //   const method = enabled ? BackgroundGeolocation.stop : BackgroundGeolocation.start
-  //   method((state) => {
-  //     dispatch({ type: 'update', payload: { enabled: !state.enabled } })
-  //   })
-  // }, [enabled, dispatch])
-
-  const toggleDebug = useCallback(() => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy)
-
-    BackgroundGeolocation.setConfig({ debug: !debug }).then(({ debug }) =>
-      dispatch(action.update({ debug })),
-    )
-  }, [debug, dispatch])
-
   const [lastEvents, restEvents] = useMemo(() => {
     const reversed = events.toReversed()
     if (events.length <= 5) return [reversed, []]
@@ -79,45 +55,33 @@ export default function AppSettings() {
   }, [events])
 
   return (
-    <>
-      {/* <SafeAreaView> */}
+    <View className="flex-1 gap-4">
+      {/* <SafeAreaView className='bg-red-500 gap-4 px-4'> */}
       <StatusBar style="auto" translucent />
       <Stack.Screen options={{ title: 'Settings' }} />
-      <View className="px-4 py-2">
-        <StatusBadges />
-      </View>
-      <View className="flex-wrap gap-2 px-4">
-        {/* <Text className="mb-4 font-bold text-xl">Geolocation debugging</Text> */}
-        <View className="flex-row justify-stretch gap-2">
-          {enabled ? (
-            <Control className="flex-1" variant="destructive" label="Stop" action={stop} />
-          ) : (
-            <Control className="flex-1" variant="default" label="Start" action={start} />
-          )}
 
-          <Control
-            className="flex-1"
-            label={
-              <>
-                <Icon as={CodeIcon} />
-                <Text>{debug ? 'Disable' : 'Enable'}</Text>
-              </>
-            }
-            active={!!debug}
-            variant="secondary"
-            action={toggleDebug}
-          />
-          <Button disabled={!enabled} size="icon" variant="secondary" onPress={togglePace}>
+      <View className="flex-col gap-2 px-4 pt-4">
+        <View className="flex-row justify-stretch gap-2">
+          <SessionButton />
+          <View className="flex-1" />
+          <Button disabled={!enabled} size="icon" variant="outline" onPress={togglePace}>
             {isMoving ? <Icon as={CircleX} /> : <Icon as={FootprintsIcon} />}
           </Button>
-          <SessionButton />
+          <Button
+            variant="outline"
+            size="icon"
+            onPress={() => SheetManager.show('device-settings')}
+          >
+            <Icon as={SettingsIcon} />
+            {/* <Text>Open Device Settings</Text> */}
+          </Button>
         </View>
       </View>
 
-      <ScrollView className="m-4 min-h-48" contentContainerClassName="gap-4">
+      <ScrollView className="min-h-48" contentContainerClassName="gap-4 px-4">
         <GeolocationState />
         <Collapsible>
-          <View className="gap-2 rounded-md bg-gray-100 p-2 dark:bg-neutral-900">
+          <View className="gap-2 rounded-md bg-muted p-2">
             <View className="flex-row items-center justify-between gap-4 pl-2">
               <Text className="font-bold text-lg">Events</Text>
               <View className="flex-row items-center gap-2">
@@ -159,7 +123,7 @@ export default function AppSettings() {
           </View>
         </Collapsible>
 
-        <View className="gap-2 rounded-md bg-gray-100 p-2 dark:bg-neutral-900">
+        <View className="gap-2 rounded-md bg-muted p-2">
           <View className="flex-row items-center justify-between pl-2">
             <Text className="font-bold text-lg">Locations</Text>
             <Button
@@ -184,38 +148,9 @@ export default function AppSettings() {
           ))}
         </View>
       </ScrollView>
+
+      <StatusBadges className="flex-row items-center justify-center border-t border-t-muted px-4 py-2" />
       {/* </SafeAreaView> */}
-    </>
-  )
-}
-
-// { state, locations, events, dispatch, clearLocations, clearEvents }
-type ControlProps = {
-  active?: boolean
-  action: () => void
-  label: string | React.ReactNode
-  className?: string
-  variant?: React.ComponentProps<typeof Button>['variant']
-}
-function Control(props: ControlProps) {
-  const { active, action, label, className, variant } = props
-  const id = useId()
-
-  const onPress = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
-    action()
-  }
-
-  return (
-    <View className={cn('flex-row items-center gap-2', className)}>
-      <Button
-        className="w-full"
-        variant={variant ?? (active ? 'destructive' : 'default')}
-        onPress={onPress}
-        id={id}
-      >
-        {typeof label === 'string' ? <Text>{label}</Text> : label}
-      </Button>
     </View>
   )
 }
@@ -225,8 +160,8 @@ const Trigger = ({ children, ...props }: { children: React.ReactNode }) => {
 
   return (
     <Button
-      variant={colorScheme === 'dark' ? 'secondary' : 'default'}
-      className="w-full justify-start gap-2"
+      variant={colorScheme === 'dark' ? 'default' : 'default'}
+      className="justify-start gap-2"
       {...props}
     >
       {children}
@@ -234,12 +169,12 @@ const Trigger = ({ children, ...props }: { children: React.ReactNode }) => {
   )
 }
 
-const StatusBadges = () => {
+const StatusBadges = ({ className }: { className: string }) => {
   const { device } = useDeviceContext()
   const { state } = useGeolocation()
 
   return (
-    <View className="flex-row flex-wrap gap-2">
+    <View className={cn('flex-row flex-wrap gap-2', className)}>
       {device ? (
         <>
           <DeviceStatusBadge device={device} />
@@ -322,10 +257,10 @@ function GeolocationState() {
   }, [device])
 
   return (
-    <View className="gap-2 rounded-md bg-gray-100 p-2 dark:bg-neutral-900">
+    <View className="gap-2 rounded-md bg-muted p-2">
       <Collapsible>
         <CollapsibleTrigger asChild>
-          <Button variant="outline" className="w-full">
+          <Button variant="default" className="w-full">
             <Text className="sticky top-0"> Current states</Text>
           </Button>
         </CollapsibleTrigger>
@@ -360,44 +295,6 @@ function GeolocationState() {
           )}
         </CollapsibleContent>
       </Collapsible>
-    </View>
-  )
-}
-
-// biome-ignore lint/correctness/noUnusedVariables: playground component
-namespace SwitchControl {
-  export type Props = {
-    active: boolean
-    action: (value: boolean) => void
-    label: string
-    className?: string
-  }
-}
-// biome-ignore lint/correctness/noUnusedVariables: playground component
-function SwitchControl({ active, action, label, className }: SwitchControl.Props) {
-  function onPress() {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
-    action(!active)
-  }
-
-  function onCheckedChange(checked: boolean) {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
-    action(checked)
-  }
-
-  const id = useId()
-  return (
-    <View className={cn('flex-row items-center gap-2', className)}>
-      <Switch
-        checked={active}
-        onCheckedChange={onCheckedChange}
-        id={id}
-        nativeID={id}
-        aria-labelledby={id}
-      />
-      <Label nativeID={id} htmlFor={id} onPress={onPress}>
-        {label}
-      </Label>
     </View>
   )
 }

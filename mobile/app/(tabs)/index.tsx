@@ -4,6 +4,8 @@ import { useColorScheme } from 'nativewind'
 import { MoonStarIcon, XIcon, SunIcon } from 'lucide-react-native'
 import { Image, type ImageStyle, View } from 'react-native'
 
+import { SheetManager } from 'react-native-actions-sheet'
+
 import { Button } from '@/components/ui/button'
 import { Icon } from '@/components/ui/icon'
 import { Text } from '@/components/ui/text'
@@ -76,6 +78,17 @@ export default function Screen() {
               <Text>Go home</Text>
             </Button>
           </Link>
+          <Button
+            size="sm"
+            variant="outline"
+            onPress={() =>
+              SheetManager.show('device-settings', {
+                payload: { test: 'Hello from the index screen!' },
+              })
+            }
+          >
+            <Text>Press me</Text>
+          </Button>
         </View>
         <Link href="/modal">
           <Link.Trigger>

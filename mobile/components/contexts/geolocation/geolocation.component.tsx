@@ -174,40 +174,17 @@ function GeolocationProvider({ children }: GeolocationProviderProps) {
   // biome-ignore lint/correctness/useExhaustiveDependencies: useReducer dispatch is stable
   useEffect(() => {
     // if (initialized.current) return console.log('⚙️ [BGL::setup ] already initialized, skipping')
-    setup().then((state) => {
-      dispatch(action.update(state))
-      dispatch(action.event({ name: '🎉 geolocation ready', data: state }))
-      // initialized.current = true
-      console.log('🎉 [BGL::setup ] BackgroundGeolocation initialized')
-    })
+    setup()
+      // .then(async () => await BackgroundGeolocation.start())
+      .then((state) => {
+        dispatch(action.update(state))
+        dispatch(action.event({ name: '🎉 geolocation ready', data: state }))
+        // initialized.current = true
+        console.log('🎉 [BGL::setup ] BackgroundGeolocation initialized')
+      })
     resolver?.()
 
     console.log('⚙️ [BGL::setup ] calling BackgroundGeolocation.ready')
-    // todo: merge initial device settings + secure store from unmount
-    // BackgroundGeolocation.ready({
-    //   desiredAccuracy: BackgroundGeolocation.DESIRED_ACCURACY_HIGH,
-    //   distanceFilter: 10,
-    //   stopOnTerminate: false,
-    //   enableHeadless: true,
-    //   startOnBoot: true,
-    //   logLevel: BackgroundGeolocation.LOG_LEVEL_VERBOSE,
-    //   heartbeatInterval: 60,
-    //   debug: false,
-    //   foregroundService: true, // <-- CRITICAL for Android
-    //   notification: {
-    //     title: 'Your App',
-    //     text: 'Tracking location',
-    //   },
-    // }).then(async (state) => {
-    //   if (!state.enabled) {
-    //     // biome-ignore lint/style/noParameterAssign: reassigning state parameter is intentional here
-    //     state = await BackgroundGeolocation.start()
-    //   }
-    //   dispatch(action.event({ name: '🎉 geolocation ready', data: state }))
-    //   dispatch(action.update(state))
-    //   // initialized.current = true
-    //   console.log('🎉 [BGL::setup ] BackgroundGeolocation initialized')
-    // })
   }, [])
 
   // fixme: this is broken and causes multiple config updates even though device.settings
@@ -239,14 +216,20 @@ const initPromise: Promise<void> = new Promise((resolve) => {
 })
 
 async function setup() {
+  if (!resolver) {
+    console.log('❓ [BGL::setup ] setup already in progress or completed')
+    return await BackgroundGeolocation.getState()
+  }
   await initPromise
   console.log('❓ [BGL::setup ] setup called after component mount')
+  // todo: merge initial device settings + secure store from unmount
   return BackgroundGeolocation.ready({
     desiredAccuracy: BackgroundGeolocation.DESIRED_ACCURACY_HIGH,
     distanceFilter: 10,
     stopOnTerminate: false,
     enableHeadless: true,
     startOnBoot: true,
+    stopTimeout: 1,
     logLevel: BackgroundGeolocation.LOG_LEVEL_VERBOSE,
     heartbeatInterval: 60,
     debug: false,
@@ -254,7 +237,8 @@ async function setup() {
       title: 'Your App',
       text: 'Tracking location',
     },
-  }).then(() => {
-    return BackgroundGeolocation.start()
+  }).then((state) => {
+    resolver = null
+    return state
   })
 }

@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { api } from '@workspace/backend/api'
 import { Button } from '@workspace/ui/components/button'
 import {
   Sheet,

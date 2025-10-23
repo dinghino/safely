@@ -151,6 +151,7 @@ export const acknowledge = mutation({
       //   outer fails?
       //   otherwise we can make some inner to handle different requests
     }
+    return false
   },
 })
 
@@ -165,6 +166,7 @@ async function dispatchCreateSession(
 ) {
   const session = await ctx.runMutation(internal.tracking.sessions.create, { deviceId })
   await ctx.db.patch(requestId, { session, acknowledged: true })
+  return true
 }
 
 async function dispatchCloseSession(
@@ -174,6 +176,7 @@ async function dispatchCloseSession(
 ) {
   const session = await ctx.runMutation(internal.tracking.sessions.close, { deviceId })
   await ctx.db.patch(requestId, { session, acknowledged: true })
+  return true
 }
 
 // todo: move to root `lib`

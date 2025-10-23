@@ -23,7 +23,7 @@ export const all = query({
 })
 
 /**
- * Get a single device by its deviceId (not the internal Convex ID)
+ * Get a single device by its id
  * @throws if the device does not exists or does not belong to the current user
  * @todo retrieve active tracking session
  */
@@ -40,7 +40,18 @@ export const one = query({
     if (!device || device.owner !== user._id) return null
     // embed current settings and return explicitly (no undefined)
     const withSettings = await helpers.get.embedSettings(ctx, device)
-    return withSettings!
+    return withSettings
+  },
+})
+
+export const settings = query({
+  args: { deviceId: v.optional(v.id('devices')) },
+  handler: async (ctx, args) => {
+    if (!args.deviceId) return undefined
+    const user = await getCurrentUserOrThrow(ctx)
+    const device = await ctx.db.get(args.deviceId)
+    if (!device || device.owner !== user._id) return null
+    return await helpers.get.getSettings(ctx, device)
   },
 })
 

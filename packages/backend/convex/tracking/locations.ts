@@ -88,7 +88,7 @@ export const getSession = query({
     const locations = await ctx.db
       .query('trackLocation')
       .withIndex('by_session', (q) => q.eq('session', session._id))
-      .order('desc')
+      .order('asc')
       .collect()
 
     const locationsData = await Promise.all(

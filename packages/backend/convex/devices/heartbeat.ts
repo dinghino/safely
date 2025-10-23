@@ -64,6 +64,10 @@ export const send = mutation({
     //
     if (location) {
       await ctx.runMutation(api.devices.location.setLast, { deviceId, ...location })
+      const tracking = await ctx.runQuery(api.tracking.sessions.getActive, { deviceId })
+      if (tracking) {
+        await ctx.runMutation(api.tracking.locations.add, { sessionId: tracking._id, ...location })
+      }
     }
 
     ///

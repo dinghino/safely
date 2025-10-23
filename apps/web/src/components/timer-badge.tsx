@@ -1,15 +1,24 @@
 'use client'
-import { useEffect, useMemo, useState } from 'react'
-import { LabeledBadge } from './labeled-badge'
+import { useMemo } from 'react'
 import dayjs from 'dayjs'
+import { LabeledBadge } from './labeled-badge'
+import { useTimer } from '@/shared/hooks/use-timer'
 
 export namespace TimerBadge {
   export type Props = Omit<LabeledBadge.Props, 'children'> & {
     children: dayjs.ConfigType
+    /**
+     * Tick interval
+     * @default 1 second
+    */
     tick?: number
   }
 }
 
+/**
+ * A badge that displays a timer counting up from a given date/time up to now
+ * in a humanized format (e.g., "5 minutes ago", "2 hours ago").
+ */
 export const TimerBadge: React.FC<TimerBadge.Props> = (props) => {
   const { children, tick = 1000, ...rest } = props
   const value = useMemo(() => dayjs(children), [children])
@@ -17,18 +26,4 @@ export const TimerBadge: React.FC<TimerBadge.Props> = (props) => {
   const diff = dayjs(now).diff(dayjs(value))
 
   return <LabeledBadge {...rest}>{dayjs.duration(diff).humanize()}</LabeledBadge>
-}
-
-type UseTimer = { tick?: number; enabled?: boolean }
-const useTimer = ({ tick = 1000, enabled = true }: UseTimer) => {
-  const [now, setNow] = useState(Date.now())
-  useEffect(() => {
-    if (!enabled) return
-    const interval = setInterval(() => {
-      setNow(Date.now())
-    }, tick)
-    return () => clearInterval(interval)
-  }, [tick, enabled])
-
-  return now
 }

@@ -1,10 +1,15 @@
-import { useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 import BackgroundGeolocation from 'react-native-background-geolocation'
 
 import * as helpers from '@/lib/geolocation'
 
 import { useDeviceContext } from '../device-manager'
-import { GeolocationContext, useGeolocationReducer, action } from './geolocation.context'
+import {
+  GeolocationContext,
+  useGeolocationReducer,
+  action,
+  type Geolocation,
+} from './geolocation.context'
 import { useListenersController } from './listeners.controller'
 
 type GeolocationProviderProps = {
@@ -13,24 +18,26 @@ type GeolocationProviderProps = {
 
 function GeolocationProvider({ children }: GeolocationProviderProps) {
   const [state, dispatch] = useGeolocationReducer()
-  const { device, settings, heartbeat } = useDeviceContext()
+  const { settings, heartbeat } = useDeviceContext()
   // last location sent to the server to avoid duplicate calls
   const lastLocationId = useRef<string | null>(null)
   // const initialized = useRef(false)
   const listeners = useListenersController(false)
 
-  // useSetupGeolocation()
-
   // --------------------------------------------------------------------------
   // reset all event listeners on mount/unmount
-  useEffect(
-    () => () => {
-      console.log('⚙️ [BGL::events] Cleaning up GeolocationContext')
-      BackgroundGeolocation.removeAllListeners()
-      console.log('✅ [BGL::events] Cleaned up all previous')
-    },
-    [],
-  )
+  // useEffect(() => {
+  //   const cleanupBGL = () => {
+  //     console.log('⚙️ [BGL::events] Cleaning up GeolocationContext')
+  //     BackgroundGeolocation.removeAllListeners()
+  //     console.log('✅ [BGL::events] Cleaned up all previous')
+  //   }
+  //   cleanupBGL()
+  //   return cleanupBGL
+  // }, [])
+
+  // --------------------------------------------------------------------------
+  // event listeners split by dependencies
 
   /**
    * Sets up ALL event listeners for `react-native-background-geolocation`
@@ -41,11 +48,14 @@ function GeolocationProvider({ children }: GeolocationProviderProps) {
    * @param dispatch The dispatcher from `useReducer` to dispatch actions to.
    * @returns A cleanup function to remove all listeners.
    */
+  // useEffect(() => {
   // biome-ignore lint/correctness/useExhaustiveDependencies: useReducer dispatch is stable
-  useEffect(() => {
+  const setupListeners = useCallback(() => {
     console.log('⚙️ [BGL::events] ----------------------------------------------')
     console.log('⚙️ [BGL::events] Initializing GeolocationContext')
-
+    if (listeners.current.length > 0) {
+      cleanupListeners()
+    }
     /**
      * Wrapper to dispatch(action.event) that takes in a name and returns a
      * function that takes any data and sends the event to the reducer.
@@ -91,11 +101,21 @@ function GeolocationProvider({ children }: GeolocationProviderProps) {
          */
         const taskid = await BackgroundGeolocation.startBackgroundTask()
         try {
-          send('💓 plugin heartbeat')({ ...event.location })
+          const { location } = event
+          send('💓 plugin heartbeat')({ ...location })
+          // if (lastLocationId.current === location.uuid) {
+          //   console.log('💤 [BGL::onLocation] Duplicate location, skipping heartbeat')
+          //   send('💤 duplicate location')(location)
+          //   return
+          // }
+          // lastLocationId.current = location.uuid
+          // send('💖 server heartbeat...')(location)
+          // await heartbeat(location)
+          // send('💖 server heartbeat sent')(location)
           // this gets caught in onLocation so we don't need to do anything else here
           // we COULD send the last known location in event.location without querying
           // the device again since we technically are not moving, but...
-          const options = helpers.transformGetLocationOptions(device, {})
+          const options = helpers.transformGetLocationOptions(settings, {})
           await BackgroundGeolocation.getCurrentPosition(options)
         } catch (error) {
           console.warn('[onHeartbeat] ERROR:', error)
@@ -170,7 +190,22 @@ function GeolocationProvider({ children }: GeolocationProviderProps) {
     return cleanup
   }, [heartbeat])
 
-  // initialize background geolocation on mount
+  // biome-ignore lint/correctness/useExhaustiveDependencies: stable entities
+  const cleanupListeners = useCallback(() => {
+    if (listeners.current.length === 0) return
+    console.log('⚙️ [BGL::events] Cleaning up GeolocationContext')
+    BackgroundGeolocation.removeAllListeners()
+    const data = listeners.current.names
+    console.log('⚙️ [BGL::events] Cleaning up Geolocation subscriptions')
+    listeners.unregisterAll()
+    dispatch(action.event({ name: '♻️ cleaned up event listeners', data }))
+  }, [])
+
+  useEffect(() => {
+    setupListeners()
+    return () => cleanupListeners()
+  }, [setupListeners, cleanupListeners])
+
   // biome-ignore lint/correctness/useExhaustiveDependencies: useReducer dispatch is stable
   useEffect(() => {
     // if (initialized.current) return console.log('⚙️ [BGL::setup ] already initialized, skipping')
@@ -187,8 +222,8 @@ function GeolocationProvider({ children }: GeolocationProviderProps) {
     console.log('⚙️ [BGL::setup ] calling BackgroundGeolocation.ready')
   }, [])
 
-  // fixme: this is broken and causes multiple config updates even though device.settings
-  // hasn't changed - need to isolate just the settings object
+  // --------------------------------------------------------------------------
+  // update BGL config when device settings change from server
   useEffect(() => {
     if (!settings) return
     console.log('🛠️ [BGL::setup ] Device settings changed, updating config')
@@ -203,7 +238,16 @@ function GeolocationProvider({ children }: GeolocationProviderProps) {
   const clearLocations = () => dispatch(action.clear())
   const clearEvents = () => dispatch(action.clearEvents())
 
-  const value = { ...state, dispatch, clearLocations, clearEvents }
+  const value = {
+    ...state,
+    dispatch,
+    clearLocations,
+    clearEvents,
+    listeners: {
+      setup: setupListeners,
+      cleanup: cleanupListeners,
+    },
+  } satisfies Geolocation.Context
 
   return <GeolocationContext.Provider value={value}>{children}</GeolocationContext.Provider>
 }
@@ -230,8 +274,10 @@ async function setup() {
     enableHeadless: true,
     startOnBoot: true,
     stopTimeout: 1,
-    logLevel: BackgroundGeolocation.LOG_LEVEL_VERBOSE,
+    motionTriggerDelay: 10_000,
+    logLevel: BackgroundGeolocation.LOG_LEVEL_DEBUG,
     heartbeatInterval: 60,
+    isMoving: false,
     debug: false,
     notification: {
       title: 'Your App',
@@ -239,6 +285,8 @@ async function setup() {
     },
   }).then((state) => {
     resolver = null
+    console.log('🛠️ [BGL::ready ] boot configuration')
+    console.log(state)
     return state
   })
 }

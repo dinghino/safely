@@ -105,12 +105,12 @@ export function transformSettings(settings: Device['settings'] | undefined): Con
  * @see {@link transformSettings} for more information as it is similar.
  */
 export function transformGetLocationOptions(
-  device: Device | null | undefined,
+  settings: Device['settings'] | null | undefined,
   options: Partial<CurrentPositionRequest> = {},
 ): CurrentPositionRequest {
-  if (!device) return options
+  if (!settings) return options
 
-  const { timeout, accuracy, maximumAge = 10 * 60 * 1000 } = device.settings.location
+  const { timeout, accuracy, maximumAge = 10 * 60 * 1000 } = settings.location
   return {
     ...options,
     desiredAccuracy: getAccuracy(accuracy),

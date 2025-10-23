@@ -15,6 +15,10 @@ export namespace Geolocation {
     locations: Location[]
     events: Geolocation.Event[]
     lastLocation: Location | null
+    listeners?: {
+      setup: () => void
+      cleanup: () => void
+    }
   }
 
   export type Action =

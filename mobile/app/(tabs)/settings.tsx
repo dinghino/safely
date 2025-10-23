@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { Stack } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
 import { ScrollView, View } from 'react-native'
@@ -13,15 +13,15 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 
-import { type Geolocation, type Location, useGeolocation } from '@/components/contexts/geolocation'
+import { type Location, useGeolocation } from '@/components/contexts/geolocation'
 
 import { cn } from '@/lib/utils'
 import { Icon } from '@/components/ui/icon'
 import {
-  BellMinusIcon,
   CircleX,
   FootprintsIcon,
   MapPinMinus,
+  MapPinPlusInside,
   SettingsIcon,
 } from 'lucide-react-native'
 import { useColorScheme } from 'nativewind'
@@ -30,10 +30,28 @@ import { DeviceStatusBadge } from '@/components/device-status-badge'
 import { action } from '@/components/contexts/geolocation/geolocation.context'
 import SessionButton from '@/components/session-requests'
 
+import { transformGetLocationOptions } from '@/lib/geolocation'
+import EventsDebugView from '@/components/debug/events-view'
+
+function useRequestPosition() {
+  const { device } = useDeviceContext()
+  const [loading, setLoading] = useState(false)
+  const request = useCallback(async () => {
+    setLoading(true)
+    const options = transformGetLocationOptions(device?.settings, {})
+    await BackgroundGeolocation.getCurrentPosition(options)
+    setLoading(false)
+  }, [device])
+
+  return [request, loading] as const
+}
+
 export default function AppSettings() {
   const geo = useGeolocation()
-  const { state, dispatch, events, locations } = geo
+  const { state, dispatch, locations } = geo
   const { enabled, isMoving } = state
+
+  const [requestPosition, requesting] = useRequestPosition()
 
   const togglePace = useCallback(async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
@@ -47,22 +65,19 @@ export default function AppSettings() {
     dispatch(action.update(payload))
   }, [dispatch])
 
-  const [lastEvents, restEvents] = useMemo(() => {
-    const reversed = events.toReversed()
-    if (events.length <= 5) return [reversed, []]
-    // split into last 5 and the rest
-    return [reversed.slice(0, 5), reversed.slice(5)]
-  }, [events])
-
   return (
     <View className="flex-1 gap-4">
       {/* <SafeAreaView className='bg-red-500 gap-4 px-4'> */}
       <StatusBar style="auto" translucent />
       <Stack.Screen options={{ title: 'Settings' }} />
-
+      {/* toolbar */}
       <View className="flex-col gap-2 px-4 pt-4">
         <View className="flex-row justify-stretch gap-2">
           <SessionButton />
+          <Button variant="secondary" onPress={requestPosition} disabled={requesting}>
+            <Icon as={MapPinPlusInside} />
+            <Text>Get Position</Text>
+          </Button>
           <View className="flex-1" />
           <Button disabled={!enabled} size="icon" variant="outline" onPress={togglePace}>
             {isMoving ? <Icon as={CircleX} /> : <Icon as={FootprintsIcon} />}
@@ -76,52 +91,19 @@ export default function AppSettings() {
             {/* <Text>Open Device Settings</Text> */}
           </Button>
         </View>
+        <View className="flex-row gap-2">
+          <Button size="sm" className="flex-1" onPress={geo.listeners?.cleanup}>
+            <Text>Cleanup Listeners</Text>
+          </Button>
+          <Button size="sm" className="flex-1" onPress={geo.listeners?.setup}>
+            <Text>Setup Listeners</Text>
+          </Button>
+        </View>
       </View>
 
       <ScrollView className="min-h-48" contentContainerClassName="gap-4 px-4">
         <GeolocationState />
-        <Collapsible>
-          <View className="gap-2 rounded-md bg-muted p-2">
-            <View className="flex-row items-center justify-between gap-4 pl-2">
-              <Text className="font-bold text-lg">Events</Text>
-              <View className="flex-row items-center gap-2">
-                {restEvents.length && (
-                  <CollapsibleTrigger asChild>
-                    <Button variant="outline">
-                      <Text>{restEvents.length} more events</Text>
-                    </Button>
-                  </CollapsibleTrigger>
-                )}
-                <Button
-                  disabled={!events.length}
-                  size="icon"
-                  variant="destructive"
-                  onPress={() => {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft)
-                    geo.clearEvents()
-                  }}
-                >
-                  <Icon as={BellMinusIcon} className="size-4" />
-                </Button>
-              </View>
-            </View>
-            {!events.length && (
-              <Text className="pl-4 text-start text-foreground/75 text-lg">
-                No events received yet.
-              </Text>
-            )}
-            {lastEvents.map((event, i) => (
-              <EventCard key={`${event.timestamp}--${i}`} event={event} />
-            ))}
-            {restEvents.length > 0 && (
-              <CollapsibleContent className="gap-2">
-                {restEvents.map((event, i) => (
-                  <EventCard key={`${event.timestamp}--${i}`} event={event} />
-                ))}
-              </CollapsibleContent>
-            )}
-          </View>
-        </Collapsible>
+        <EventsDebugView />
 
         <View className="gap-2 rounded-md bg-muted p-2">
           <View className="flex-row items-center justify-between pl-2">
@@ -197,28 +179,6 @@ const StatusBadges = ({ className }: { className: string }) => {
         <Text>{state.heartbeatInterval}s</Text>
       </Badge>
     </View>
-  )
-}
-
-function EventCard({ event }: { event: Geolocation.Event }) {
-  return (
-    <Collapsible className="gap-2">
-      <CollapsibleTrigger asChild>
-        <Trigger>
-          <View className="flex flex-row justify-between gap-4">
-            <Text className="flex-1">{event.name}</Text>
-            <Text className="text-muted-foreground">{formatTimestamp(event.timestamp)}</Text>
-          </View>
-        </Trigger>
-      </CollapsibleTrigger>
-      <CollapsibleContent>
-        <Card className="py-4">
-          <CardContent className="px-4">
-            <Text className="text-xs">{JSON.stringify(event.data, null, 2)}</Text>
-          </CardContent>
-        </Card>
-      </CollapsibleContent>
-    </Collapsible>
   )
 }
 
@@ -313,14 +273,4 @@ function flatten(obj: Record<string, any>, prefix = ''): [string, any][] {
     }
   }
   return result
-}
-
-// format timestamp in HH:MM:SS.mmmm with damn milliseconds
-function formatTimestamp(timestamp: number) {
-  const date = new Date(timestamp)
-  const hours = String(date.getHours()).padStart(2, '0')
-  const minutes = String(date.getMinutes()).padStart(2, '0')
-  const seconds = String(date.getSeconds()).padStart(2, '0')
-  const milliseconds = String(date.getMilliseconds()).padStart(3, '0')
-  return `${hours}:${minutes}:${seconds}.${milliseconds}`
 }

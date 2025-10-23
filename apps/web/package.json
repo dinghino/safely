@@ -22,7 +22,7 @@
     "@workspace/react-utils": "workspace:*",
     "@workspace/ui": "workspace:*",
     "@xstate/react": "^6.0.0",
-    "convex": "^1.27.3",
+    "convex": "^1.28.0",
     "dayjs": "^1.11.18",
     "leaflet": "^1.9.4",
     "leaflet-defaulticon-compatibility": "^0.1.2",

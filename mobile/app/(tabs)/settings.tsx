@@ -8,23 +8,20 @@ import { SheetManager } from 'react-native-actions-sheet'
 import BackgroundGeolocation from 'react-native-background-geolocation'
 
 import { Text } from '@/components/ui/text'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 
-import { type Location, useGeolocation } from '@/components/contexts/geolocation'
+import {useGeolocation } from '@/components/contexts/geolocation'
 
 import { cn } from '@/lib/utils'
 import { Icon } from '@/components/ui/icon'
 import {
   CircleX,
   FootprintsIcon,
-  MapPinMinus,
   MapPinPlusInside,
   SettingsIcon,
 } from 'lucide-react-native'
-import { useColorScheme } from 'nativewind'
 import { useDeviceContext } from '@/components/contexts/device-manager'
 import { DeviceStatusBadge } from '@/components/device-status-badge'
 import { action } from '@/components/contexts/geolocation/geolocation.context'
@@ -32,6 +29,7 @@ import SessionButton from '@/components/session-requests'
 
 import { transformGetLocationOptions } from '@/lib/geolocation'
 import EventsDebugView from '@/components/debug/events-view'
+import LocationsDebugView from '@/components/debug/locations-view'
 
 function useRequestPosition() {
   const { device } = useDeviceContext()
@@ -48,7 +46,7 @@ function useRequestPosition() {
 
 export default function AppSettings() {
   const geo = useGeolocation()
-  const { state, dispatch, locations } = geo
+  const { state, dispatch } = geo
   const { enabled, isMoving } = state
 
   const [requestPosition, requesting] = useRequestPosition()
@@ -104,50 +102,12 @@ export default function AppSettings() {
       <ScrollView className="min-h-48" contentContainerClassName="gap-4 px-4">
         <GeolocationState />
         <EventsDebugView />
-
-        <View className="gap-2 rounded-md bg-muted p-2">
-          <View className="flex-row items-center justify-between pl-2">
-            <Text className="font-bold text-lg">Locations</Text>
-            <Button
-              disabled={!locations.length}
-              size="icon"
-              variant="destructive"
-              onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft)
-                geo.clearLocations()
-              }}
-            >
-              <Icon as={MapPinMinus} className="size-4" />
-            </Button>
-          </View>
-          {!locations.length && (
-            <Text className="pl-4 text-start text-foreground/75 text-lg">
-              No locations recorded yet.
-            </Text>
-          )}
-          {locations.reverse().map((location, i) => (
-            <LocationCard key={`${location.timestamp}--${i}`} location={location} />
-          ))}
-        </View>
+        <LocationsDebugView />
       </ScrollView>
 
       <StatusBadges className="flex-row items-center justify-center border-t border-t-muted px-4 py-2" />
       {/* </SafeAreaView> */}
     </View>
-  )
-}
-
-const Trigger = ({ children, ...props }: { children: React.ReactNode }) => {
-  const { colorScheme } = useColorScheme()
-
-  return (
-    <Button
-      variant={colorScheme === 'dark' ? 'default' : 'default'}
-      className="justify-start gap-2"
-      {...props}
-    >
-      {children}
-    </Button>
   )
 }
 
@@ -179,30 +139,6 @@ const StatusBadges = ({ className }: { className: string }) => {
         <Text>{state.heartbeatInterval}s</Text>
       </Badge>
     </View>
-  )
-}
-
-function LocationCard({ location }: { location: Location }) {
-  return (
-    <Collapsible className="gap-2">
-      <CollapsibleTrigger asChild>
-        <Trigger>
-          <Text>{new Date(location.timestamp).toLocaleString()}</Text>
-        </Trigger>
-      </CollapsibleTrigger>
-      <CollapsibleContent>
-        <Card key={location.timestamp} className="py-2">
-          <CardHeader>
-            <CardTitle>
-              {location.coords.latitude}, {location.coords.longitude}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Text className="text-xs">{JSON.stringify(location, null, 2)}</Text>
-          </CardContent>
-        </Card>
-      </CollapsibleContent>
-    </Collapsible>
   )
 }
 

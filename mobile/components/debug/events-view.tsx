@@ -1,11 +1,11 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
-import { FlatList, ScrollView, View } from 'react-native'
+import { ScrollView, View } from 'react-native'
 import * as Haptics from 'expo-haptics'
 
 import ActionSheet, { type ActionSheetRef } from 'react-native-actions-sheet'
 
 import { Text } from '@/components/ui/text'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { Button } from '@/components/ui/button'
 
@@ -13,9 +13,9 @@ import { type Geolocation, useGeolocation } from '@/components/contexts/geolocat
 
 import { Icon } from '@/components/ui/icon'
 import { BellMinusIcon, FilterIcon, FilterXIcon } from 'lucide-react-native'
-import { useColorScheme } from 'nativewind'
 import { useBackgroundColor } from '@/lib/hooks/use-background-color'
 import { SwitchControl } from '../switch-control'
+import { Trigger } from './collapse-button'
 
 type ContextValue = {
   active: string[]
@@ -114,9 +114,9 @@ function EventsDebugViewContent() {
 
   return (
     <Collapsible>
-      <View className="gap-2 rounded-md bg-muted p-2">
-        <View className="flex-row items-center justify-between gap-4">
-          <View className="flex-row items-center gap-2">
+      <View className="gap-2 rounded-md p-2">
+        <View className="flex-row items-center justify-between gap-4 rounded-lg bg-muted p-1">
+          <View className="flex-row items-center gap-0">
             <FilterSheet />
             <Text className="font-bold text-lg">Events</Text>
           </View>
@@ -199,20 +199,6 @@ function EventCard({ event }: { event: Geolocation.Event }) {
   )
 }
 
-const Trigger = ({ children, ...props }: { children: React.ReactNode }) => {
-  const { colorScheme } = useColorScheme()
-
-  return (
-    <Button
-      variant={colorScheme === 'dark' ? 'default' : 'default'}
-      className="justify-start gap-2"
-      {...props}
-    >
-      {children}
-    </Button>
-  )
-}
-
 function FilterSheet() {
   const ref = useRef<ActionSheetRef>(null)
   const backgroundColor = useBackgroundColor()
@@ -233,12 +219,12 @@ function FilterSheet() {
         gestureEnabled
         containerStyle={{ backgroundColor }}
       >
-        <View className="p-4 gap-4">
+        <View className="gap-4 p-4">
           <Text className="font-bold text-lg">Filter Events</Text>
           <View className="flex-row items-center gap-2">
             {/* show/hide all buttons */}
             <Button
-              className='flex-1'
+              className="flex-1"
               size="sm"
               variant="outline"
               onPress={() => {
@@ -249,7 +235,7 @@ function FilterSheet() {
               <Text>Select All</Text>
             </Button>
             <Button
-              className='flex-1'
+              className="flex-1"
               size="sm"
               variant="outline"
               onPress={() => {

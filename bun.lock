@@ -7,7 +7,6 @@
         "@biomejs/biome": "^2.2.4",
         "@workspace/eslint-config": "workspace:*",
         "@workspace/typescript-config": "workspace:*",
-        "nuqs": "^2.7.2",
         "tsup": "^8.5.0",
         "turbo": "^2.5.6",
         "typescript": "^5.9.3",
@@ -66,7 +65,7 @@
         "@workspace/react-utils": "workspace:*",
         "@workspace/ui": "workspace:*",
         "@xstate/react": "^6.0.0",
-        "convex": "^1.27.3",
+        "convex": "^1.28.0",
         "dayjs": "^1.11.18",
         "leaflet": "^1.9.4",
         "leaflet-defaulticon-compatibility": "^0.1.2",
@@ -102,14 +101,14 @@
       "name": "@workspace/backend",
       "version": "1.0.0",
       "dependencies": {
-        "@clerk/backend": "^2.14.0",
+        "@clerk/backend": "^2.19.0",
         "@convex-dev/geospatial": "^0.1.9",
-        "@convex-dev/presence": "^0.1.5",
-        "convex": "^1.27.3",
+        "@convex-dev/presence": "^0.2.1",
+        "convex": "^1.28.0",
         "svix": "^1.76.1",
       },
       "devDependencies": {
-        "@types/node": "^24.6.2",
+        "@types/node": "^24.9.1",
         "typescript": "^5.9.3",
       },
     },
@@ -274,9 +273,6 @@
     "packages/react-utils": {
       "name": "@workspace/react-utils",
       "version": "1.0.0",
-      "dependencies": {
-        "nuqs": "^2.6.0",
-      },
       "devDependencies": {
         "@types/bun": "latest",
         "@types/react": "~19.1.13",
@@ -360,6 +356,11 @@
       },
     },
   },
+  "trustedDependencies": [
+    "fumadocs",
+    "core-js-pure",
+    "@clerk/shared",
+  ],
   "packages": {
     "@alloc/quick-lru": ["@alloc/quick-lru@5.2.0", "", {}, "sha512-UrcABB+4bUrFABwbluTIBErXwvbsU/V7TZWfmbgJfbkwiBuziS9gxdODUyuiecfdGQ85jglMW6juS3+z5TsKLw=="],
 
@@ -399,7 +400,7 @@
 
     "@convex-dev/geospatial": ["@convex-dev/geospatial@0.1.9", "", { "dependencies": { "async-channel": "^0.2.0", "heap-js": "^2.5.0" }, "peerDependencies": { "convex": "~1.16.5 || >=1.17.0 <1.35.0" } }, "sha512-xYqMIzLZ3iWEzJ2RN3AZ6ArAp9Zx0qeG3Xkli0jo4vtdDZ/KhRl4GGd50ZI3E7QWmNIQSR9XJaw9aewwvNUSVQ=="],
 
-    "@convex-dev/presence": ["@convex-dev/presence@0.1.5", "", { "peerDependencies": { "convex": ">=1.24.8 <1.35.0", "react": "~18.3.1 || ^19.0.0", "react-dom": "~18.3.1 || ^19.0.0" } }, "sha512-tHD03dLnP0bB4lHuXMVx64NkQqn/SR4dJakwkcOEsXZXFJsvoai/O0FcAnrd5KBYzbbt8GFZ7vxPdBO0l1CSUw=="],
+    "@convex-dev/presence": ["@convex-dev/presence@0.2.1", "", { "peerDependencies": { "convex": ">=1.24.8 <1.35.0", "expo-crypto": ">=14.1.0", "react": "~18.3.1 || ^19.0.0", "react-dom": "~18.3.1 || ^19.0.0", "react-native": ">=0.79.0" }, "optionalPeers": ["expo-crypto", "react-native"] }, "sha512-XBcEzb1qxV4yq3UNe+UpZbTb1ecgg14vYZWDZMA2XPh2D/x2yCxTfWyQ/vdMeX2HYiGzj2be5aRu8CK3cogQnA=="],
 
     "@cspotcode/source-map-support": ["@cspotcode/source-map-support@0.8.1", "", { "dependencies": { "@jridgewell/trace-mapping": "0.3.9" } }, "sha512-IchNf6dN4tHoMFIn/7OE8LWZ19Y6q/67Bmf6vnGREv8RSbBVb9LPJxEcnwrcwX6ixSvaiGoomAUvu4YSxXrVgw=="],
 

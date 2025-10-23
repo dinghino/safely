@@ -28,15 +28,8 @@ function ThemeToggle() {
 
 export function AppHeader() {
   return (
-    <SafeAreaView>
-      <View
-        className={cn(
-          'flex-row justify-between px-4 py-2',
-          // 'absolute top-safe right-0 left-0 web:mx-2 pt-12',
-          // 'bg-indigo-700',
-          // 'border-border border-b',
-        )}
-      >
+    <SafeAreaView edges={['top']} className="bg-background">
+      <View className={cn('flex-row justify-between px-4 py-2', 'border-border border-b')}>
         {/* <StatusBar style="auto" /> */}
         <ThemeToggle />
         <UserMenu />

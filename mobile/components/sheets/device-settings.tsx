@@ -1,13 +1,11 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback } from 'react'
 import { View } from 'react-native'
 import { SettingsIcon, XIcon } from 'lucide-react-native'
 import ActionSheet, { ScrollView, SheetManager } from 'react-native-actions-sheet'
 
 import * as Haptics from 'expo-haptics'
-import { useColorScheme } from 'nativewind'
 import BackgroundGeolocation from 'react-native-background-geolocation'
 
-import { THEME } from '@/lib/theme'
 import { Text } from '@/components/ui/text'
 import { Button } from '@/components/ui/button'
 import { Icon } from '@/components/ui/icon'
@@ -16,25 +14,21 @@ import { SwitchControl } from '@/components/switch-control'
 import { action, useGeolocation } from '@/components/contexts/geolocation'
 
 import { TrackingModeControl } from '@/components/tracking-mode-control'
+import { useBackgroundColor } from '@/lib/hooks/use-background-color'
 
 export namespace DeviceSettingsSheet {
   export type Props = {}
 }
 
 export const DeviceSettingsSheet: React.FC<DeviceSettingsSheet.Props> = (_props) => {
-  const { colorScheme } = useColorScheme()
-
   const { dispatch, state } = useGeolocation()
-
-  const backgroundColor = useMemo(() => {
-    if (!colorScheme) return THEME.light.card
-    return THEME[colorScheme].card
-  }, [colorScheme])
+  const backgroundColor = useBackgroundColor()
 
   const toggleDebug = useCallback(
     async (debug: boolean) => {
       await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy)
       const state = await BackgroundGeolocation.setConfig({ debug })
+      dispatch(action.event({ name: '🐛 toggle debug', data: { debug: state.debug } }))
       dispatch(action.update({ debug: state.debug }))
     },
     [dispatch],
@@ -43,6 +37,7 @@ export const DeviceSettingsSheet: React.FC<DeviceSettingsSheet.Props> = (_props)
   const toggleEnabled = useCallback(async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy)
     const state = await toggle()
+    dispatch(action.event({ name: '✅ toggle enabled', data: { enabled: state.enabled } }))
     dispatch(action.update({ enabled: state.enabled }))
   }, [dispatch])
 

@@ -16,6 +16,17 @@ import store from '@/lib/secure-store'
 import { STORE_KEY } from './constants'
 import * as helpers from '@/lib/geolocation'
 
+import {
+  configureReanimatedLogger,
+  ReanimatedLogLevel,
+} from 'react-native-reanimated';
+
+// This is the default configuration
+configureReanimatedLogger({
+  level: ReanimatedLogLevel.warn,
+  strict: false, // Reanimated runs in strict mode by default
+});
+
 // temporary flag to disable headless heartbeat until we figure out auth issues
 const ENABLED = false
 

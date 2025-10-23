@@ -10,7 +10,7 @@
     "web#build": {
       "dependsOn": ["^build"],
       "env": ["CLERK_SECRET_KEY ", "CONVEX_DEPLOYMENT ", "CONVEX_URL ", "GOOGLE_MAPS_API_KEY"],
-      "outputs": ["dist/**"]
+      "outputs": [".next/**", "!.next/cache/**"]
     },
     "lint": {
       "dependsOn": ["^lint"]

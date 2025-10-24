@@ -2,13 +2,21 @@
   "name": "@workspace/nuqs",
   "version": "1.0.0",
   "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
   "exports": {
-    ".": "./src/index.ts"
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
   },
   "files": [
     "dist"
   ],
   "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
     "check-types": "tsup --noEmit"
   },
   "dependencies": {

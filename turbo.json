@@ -19,6 +19,7 @@
       "dependsOn": ["^check-types"]
     },
     "dev": {
+      "with": ["@workspace/nuqs#dev"],
       "cache": false,
       "persistent": true
     },

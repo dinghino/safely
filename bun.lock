@@ -52,8 +52,8 @@
       "name": "web",
       "version": "0.1.0",
       "dependencies": {
-        "@clerk/nextjs": "^6.32.0",
-        "@clerk/themes": "^2.4.19",
+        "@clerk/nextjs": "^6.34.0",
+        "@clerk/themes": "^2.4.29",
         "@tanstack/react-form": "^1.23.0",
         "@workspace/backend": "workspace:*",
         "@workspace/data-filter": "workspace:*",

@@ -14,7 +14,6 @@
   },
   "dependencies": {
     "@clerk/clerk-expo": "^2.16.1",
-    "@clerk/clerk-js": "^5.102.0",
     "@maplibre/maplibre-react-native": "^10.2.1",
     "@react-navigation/native": "^7.0.0",
     "@rn-primitives/avatar": "^1.2.0",

@@ -48,7 +48,7 @@ async function createConvexClient() {
 
 // during a heartbeat event we dispatch a new request for the current position
 async function handleHeartbeat(device: Device | undefined) {
-  const options = helpers.transformGetLocationOptions(device, {
+  const options = helpers.transformGetLocationOptions(device?.settings, {
     samples: 3,
     extras: { headless: true },
   })

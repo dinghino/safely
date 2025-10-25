@@ -9,6 +9,8 @@ import { getCurrentUserOrThrow } from '../lib/auth'
 import { helpers } from '../lib/devices'
 import { api } from '../_generated/api'
 
+// region heartbeat.send
+
 export const send = mutation({
   args: {
     // deviceId: v.id('devices'),
@@ -84,6 +86,10 @@ export const send = mutation({
   },
 })
 
+// endregion
+
+// region heartbeat.disconnect
+
 export const disconnect = mutation({
   args: { sessionToken: v.string() },
   handler: async (ctx, args) => {
@@ -103,7 +109,10 @@ export const disconnect = mutation({
     }
 
     await ctx.db.patch(session.deviceId, { status: 'offline' })
+    // todo: close/remove active session and session token?
 
     await helpers.heartbeat.removeScheduleDisconnect(ctx, sessionId)
   },
 })
+
+// endregion

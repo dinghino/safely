@@ -5,7 +5,7 @@ import type { Id } from '../../_generated/dataModel'
 import type { MutationCtx, QueryCtx } from '../../_generated/server'
 import { DEFAULT_HEARTBEAT_INTERVAL_MS } from '../constants'
 
-// helpers
+// region scheduler
 
 /**
  * Schedule a disconnect for the given session with the given token.
@@ -67,6 +67,8 @@ export async function removeScheduleDisconnect(ctx: MutationCtx, sessionId: stri
     await ctx.db.delete(existingTimeout._id)
   }
 }
+
+// region device sessions
 
 /** retrieve a token record given the token */
 export async function getSessionTokenRecord(ctx: QueryCtx, options: { sessionToken: string }) {

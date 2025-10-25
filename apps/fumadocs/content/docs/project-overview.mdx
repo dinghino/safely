@@ -1,0 +1,27 @@
+---
+title: Project Overview
+description: Overview of the Safely project and its features
+---
+
+## What is Safely?
+
+Safely is a TypeScript Turborepo project designed to become a GIS-aware social platform focused on on-demand tracking and alerts for user-owned devices. The primary target audience is pet owners, aiming to enhance pet safety and comfort through advanced location-based features.
+
+At its core, Safely enables users to register their devices (initially web and mobile phones, with plans for embedded IoT trackers in the future) with the platform. Users can then remotely issue commands to these devices and receive notifications about events occurring to or around them.
+
+## Key Use Cases
+
+- **Geofence Alerts**: Notify users when a device crosses predefined geographical boundaries.
+- **Device Status Monitoring**: Alerts for low battery, connectivity issues, or other device health metrics.
+- **Points of Interest Proximity**: Platform-specific feature to alert when devices are near designated locations (though this feature is not yet implemented).
+- **Remote Commands**: Issue commands to devices, such as starting tracking sessions or adjusting settings.
+
+## Current Architecture
+
+Safely is built as a monorepo with the following main components:
+
+- **Web Dashboard**: A fully functional web application for device management and monitoring.
+- **Mobile App**: Primarily serves as a GPS relay beacon using TransistorSoft's React Native Background Geolocation plugin, with support for headless mode.
+- **Backend**: Powered by Convex, a real-time RPC backend-as-a-service, integrated with Clerk for user authentication.
+
+The system uses a heartbeat mechanism for devices to report their online status and optionally their location, enabling real-time tracking and alert generation.

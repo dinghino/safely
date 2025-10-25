@@ -1,0 +1,145 @@
+---
+title: Headless Mode Authentication Issue
+description: Analysis of the headless mode authentication issue in the mobile app
+---
+
+## Problem Description
+
+The mobile app's headless mode, which allows background geolocation and heartbeat functionality even when the app is terminated, is currently non-functional due to authentication challenges.
+
+### Current Implementation
+
+- The mobile app uses TransistorSoft's React Native Background Geolocation plugin for location tracking.
+- Headless mode enables the app to respond to location and heartbeat events even when the main app process is killed.
+- Heartbeat requests to the Convex backend require authentication, currently handled via Clerk JWT tokens.
+- These JWT tokens are stored securely and used for authenticated requests when the app is in foreground or background.
+
+### The Issue
+
+In headless mode, the code runs in a separate native JavaScript runtime, not within the React Native environment. This creates several problems:
+
+1. **JWT Access**: The headless task cannot reliably access the stored Clerk JWT token from secure storage.
+2. **Token Refresh**: Even if accessible, JWT tokens have a short lifespan (typically 50-60 seconds), and headless events can occur at unpredictable intervals. There's no guarantee the token is still valid, and refreshing it in headless mode is complex.
+3. **Runtime Isolation**: The headless environment lacks access to the full React Native context, making it difficult to perform authentication-related operations.
+
+As a result, heartbeat requests from headless mode fail authentication, breaking the core location reporting functionality.
+
+### Current Workaround
+
+Session tokens are generated during device registration but are not currently utilized for authentication. These tokens are intended for machine-to-machine communications and could potentially serve as an alternative authentication mechanism.
+
+## Analysis and Notes
+
+### Existing Attempts
+
+There is an existing file `mobile/headless/index.ts` that attempts to create a Clerk instance using `@clerk/clerk-js`, which is designed for web environments. This approach is unlikely to work in the React Native headless context, as Clerk for React Native uses `@clerk/clerk-expo`. This may be an experimental or incorrect implementation.
+
+However, the JWT token can technically be retrieved from secure storage in headless mode. The issue appears to be in how it's passed to the Convex client - likely needing the `Bearer ${token}` format. The JWT lifespan is nominally 60 seconds, but users remain logged in even after days, suggesting either longer actual validity or automatic refresh mechanisms in the main app context.
+
+### Purpose of headless/ Directory
+
+The `mobile/headless/*` directory is intended for modularizing headless functionalities and helpers, keeping the main `index.ts` clean and maintainable by importing from this module.
+
+### Security Considerations
+
+Session tokens appear to be a viable alternative for device authentication:
+
+- **Association**: Tokens are tied to specific devices and can be validated server-side to retrieve the associated user/owner.
+- **Lifespan**: Currently no expiration policy implemented; can be added in `heartbeat.ts` helpers. Can be designed as long-lived or refreshable tokens (e.g., valid for 1-10 requests or time-based).
+- **Storage**: Stored in secure-store on mobile and local storage/cookies on web.
+- **Rotation/Refresh**: No existing mechanisms; would need to be implemented.
+- **M2M Suitability**: Ideal for IoT scenarios where devices cannot perform user authentication (e.g., pet trackers).
+- **Security Risks**: If compromised, could allow unauthorized access, but proper validation and rotation can mitigate this.
+
+### Future Device Types
+
+The platform plans to support embedded IoT devices that cannot access Clerk for JWT renewal. Session tokens provide a forward-compatible solution for these use cases.
+
+### Implementation Complexity
+
+Using session tokens would require:
+- Modifying backend procedures to accept session tokens as an alternative to JWT authentication.
+- Updating mobile app to use session tokens for headless requests.
+- Ensuring proper token validation and rotation on the server.
+
+## Possible Solutions
+
+### Option 1: Access JWT in Headless Mode
+
+**Description**: Investigate methods to access and potentially refresh the Clerk JWT token within the headless environment.
+
+**Pros**:
+- Maintains existing authentication flow.
+- No major backend changes required.
+
+**Cons**:
+- Technically challenging due to runtime isolation.
+- Unreliable token refresh timing.
+- May not be feasible with current plugin limitations.
+
+**Implementation Notes**:
+- Research TransistorSoft plugin's capabilities for accessing app storage in headless mode.
+- Explore if Clerk SDK can be used in headless context.
+- Consider storing JWT in a location accessible to headless (though this may compromise security).
+
+### Option 2: Implement Session Token Authentication
+
+**Description**: Implement device session tokens for machine-to-machine communications, while keeping user JWTs for user-initiated actions. Procedures will use either user JWT (for user actions like device registration) or device session tokens (for automated/device actions like heartbeats). If both are present, prioritize device token validation.
+
+**Pros**:
+- Solves the headless authentication problem definitively.
+- Prepares for IoT device support.
+- Maintains clear separation between user and device authentication contexts.
+- No need for dual authentication methods in procedures.
+
+**Cons**:
+- Requires modifying backend procedures to accept and validate device session tokens.
+- Need to implement token validation logic to retrieve device/user context.
+- Potential complexity in determining which auth method to use per procedure.
+
+**Implementation Steps**:
+1. Create a new authentication helper (e.g., `getDeviceFromToken`) to validate session tokens and retrieve device/user context.
+2. Modify heartbeat procedures to use device token auth instead of user JWT.
+3. Update mobile app headless code to use session tokens for Convex client authentication.
+4. Implement token expiration and rotation mechanisms in heartbeat helpers.
+5. Ensure device-specific procedures (e.g., acknowledging requests) only accept device tokens.
+
+### Option 3: Embedded Session Tokens in Requests
+
+**Description**: Extend Option 2 by automatically embedding session tokens in all device-related requests, similar to how JWTs are currently handled.
+
+**Pros**:
+- Seamless integration with existing RPC patterns.
+- Automatic authentication for device operations.
+- Reduces argument passing in procedures.
+
+**Cons**:
+- Requires middleware or request interceptor implementation.
+- Potential complexity in distinguishing user-initiated vs. device-initiated requests.
+- May affect API design and client libraries.
+
+**Implementation Steps**:
+1. Implement request middleware to detect and attach session tokens.
+2. Modify Convex client configuration to include token handling.
+3. Update backend to validate embedded tokens.
+4. Ensure backward compatibility with JWT-based auth.
+
+## Recommendations
+
+1. **Primary Solution**: Implement Option 2 (Session Token Authentication) as described, establishing separate authentication contexts for user vs. device actions.
+2. **Implementation Priority**: Start with heartbeat procedures, then expand to other device-specific operations.
+3. **Future Enhancement**: Consider Option 3 (embedded tokens) only after Option 2 is stable and middleware patterns are established in Convex.
+4. **Avoid Option 1**: Given the runtime isolation issues and JWT lifespan concerns, focus on session tokens instead.
+
+## Answers to Clarification Questions
+
+- **Purpose of `mobile/headless/index.ts`**: This directory is for modularizing headless functionalities and helpers, keeping the main `index.ts` clean by importing from this module.
+- **Session Token Expiration**: Currently no expiration policy implemented; can be added in `heartbeat.ts` helpers.
+- **Token Rotation/Refresh Mechanisms**: None currently exist; would need to be implemented.
+- **Token Storage**: Stored in secure-store on mobile and local storage/cookies on web.
+- **Error Messages**: Authentication fails due to missing user JWT, triggering the error from `getCurrentUserOrThrow`.
+- **Security Audits**: None conducted; the project is in early development with registrations disabled, but endpoints need security checks regardless.
+
+### Current Authentication Pattern
+
+The backend currently uses explicit authentication checks with `getCurrentUserOrThrow` in procedures that require user auth, rather than middleware-based approaches. This pattern can be extended to include device token validation for machine-to-machine procedures.

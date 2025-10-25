@@ -3,6 +3,7 @@ import type { MDXComponents } from 'mdx/types'
 import * as TabsComponents from 'fumadocs-ui/components/tabs'
 import { createGenerator } from 'fumadocs-typescript'
 import { AutoTypeTable } from 'fumadocs-typescript/ui'
+import { Mermaid } from './components/mdx/mermaid'
 
 const generator = createGenerator()
 
@@ -11,6 +12,7 @@ export function getMDXComponents(components?: MDXComponents): MDXComponents {
   return {
     ...defaultMdxComponents,
     ...TabsComponents,
+    Mermaid,
     AutoTypeTable: (props) => <AutoTypeTable {...props} generator={generator} />,
     ...components,
   }

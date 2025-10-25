@@ -1,0 +1,13 @@
+{
+  "title": "Machine to Machine Auth",
+  "description": "Design and API changes for M2M authentication",
+  "root": false,
+  "icon": "key",
+  "pages": [
+    "index.mdx",
+    "design.mdx",
+    "lifecycle.mdx",
+    "api-changes.mdx",
+    "..."
+  ]
+}

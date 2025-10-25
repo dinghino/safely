@@ -16,10 +16,10 @@ Session tokens are long-lived credentials used for machine-to-machine (M2M) auth
 - Token refresh/rotation events
 - User explicitly requests new token
 
-**Token Structure:**
-- Unique identifier (UUID or random string)
+**Token Structure (POC):**
+- Unique identifier (recommend `nanoid(48)`)
 - Associated with specific device/session
-- Include minimal metadata (creation time, device ID)
+- Include minimal metadata (use Convex `_creationTime`, device/session mapping)
 
 **Security Considerations:**
 - Use cryptographically secure random generation
@@ -34,7 +34,7 @@ Session tokens are long-lived credentials used for machine-to-machine (M2M) auth
 - Include creation/expiration metadata
 
 **Client:**
-- Secure storage (encrypted keychain on mobile, httpOnly cookies on web)
+- Secure storage (SecureStore or encrypted keychain on mobile; localStorage acceptable for dev web)
 - Separate from user JWTs
 - Accessible in headless/background contexts
 
@@ -66,7 +66,7 @@ Session tokens are long-lived credentials used for machine-to-machine (M2M) auth
 
 ## Proposed Implementation for Safely
 
-Given our early development stage and the need for simplicity, we'll implement a usage-based expiration system that's easy to manage and doesn't require time synchronization across devices.
+Given offline constraints and the need for simplicity, we will use long-lived tokens for POC with optional usage tracking. Rotation and expiry are deferred for later iterations.
 
 ### Database Schema (Current)
 
@@ -95,6 +95,8 @@ export async function getSessionToken(ctx: MutationCtx, options: { sessionId: st
   if (sessionTokenRecord) {
     return sessionTokenRecord.token
   }
+  // For POC prefer a secure random string like nanoid(48) instead of crypto.randomUUID()
+  // const sessionToken = nanoid(48)
   const sessionToken = crypto.randomUUID()
   await ctx.db.insert('deviceSessionTokens', { sessionId, token: sessionToken })
   return sessionToken
@@ -105,19 +107,9 @@ export async function getSessionToken(ctx: MutationCtx, options: { sessionId: st
 
 ### Enhanced Token Management
 
-**Add to Schema:**
-```typescript
-export const deviceSessionTokens = defineTable({
-  token: v.string(),
-  sessionId: v.string(),
-  createdAt: v.number(), // timestamp
-  usageCount: v.number(), // track usage
-  maxUsage: v.optional(v.number()), // configurable limit
-  expiresAt: v.optional(v.number()), // optional time-based expiration
-})
-  .index('token', ['token'])
-  .index('sessionId', ['sessionId'])
-```
+**Schema notes (POC)**
+
+Use existing `deviceSessionTokens` table. Optional additive fields for audit/revocation: `lastUsedAt`, `revoked`, `issuedBy`. For POC `_creationTime` is sufficient as issuance timestamp.
 
 **Enhanced Issuance Function:**
 ```typescript
@@ -139,7 +131,9 @@ export async function getSessionToken(ctx: MutationCtx, options: { sessionId: st
   }
   
   if (!tokenRecord) {
-    const sessionToken = crypto.randomUUID()
+  // For POC prefer a secure random string like nanoid(48)
+  // const sessionToken = nanoid(48)
+  const sessionToken = crypto.randomUUID()
     const createdAt = Date.now()
     await ctx.db.insert('deviceSessionTokens', { 
       sessionId, 

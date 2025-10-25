@@ -1,0 +1,97 @@
+---
+title: Glossary
+description: "Canonical definitions for devices, sessions, tokens and M2M authentication terms used across the docs."
+---
+
+This glossary centralizes the terminology we use for device-related concepts and the M2M authentication system. I've trimmed the text and used clear headings and short rules to keep it readable.
+
+## Device
+
+Definition
+: A physical piece of hardware that can connect to Safely and:
+
+- interact independently (background/headless),
+- be issued commands, and
+- be tracked (geolocation)
+
+Notes
+: Browser tabs and web apps can be considered devices for development. Devices are discriminated with `platform` / `type` (e.g. `mobile`, `web`, `tracker`). Production flows may treat web tabs differently (no background tracking).
+
+Convex mapping
+: `devices` table (primary identifier: `_id`, called `deviceId` in docs).
+
+## Registration
+
+Definition
+: Explicit (user clicks register) or implicit (auto-register on login) action that creates a `devices` row and provisions bootstrap auth material.
+
+Outcome
+: `deviceId` returned; server may also provision one or more `sessionToken`s for the device.
+
+## Device session
+
+Definition
+: A long-lived server-side record grouping a `device` with its auth handles. In POC, sessions last from registration until unregister (no auto-expiry).
+
+Convex mapping
+: `deviceSessions` table with `sessionId` (string) and `deviceId`.
+
+## Session token
+
+Definition
+: Opaque bearer string used for device-auth (M2M) on RPCs (heartbeats, request acks). Clients treat it as a secret.
+
+POC behaviour
+: Passed as an RPC argument (e.g. `heartbeat.send({ sessionToken })`). We'll migrate to headers later (e.g. `x-safely-device`).
+
+Token characteristics (POC)
+:
+- Format: secure random string (recommend `nanoid(48)`),
+- Lifetime: long-lived (no automatic expiry),
+- Rotation: deferred; add manual rotate/revoke later.
+
+Client guidance
+: Store tokens in SecureStore on mobile. On web, localStorage is acceptable for dev; plan for secure storage for production.
+
+## Device secret (DSK)
+
+Definition
+: Optional long-lived secret provisioned at registration and stored hashed server-side. Useful for re-issuing or rotating tokens via challenge/refresh flows.
+
+When to use
+: Not required for POC. Add DSK when you need server-driven token refresh without user re-login (headless IoT or shared devices).
+
+## Token metadata
+
+- `_creationTime` (Convex) — issuance timestamp to use by default.
+- `lastUsedAt` — recommended server-updated timestamp.
+- `revoked` — optional revocation flag.
+
+## Auth modes
+
+- User-auth: user session via Clerk (`getCurrentUserOrThrow`).
+- Device-auth: `sessionToken` (M2M) used by devices when user-auth is not available.
+- Hybrid: RPCs may accept either — when device-auth is used the server relies on token→session→device mapping.
+
+## Scheduler
+
+`deviceSessionTimeouts` ties `sessionId` → scheduled function id; scheduler calls `devices.heartbeat.disconnect` on timeouts.
+
+## Contract rules
+
+1. `sessionToken` → `sessionId` → `deviceId` (resolve token to device).
+2. If an RPC accepts `sessionToken`, server must:
+   - validate token exists and not revoked,
+   - resolve mapped `deviceId`,
+   - perform resource-level checks based on the resolved device (ownership checks that require user context cannot be made using only device-auth).
+3. Clients MUST store tokens securely (SecureStore on RN; localStorage for dev web).
+4. For POC tokens are passed as RPC args; migrate to headers later.
+
+## Quick reference
+
+- `deviceId`: Convex `devices` record `_id`.
+- `sessionId`: string assigned to a `deviceSessions` entry.
+- `sessionToken`: opaque string in `deviceSessionTokens.token` mapping to `sessionId`.
+- `DSK`: optional device secret (hashed) for advanced flows.
+
+If you'd like changes to wording or emphasis, tell me and I'll update the file.

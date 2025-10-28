@@ -110,6 +110,7 @@
         "@convex-dev/geospatial": "^0.1.9",
         "@convex-dev/presence": "^0.2.1",
         "convex": "^1.28.0",
+        "nanoid": "^5.1.6",
         "svix": "^1.76.1",
       },
       "devDependencies": {

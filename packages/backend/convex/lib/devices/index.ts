@@ -14,8 +14,9 @@ export const helpers = {
   createDevice,
 }
 
-import type { DeviceType, Id } from '../../../types'
-import type { MutationCtx } from '../../_generated/server'
+import type { DeviceType, Doc, Id } from '../../../types'
+import type { MutationCtx, QueryCtx } from '../../_generated/server'
+import { getCurrentUserOrThrow } from '../auth'
 
 type FromExpo = 'ios' | 'android' | 'windows' | 'macos' | 'web'
 type FromNavigator = 'MacIntel' | 'Win32' | 'Linux x86_64'
@@ -72,4 +73,22 @@ export async function createDevice(ctx: MutationCtx, args: CreateDeviceArgs) {
   const device = (await ctx.db.get(id))! // since we just created it we know it's there
   await helpers.options.populateDeviceOptions(ctx, device)
   return id
+}
+
+// region auth and type checks
+
+/**
+ * Helper function to check if the current user (authenticated in ctx) owns
+ * the device with the given deviceId
+ * @returns true if ownership is confirmed
+ */
+export async function isCurrentUserOwner(options: {
+  ctx: QueryCtx
+  device: Doc<'devices'> | null
+}) {
+  const { ctx, device } = options
+  if (!device) return false
+
+  const user = await getCurrentUserOrThrow(ctx)
+  return device.owner === user._id
 }

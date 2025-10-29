@@ -4,10 +4,9 @@ import { mutation } from '../_generated/server'
 
 import { locationMetadata } from '../schemas/shared'
 
-import { getCurrentUserOrThrow } from '../lib/auth'
-
 import { helpers } from '../lib/devices'
 import { api } from '../_generated/api'
+import { _getActiveSession, addLocationPoint } from '../tracking/lib'
 
 // region heartbeat.send
 
@@ -31,9 +30,16 @@ export const send = mutation({
     if (!sessionToken) {
       throw new Error('Unathorized')
     }
-    console.log('Heartbeat received for session token:', sessionToken)
+
+    // ------------------------------------------------------------------------
+    // session lookup and ownership extraction
+    // we removed the ownership check on users since
+    //  1. devices could be IoT and not linked to users directly
+    //  2. we want to allow device sessions to be independent of users
+    // authorization and validation is done through session tokens and
+    // (in the future) either/or api keys or hmac signatures on payloads
+
     const session = await helpers.heartbeat.getSessionByToken(ctx, { sessionToken })
-    console.log('Resolved session:', session)
     if (!session) {
       throw new Error('Invalid session token')
     }
@@ -41,14 +47,6 @@ export const send = mutation({
     const deviceId = session.deviceId
 
     // ownership check -----------------------------------
-
-    // fixme: we cannot be sure that we have a user in our context here
-    // since we are refactoring with device sessions not linked to users directly
-    const user = await getCurrentUserOrThrow(ctx)
-    const device = await helpers.get.deviceById(ctx, deviceId)
-    if (device.owner !== user._id) {
-      throw new Error('You do not own this device')
-    }
 
     await helpers.heartbeat.removeScheduleDisconnect(ctx, session._id)
 
@@ -65,9 +63,10 @@ export const send = mutation({
     //
     if (location) {
       await ctx.runMutation(api.devices.location.setLast, { deviceId, ...location })
-      const tracking = await ctx.runQuery(api.tracking.sessions.getActive, { deviceId })
-      if (tracking) {
-        await ctx.runMutation(api.tracking.locations.add, { sessionId: tracking._id, ...location })
+      // fixme: getActive uses user auth and will fail when we only have device session tokens
+      const activeSession = await _getActiveSession({ ctx, deviceId })
+      if (activeSession) {
+        await addLocationPoint({ ctx, session: activeSession, data: location })
       }
     }
 
@@ -84,84 +83,6 @@ export const send = mutation({
     return { sessionToken }
   },
 })
-
-// endregion
-
-// region old heartbeat.send
-
-// export const user_send = mutation({
-//   args: {
-//     deviceId: v.id('devices'),
-//     interval: v.optional(v.number()),
-//     location: v.optional(
-//       v.object({
-//         point: point,
-//         metadata: v.optional(locationMetadata),
-//       }),
-//     ),
-//   },
-//   returns: {
-//     sessionToken: v.string(),
-//   },
-//   handler: async (ctx, args) => {
-//     const { deviceId, location, interval } = args
-
-//     // ownership check -----------------------------------
-
-//     const user = await getCurrentUserOrThrow(ctx)
-//     const device = await helpers.get.deviceById(ctx, deviceId)
-//     if (device.owner !== user._id) {
-//       throw new Error('You do not own this device')
-//     }
-
-//     // update or create session - single session per device
-//     let sessionId: string
-//     const session = await ctx.db
-//       .query('deviceSessions')
-//       .withIndex('deviceId', (q) => q.eq('deviceId', deviceId))
-//       .unique()
-
-//     if (session) {
-//       sessionId = session.sessionId
-//     } else {
-//       sessionId = generateDeviceSessionToken()
-//       await ctx.db.insert('deviceSessions', { deviceId, sessionId })
-//     }
-
-//     await helpers.heartbeat.removeScheduleDisconnect(ctx, sessionId)
-
-//     ///
-//     ///
-
-//     // update device data - we do not update user since devices could be IoT
-//     // to update other entities we need some discriminator on the devices
-
-//     const last_seen = Date.now()
-//     await ctx.db.patch(deviceId, { last_seen, status: 'online' })
-
-//     // handle location data if provided by dispatching a last known location update.
-//     //
-//     if (location) {
-//       await ctx.runMutation(api.devices.location.setLast, { deviceId, ...location })
-//       const tracking = await ctx.runQuery(api.tracking.sessions.getActive, { deviceId })
-//       if (tracking) {
-//         await ctx.runMutation(api.tracking.locations.add, { sessionId: tracking._id, ...location })
-//       }
-//     }
-
-//     ///
-//     ///
-
-//     // Get or generate token to disconnect session.
-//     const sessionToken = await helpers.heartbeat.getSessionToken(ctx, { sessionId })
-
-//     // Schedule timeout to disconnect this session if no heartbeat is received
-//     // todo: chain scheduled with some `idle` function before full disconnect
-//     // if we want to implement idle states
-//     await helpers.heartbeat.scheduleDisconnect(ctx, { sessionId, sessionToken, interval })
-//     return { sessionToken }
-//   },
-// })
 
 // endregion
 

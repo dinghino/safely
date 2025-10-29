@@ -1,3 +1,4 @@
+import type { Doc } from '../../_generated/dataModel'
 import type { QueryCtx } from '../../_generated/server'
 import * as nanoid from 'nanoid'
 /**
@@ -64,3 +65,7 @@ export function generateDeviceSessionToken() {
   const generator = new DeviceTokenService()
   return generator.generate()
 }
+
+// endregion
+
+// region device auth

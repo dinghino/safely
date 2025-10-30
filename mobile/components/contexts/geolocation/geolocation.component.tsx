@@ -204,7 +204,7 @@ function GeolocationProvider({ children }: GeolocationProviderProps) {
   useEffect(() => {
     // if (initialized.current) return console.log('⚙️ [BGL::setup ] already initialized, skipping')
     setup()
-      // .then(async () => await BackgroundGeolocation.start())
+      .then(async () => await BackgroundGeolocation.start())
       .then((state) => {
         dispatch(action.update(state))
         dispatch(action.event({ name: '🎉 geolocation ready', data: state }))

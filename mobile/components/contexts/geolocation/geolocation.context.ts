@@ -18,6 +18,7 @@ export namespace Geolocation {
     listeners?: {
       setup: () => void
       cleanup: () => void
+      count: number
     }
   }
 

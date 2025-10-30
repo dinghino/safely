@@ -240,6 +240,7 @@ function GeolocationProvider({ children }: GeolocationProviderProps) {
     listeners: {
       setup: setupListeners,
       cleanup: cleanupListeners,
+      count: listeners.current.length,
     },
   } satisfies Geolocation.Context
 

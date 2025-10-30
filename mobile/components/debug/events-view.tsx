@@ -1,20 +1,12 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
-import { ScrollView, View } from 'react-native'
-import * as Haptics from 'expo-haptics'
-
-import ActionSheet, { type ActionSheetRef } from 'react-native-actions-sheet'
+import { View } from 'react-native'
 
 import { Text } from '@/components/ui/text'
 import { Card, CardContent } from '@/components/ui/card'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
-import { Button } from '@/components/ui/button'
 
 import { type Geolocation, useGeolocation } from '@/components/contexts/geolocation'
 
-import { Icon } from '@/components/ui/icon'
-import { BellMinusIcon, FilterIcon, FilterXIcon } from 'lucide-react-native'
-import { useBackgroundColor } from '@/lib/hooks/use-background-color'
-import { SwitchControl } from '../switch-control'
 import { Trigger } from './collapse-button'
 
 type ContextValue = {
@@ -32,9 +24,13 @@ const initialFilterState: ContextValue = {
   all: () => {},
 }
 
-const FilterContext = createContext<ContextValue>(initialFilterState)
+export const FilterContext = createContext<ContextValue>(initialFilterState)
 
-const FilterProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export function useEventsFilterContext() {
+  return useContext(FilterContext)
+}
+
+export const FilterProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { events } = useGeolocation()
 
   const _map = useRef(new Map<string, boolean>())
@@ -88,88 +84,7 @@ const FilterProvider: React.FC<{ children: React.ReactNode }> = ({ children }) =
   return <FilterContext.Provider value={value}>{children}</FilterContext.Provider>
 }
 
-export default function EventsDebugView() {
-  return (
-    <FilterProvider>
-      <EventsDebugViewContent />
-    </FilterProvider>
-  )
-}
-
-function EventsDebugViewContent() {
-  const { events: allEvents, clearEvents } = useGeolocation()
-  const { active } = useContext(FilterContext)
-
-  const events = useMemo(() => {
-    if (active.length === 0) return []
-    return allEvents.filter((e) => active.includes(e.name))
-  }, [allEvents, active])
-
-  const [lastEvents, restEvents] = useMemo(() => {
-    const reversed = events.toReversed()
-    if (events.length <= 5) return [reversed, []]
-    // split into last 5 and the rest
-    return [reversed.slice(0, 5), reversed.slice(5)]
-  }, [events])
-
-  return (
-    <Collapsible>
-      <View className="gap-2 rounded-md p-2">
-        <View className="flex-row items-center justify-between gap-4 rounded-lg bg-muted p-1">
-          <View className="flex-row items-center gap-0">
-            <FilterSheet />
-            <Text className="font-bold text-lg">Events</Text>
-          </View>
-          <View className="flex-row items-center gap-2">
-            {restEvents.length > 0 && (
-              <CollapsibleTrigger asChild>
-                <Button variant="outline" size="sm">
-                  <Text>{restEvents.length} more events</Text>
-                </Button>
-              </CollapsibleTrigger>
-            )}
-            <Button
-              disabled={!events.length}
-              size="icon"
-              variant="destructive"
-              onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Soft)
-                clearEvents()
-              }}
-            >
-              <Icon as={BellMinusIcon} className="size-4" />
-            </Button>
-          </View>
-        </View>
-        {/* <FlatList
-          data={events}
-          style={{ height: 300 }}
-          renderItem={({ item: event, index }) => (
-            <EventCard key={`${event.timestamp}--${index}`} event={event} />
-          )}
-          nestedScrollEnabled
-          contentContainerClassName="gap-2 px-4"
-        /> */}
-        {!events.length && (
-          <Text className="pl-4 text-center text-foreground/75 text-lg">No events to show</Text>
-        )}
-
-        {lastEvents.map((event, i) => (
-          <EventCard key={`${event.timestamp}--${i}`} event={event} />
-        ))}
-        {restEvents.length > 0 && (
-          <CollapsibleContent className="gap-2">
-            {restEvents.map((event, i) => (
-              <EventCard key={`${event.timestamp}--${i}`} event={event} />
-            ))}
-          </CollapsibleContent>
-        )}
-      </View>
-    </Collapsible>
-  )
-}
-
-function EventCard({ event }: { event: Geolocation.Event }) {
+export function EventCard({ event }: { event: Geolocation.Event }) {
   const title = useMemo(() => {
     switch (true) {
       case event.name.includes('📍 location'):
@@ -196,69 +111,6 @@ function EventCard({ event }: { event: Geolocation.Event }) {
         </Card>
       </CollapsibleContent>
     </Collapsible>
-  )
-}
-
-function FilterSheet() {
-  const ref = useRef<ActionSheetRef>(null)
-  const backgroundColor = useBackgroundColor()
-  const { active, names, ...filters } = useContext(FilterContext)
-  return (
-    <>
-      <Button variant="secondary" onPress={() => ref.current?.show()}>
-        {active.length !== names.length ? (
-          <Icon as={FilterXIcon} className="size-4" />
-        ) : (
-          <Icon as={FilterIcon} className="size-4" />
-        )}
-      </Button>
-      <ActionSheet
-        ref={ref}
-        snapPoints={[100]}
-        useBottomSafeAreaPadding
-        gestureEnabled
-        containerStyle={{ backgroundColor }}
-      >
-        <View className="gap-4 p-4">
-          <Text className="font-bold text-lg">Filter Events</Text>
-          <View className="flex-row items-center gap-2">
-            {/* show/hide all buttons */}
-            <Button
-              className="flex-1"
-              size="sm"
-              variant="outline"
-              onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy)
-                filters.all(true)
-              }}
-            >
-              <Text>Select All</Text>
-            </Button>
-            <Button
-              className="flex-1"
-              size="sm"
-              variant="outline"
-              onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy)
-                filters.all(false)
-              }}
-            >
-              <Text>Deselect All</Text>
-            </Button>
-          </View>
-          <ScrollView>
-            {names.map((name) => (
-              <SwitchControl
-                key={name}
-                active={active.includes(name) ?? false}
-                label={name}
-                action={(value) => filters.set(name, value)}
-              />
-            ))}
-          </ScrollView>
-        </View>
-      </ActionSheet>
-    </>
   )
 }
 

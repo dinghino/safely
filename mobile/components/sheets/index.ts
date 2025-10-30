@@ -3,7 +3,7 @@
  * used in the app with react-native-actions-sheet.
  * @see https://rnas.vercel.app/guides/sheetmanager
  */
-import { registerSheet, RouteDefinition, type SheetDefinition } from 'react-native-actions-sheet'
+import { registerSheet, type RouteDefinition, type SheetDefinition } from 'react-native-actions-sheet'
 
 import { DeviceSettingsSheet } from './device-settings'
 import { DebugLocationsDataSheet } from './debug-locations-data'

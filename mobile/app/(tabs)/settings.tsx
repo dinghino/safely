@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { Stack } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
 import { ScrollView, View } from 'react-native'
@@ -23,8 +23,7 @@ import { action } from '@/components/contexts/geolocation/geolocation.context'
 import SessionButton from '@/components/session-requests'
 
 import { transformGetLocationOptions } from '@/lib/geolocation'
-import EventsDebugView from '@/components/debug/events-view'
-import LocationsDebugView from '@/components/debug/locations-view'
+import { WatchPositionButton } from '@/components/watch-position-toggle-button'
 
 function useRequestPosition() {
   const { device } = useDeviceContext()
@@ -46,7 +45,6 @@ export default function AppSettings() {
 
   const [requestPosition, requesting] = useRequestPosition()
 
-
   const togglePace = useCallback(async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
     const state = await BackgroundGeolocation.getState()
@@ -60,7 +58,7 @@ export default function AppSettings() {
   }, [dispatch])
 
   return (
-    <View className="flex-1 gap-4">
+    <View className="flex-1 justify-stretch gap-4">
       {/* <SafeAreaView className='bg-red-500 gap-4 px-4'> */}
       <StatusBar style="auto" translucent />
       <Stack.Screen options={{ title: 'Settings' }} />
@@ -68,10 +66,11 @@ export default function AppSettings() {
       <View className="flex-col gap-2 px-4 pt-4">
         <View className="flex-row justify-stretch gap-2">
           <SessionButton />
-          <Button variant="secondary" onPress={requestPosition} disabled={requesting}>
+          <Button variant="secondary" size="icon" onPress={requestPosition} disabled={requesting}>
             <Icon as={MapPinPlusInside} />
-            <Text>Get Position</Text>
+            {/* <Text>Get Position</Text> */}
           </Button>
+          <WatchPositionButton />
           <View className="flex-1" />
           <Button disabled={!enabled} size="icon" variant="outline" onPress={togglePace}>
             {isMoving ? <Icon as={CircleX} /> : <Icon as={FootprintsIcon} />}
@@ -86,19 +85,39 @@ export default function AppSettings() {
           </Button>
         </View>
         <View className="flex-row gap-2">
-          <Button size="sm" className="flex-1" onPress={geo.listeners?.cleanup}>
-            <Text>Cleanup Listeners</Text>
+          {!!geo.listeners?.count && (
+            <Button size="sm" className="flex-1" onPress={geo.listeners?.cleanup}>
+              <Text>Cleanup {geo.listeners?.count} Listeners</Text>
+            </Button>
+          )}
+          {!geo.listeners?.count && (
+            <Button size="sm" className="flex-1" onPress={geo.listeners?.setup}>
+              <Text>Setup Listeners</Text>
+            </Button>
+          )}
+          <Button
+            size="sm"
+            variant="secondary"
+            onPress={() => SheetManager.show('debug-locations-data')}
+          >
+            <Text>Locations</Text>
           </Button>
-          <Button size="sm" className="flex-1" onPress={geo.listeners?.setup}>
-            <Text>Setup Listeners</Text>
+          <Button
+            size="sm"
+            variant="secondary"
+            onPress={() => SheetManager.show('debug-geo-events')}
+          >
+            <Text>Events</Text>
           </Button>
         </View>
+        {/* <View className="flex-row gap-2"></View> */}
       </View>
 
-      <ScrollView className="min-h-48" contentContainerClassName="gap-4 px-4">
+      <ScrollView contentContainerClassName="gap-4 px-4">
+        <View className="aspect-square flex-1 items-center justify-center rounded-lg bg-muted">
+          <Text>map goes here</Text>
+        </View>
         <GeolocationState />
-        <EventsDebugView />
-        <LocationsDebugView />
       </ScrollView>
 
       <StatusBadges className="flex-row items-center justify-center border-t border-t-muted px-4 py-2" />

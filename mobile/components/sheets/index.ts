@@ -1,7 +1,7 @@
 /**
  * @fileoverview This file is used to register all the bottom sheets
  * used in the app with react-native-actions-sheet.
- * @see https://rnas.vercel.app/docs/usage/registering-sheets
+ * @see https://rnas.vercel.app/guides/sheetmanager
  */
 import { registerSheet, type SheetDefinition } from 'react-native-actions-sheet'
 

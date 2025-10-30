@@ -58,6 +58,7 @@ export const DeviceManager = ({ children }: DeviceManager.Props) => {
   const device = useQuery(api.devices.get.one, { deviceId })
   const settings = useQuery(api.devices.get.settings, { deviceId })
   const registerMutation = useMutation(api.devices.manage.register)
+  const disconnectMutation = useMutation(api.devices.heartbeat.disconnect)
   const heartbeatMutation = useMutation(api.devices.heartbeat.send)
 
   // --------------------------------------------------------------------------
@@ -78,6 +79,22 @@ export const DeviceManager = ({ children }: DeviceManager.Props) => {
       clearSessionToken()
     }
   }
+
+  // handle graceful disconnect on unmount
+  // todo: we need to "reconnect" in headless by sending a heartbeat again when it starts
+  // even if we don't have a location yet -- or we just wait for the geolocator to do
+  // its thing and send a normal heartbeat with location
+  useEffect(() => {
+    if (!deviceId || !sessionToken) return
+    heartbeatMutation({ sessionToken })
+    return () => {
+
+      console.log('💔 [Manager] Disconnecting device on unmount')
+      disconnectMutation({ sessionToken }).catch((e) => {
+        console.error('💔 [Manager] Error disconnecting device on unmount', e)
+      })
+    }
+  }, [deviceId, sessionToken, disconnectMutation, heartbeatMutation])
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: mutation is stable
   const heartbeat = useCallback(

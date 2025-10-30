@@ -1,0 +1,17 @@
+---
+title: "Device Session Tokens"
+description: "Overview of the proposed machine-to-machine authentication system for devices: long-lived secrets, session tokens, and lifecycle management."
+---
+
+## Summary
+
+This document describes a proof-of-concept design for machine-to-machine (M2M) authentication for devices in Safely. It focuses on:
+
+- Provisioning long-lived device secrets
+- Issuing and validating session tokens for automated device operations (heartbeats, acknowledge requests)
+- Token lifecycle: rotation, revocation, and cleanup
+- Minimal changes required to existing RPCs to support hybrid user/device auth
+
+The goal is to allow devices to perform actions without a user session while keeping security and an auditable lifecycle.
+
+See the other pages in this folder for lifecycle details and recommended API changes.

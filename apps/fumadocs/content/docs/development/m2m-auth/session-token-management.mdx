@@ -1,0 +1,247 @@
+---
+title: Session Token Management Plan
+description: Analysis of the session token management plan in the mobile app
+---
+
+## Overview
+
+Session tokens are long-lived credentials used for machine-to-machine (M2M) authentication, particularly suitable for IoT devices and automated systems that cannot perform interactive user authentication. Unlike user JWTs that expire quickly (typically 60 seconds), session tokens can be designed for longer lifespans or usage-based expiration.
+
+## Common Standard Practices
+
+### Token Issuance
+
+**When to Issue:**
+- Device registration/initial setup
+- Token refresh/rotation events
+- User explicitly requests new token
+
+**Token Structure (POC):**
+- Unique identifier (recommend `nanoid(48)`)
+- Associated with specific device/session
+- Include minimal metadata (use Convex `_creationTime`, device/session mapping)
+
+**Security Considerations:**
+- Use cryptographically secure random generation
+- Store hashed versions if needed (though for validation, plain comparison is common)
+- Avoid including sensitive data in the token itself
+
+### Token Storage
+
+**Backend:**
+- Database table linking tokens to devices/sessions
+- Indexed for fast lookup
+- Include creation/expiration metadata
+
+**Client:**
+- Secure storage (SecureStore or encrypted keychain on mobile; localStorage acceptable for dev web)
+- Separate from user JWTs
+- Accessible in headless/background contexts
+
+### Token Validation
+
+**Validation Process:**
+1. Receive token in request
+2. Lookup token in database
+3. Verify token exists and is valid (not expired, not revoked)
+4. Retrieve associated device/user context
+5. Proceed with authenticated operation
+
+**Error Handling:**
+- Invalid token: Return 401 Unauthorized
+- Expired token: Return 401 with refresh hint
+- Missing token: Return 401
+
+### Token Expiration and Rotation
+
+**Expiration Strategies:**
+- **Time-based**: Fixed duration from issuance
+- **Usage-based**: Valid for X requests, then expires
+- **Event-based**: Expires on specific events (device offline, user logout)
+
+**Rotation Mechanisms:**
+- Automatic refresh before expiration
+- Manual rotation via API
+- One-time-use tokens for sensitive operations
+
+## Proposed Implementation for Safely
+
+Given offline constraints and the need for simplicity, we will use long-lived tokens for POC with optional usage tracking. Rotation and expiry are deferred for later iterations.
+
+### Database Schema (Current)
+
+We already have the foundation in `schemas/devices.schema.ts`:
+
+```typescript
+export const deviceSessionTokens = defineTable({
+  token: v.string(),
+  sessionId: v.string(),
+})
+  .index('token', ['token'])
+  .index('sessionId', ['sessionId'])
+```
+
+### Token Issuance
+
+**Current Implementation** (in `lib/devices/heartbeat.ts`):
+
+```typescript
+export async function getSessionToken(ctx: MutationCtx, options: { sessionId: string }) {
+  const { sessionId } = options
+  const sessionTokenRecord = await ctx.db
+    .query('deviceSessionTokens')
+    .withIndex('sessionId', (q) => q.eq('sessionId', sessionId))
+    .unique()
+  if (sessionTokenRecord) {
+    return sessionTokenRecord.token
+  }
+  // For POC prefer a secure random string like nanoid(48) instead of crypto.randomUUID()
+  // const sessionToken = nanoid(48)
+  const sessionToken = crypto.randomUUID()
+  await ctx.db.insert('deviceSessionTokens', { sessionId, token: sessionToken })
+  return sessionToken
+}
+```
+
+**Proposed Enhancement:** Add usage tracking and expiration.
+
+### Enhanced Token Management
+
+**Schema notes (POC)**
+
+Use existing `deviceSessionTokens` table. Optional additive fields for audit/revocation: `lastUsedAt`, `revoked`, `issuedBy`. For POC `_creationTime` is sufficient as issuance timestamp.
+
+**Enhanced Issuance Function:**
+```typescript
+export async function getSessionToken(ctx: MutationCtx, options: { sessionId: string, maxUsage?: number }) {
+  const { sessionId, maxUsage = 100 } = options // default 100 requests
+  
+  let tokenRecord = await ctx.db
+    .query('deviceSessionTokens')
+    .withIndex('sessionId', (q) => q.eq('sessionId', sessionId))
+    .unique()
+    
+  if (tokenRecord) {
+    // Check if expired
+    if (tokenRecord.usageCount >= tokenRecord.maxUsage) {
+      // Token expired, create new one
+      await ctx.db.delete(tokenRecord._id)
+      tokenRecord = null
+    }
+  }
+  
+  if (!tokenRecord) {
+  // For POC prefer a secure random string like nanoid(48)
+  // const sessionToken = nanoid(48)
+  const sessionToken = crypto.randomUUID()
+    const createdAt = Date.now()
+    await ctx.db.insert('deviceSessionTokens', { 
+      sessionId, 
+      token: sessionToken,
+      createdAt,
+      usageCount: 0,
+      maxUsage
+    })
+    return sessionToken
+  }
+  
+  return tokenRecord.token
+}
+```
+
+**Token Validation Helper:**
+```typescript
+// Add to lib/auth/index.ts or create lib/deviceAuth.ts
+export async function getDeviceFromSessionToken(ctx: QueryCtx, sessionToken: string) {
+  const tokenRecord = await ctx.db
+    .query('deviceSessionTokens')
+    .withIndex('token', (q) => q.eq('token', sessionToken))
+    .unique()
+    
+  if (!tokenRecord) {
+    throw new Error('Invalid session token')
+  }
+  
+  // Check expiration
+  if (tokenRecord.usageCount >= tokenRecord.maxUsage) {
+    throw new Error('Session token expired')
+  }
+  
+  // Get device session
+  const session = await ctx.db
+    .query('deviceSessions')
+    .withIndex('sessionId', (q) => q.eq('sessionId', tokenRecord.sessionId))
+    .unique()
+    
+  if (!session) {
+    throw new Error('Device session not found')
+  }
+  
+  // Get device
+  const device = await ctx.db.get(session.deviceId)
+  if (!device) {
+    throw new Error('Device not found')
+  }
+  
+  // Increment usage count
+  await ctx.db.patch(tokenRecord._id, { 
+    usageCount: tokenRecord.usageCount + 1 
+  })
+  
+  return { device, ownerId: device.owner }
+}
+```
+
+### Usage in Procedures
+
+**Heartbeat Mutation Example:**
+```typescript
+export const send = mutation({
+  args: {
+    deviceId: v.id('devices'),
+    sessionToken: v.string(), // Add this
+    interval: v.optional(v.number()),
+    location: v.optional(v.object({...})),
+  },
+  handler: async (ctx, args) => {
+    const { deviceId, sessionToken, location, interval } = args
+
+    // Validate device token instead of user JWT
+    const { device, ownerId } = await getDeviceFromSessionToken(ctx, sessionToken)
+    
+    // Ensure the deviceId matches the token's device
+    if (device._id !== deviceId) {
+      throw new Error('Device ID mismatch')
+    }
+
+    // Rest of the logic remains similar...
+    // ...existing code...
+  },
+})
+```
+
+### Token Rotation Strategy
+
+**Automatic Rotation:**
+- When usage count reaches threshold (e.g., 80% of maxUsage), return new token in response
+- Client stores new token for future requests
+
+**Manual Rotation:**
+- Add endpoint for explicit token refresh
+- Useful for security maintenance
+
+### Security Considerations (Early Stage)
+
+- **No perfect security needed yet**: Usage-based expiration provides reasonable protection
+- **Token theft mitigation**: Short usage limits, device binding
+- **Future enhancements**: Add IP whitelisting, device fingerprinting, rate limiting
+- **Monitoring**: Log token usage for anomaly detection
+
+### Implementation Phases
+
+1. **Phase 1**: Add usage tracking to existing schema
+2. **Phase 2**: Implement validation helper and update heartbeat
+3. **Phase 3**: Add rotation logic and monitoring
+4. **Phase 4**: Enhance security features as needed
+
+This approach balances simplicity with security, leveraging our existing codebase while providing a foundation for future improvements.

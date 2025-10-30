@@ -10,6 +10,6 @@ export const source = loader({
   source: docs.toFumadocsSource(),
   icon: (icon) => {
     if (!icon) return null
-    return createElement(DynamicIcon, { name: icon as IconName })
+    return createElement(DynamicIcon, { name: icon as IconName, key: crypto.randomUUID() })
   },
 })

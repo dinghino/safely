@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Stack } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
 import { ScrollView, View } from 'react-native'
@@ -12,16 +12,11 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 
-import {useGeolocation } from '@/components/contexts/geolocation'
+import { useGeolocation } from '@/components/contexts/geolocation'
 
 import { cn } from '@/lib/utils'
 import { Icon } from '@/components/ui/icon'
-import {
-  CircleX,
-  FootprintsIcon,
-  MapPinPlusInside,
-  SettingsIcon,
-} from 'lucide-react-native'
+import { CircleX, FootprintsIcon, MapPinPlusInside, SettingsIcon } from 'lucide-react-native'
 import { useDeviceContext } from '@/components/contexts/device-manager'
 import { DeviceStatusBadge } from '@/components/device-status-badge'
 import { action } from '@/components/contexts/geolocation/geolocation.context'
@@ -50,6 +45,7 @@ export default function AppSettings() {
   const { enabled, isMoving } = state
 
   const [requestPosition, requesting] = useRequestPosition()
+
 
   const togglePace = useCallback(async () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)

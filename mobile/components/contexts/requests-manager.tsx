@@ -4,8 +4,9 @@ import { useMutation, useQuery } from 'convex/react'
 import { api } from '@workspace/backend/api'
 
 import { useDeviceContext } from './device-manager'
-import { isRequestValid, type TrackingRequest } from '@/lib/shared/request-helpers'
+import { isRequestPending, isRequestValid, type TrackingRequest } from '@/lib/shared/request-helpers'
 import BackgroundGeolocation from 'react-native-background-geolocation'
+import { useSessionToken } from '@/lib/hooks/auth-hooks'
 
 /**
  * Pure business logic component that listens for incoming requests from the server
@@ -37,9 +38,17 @@ export const RequestsManager = () => {
 
 function useAcknowledgeRequest() {
   const acknowledge = useMutation(api.tracking.requests.acknowledge)
+  const [sessionToken] = useSessionToken()
 
   return useCallback(
     async (request: TrackingRequest) => {
+      if (!hasSessionToken(sessionToken)) {
+        return console.error('No session token available to acknowledge request')
+      }
+      if (!isRequestPending(request)) {
+        return console.error('No valid request provided to acknowledge')
+      }
+
       // get current state from bgl
       const state = await BackgroundGeolocation.getState()
       switch (request.type) {
@@ -57,9 +66,9 @@ function useAcknowledgeRequest() {
           throw new Error('Invalid request type')
       }
 
-      return acknowledge({ requestId: request!._id })
+      return acknowledge({ requestId: request._id, sessionToken })
     },
-    [acknowledge],
+    [acknowledge, sessionToken],
   )
 }
 
@@ -73,4 +82,8 @@ async function handleStartSession(state: { enabled: boolean }) {
 async function handleStopSession(state: { enabled: boolean }) {
   if (!state.enabled) return // already stopped
   await BackgroundGeolocation.changePace(false)
+}
+
+function hasSessionToken<T>(token: T | null | undefined): token is T {
+  return !!token
 }

@@ -21,24 +21,41 @@ export const devices = defineTable({
   .index('by_last_seen', ['last_seen'])
   .index('by_status', ['status'])
 
+// region device sessions
 /**
- * track active sessions for a device.
+ * Collection to keep track of sessions association with
+ * devices.
  */
 export const deviceSessions = defineTable({
   deviceId: v.id('devices'),
-  sessionId: v.string(),
-})
-  .index('deviceId', ['deviceId'])
-  .index('sessionId', ['sessionId'])
+  // sessionId: v.string(),
+  // todo: add session metadata, e.g. expiration, use count, etc to
+  // allow session management, like invalidation, refresh etc.
+}).index('deviceId', ['deviceId'])
+// .index('sessionId', ['sessionId'])
 
+/**
+ * Track active session timeouts to allow cancelling scheduled disconnects
+ */
 export const deviceSessionTimeouts = defineTable({
   sessionId: v.string(),
   scheduledFunctionId: v.id('_scheduled_functions'),
 }).index('sessionId', ['sessionId'])
 
+/**
+ * Link session tokens to sessions, allowing a disconnect
+ * between the two entities but linking a session token with
+ * a device
+ */
 export const deviceSessionTokens = defineTable({
   token: v.string(),
-  sessionId: v.string(),
+  sessionId: v.id('deviceSessions'), // todo: Id<'deviceSessions'>
+  // // for future use, so we can mark tokens as revoked/invalidated and have
+  // // a history and revalidation mechanism
+  // expired: v.optional(v.number()), // timestamp
+
+  // todo: add expiration and token validity metadata?
+  // todo: add deviceId for easier querying?
 })
   .index('token', ['token'])
   .index('sessionId', ['sessionId'])
@@ -46,6 +63,8 @@ export const deviceSessionTokens = defineTable({
 // ----------------------------------------------------------------------------
 // placeholder for device options and settings
 // ----------------------------------------------------------------------------
+
+// region device options
 
 export const locatorOptions = v.object({
   // options: v.object({
@@ -80,7 +99,6 @@ export const deviceOptions = defineTable({
   location: locatorOptions,
   heartbeat: heartbeatOptions,
 }).index('device_mode', ['deviceId', 'mode'])
-
 
 export const deviceLocations = defineTable({
   deviceId: v.id('devices'),

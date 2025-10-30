@@ -16,19 +16,13 @@ import store from '@/lib/secure-store'
 import { STORE_KEY } from './constants'
 import * as helpers from '@/lib/geolocation'
 
-import {
-  configureReanimatedLogger,
-  ReanimatedLogLevel,
-} from 'react-native-reanimated';
+import { configureReanimatedLogger, ReanimatedLogLevel } from 'react-native-reanimated'
 
 // This is the default configuration
 configureReanimatedLogger({
   level: ReanimatedLogLevel.warn,
   strict: false, // Reanimated runs in strict mode by default
-});
-
-// temporary flag to disable headless heartbeat until we figure out auth issues
-const ENABLED = false
+})
 
 // import * as dotenv from 'dotenv'
 // dotenv.config({ path: '.env' })
@@ -38,53 +32,54 @@ async function createConvexClient() {
   if (!CONVEX_URL) {
     throw new Error('CONVEX_URL is not defined in environment variables')
   }
-  const jwt = await store.load<string>({ key: STORE_KEY.CLERK_JWT })
+  // const jwt = await store.load<string>({ key: STORE_KEY.CLERK_JWT })
 
   return new ConvexHttpClient(CONVEX_URL, {
-    auth: jwt,
+    // auth: jwt,
     logger: true,
   })
 }
 
 // during a heartbeat event we dispatch a new request for the current position
 async function handleHeartbeat(device: Device | undefined) {
+  console.log('😶‍🌫️ 💓 [heartbeat] handling event. requesting location')
   const options = helpers.transformGetLocationOptions(device?.settings, {
     samples: 3,
     extras: { headless: true },
   })
+  // triggers location event which we handle separately
   await BackgroundGeolocation.getCurrentPosition(options)
 }
 
-let sendingHeartbeat = false
+// let sendingHeartbeat = false
 async function handleLocationEvent(opts: { device: Device; location: Location }) {
   const { device, location } = opts
+  console.log('😶‍🌫️ 📍 [location] handling event. sending to server...')
 
-  if (!ENABLED)
-    return console.log('😶‍🌫️ 💓 Headless heartbeat disabled, skipping location event handling')
+  if (location.sample) return console.log('😶‍🌫️ 📍 ⛔ Ignoring sample location event')
 
-  if (location.sample) return console.log('😶‍🌫️ 📍 Ignoring sample location event')
+  // if (sendingHeartbeat) return
 
-  if (sendingHeartbeat)
-    return console.log('😶‍🌫️ 💓 Already sending heartbeat, skipping location event handling')
-
-  console.log('😶‍🌫️ 📍 Handling headless location event')
-  sendingHeartbeat = true
+  // sendingHeartbeat = true
+  const sessionToken = await store.load<string>({ key: STORE_KEY.DEVICE_SESSION_TOKEN })
+  if (!sessionToken) {
+    console.log('😶‍🌫️ 📍 No session token found, skipping heartbeat')
+    return
+  }
 
   try {
-    console.log('😶‍🌫️ 💓 Sending heartbeat with location')
     const client = await createConvexClient()
-    // todo: store session token for when we're back in the foreground?
-    const { sessionToken } = await client.mutation(api.devices.heartbeat.send, {
-      deviceId: device._id,
+    // fixme: add timestamp to location data on convex
+    const { timestamp, ...data } = helpers.transformLocation(location)
+    const { sessionToken: newToken } = await client.mutation(api.devices.heartbeat.send, {
+      sessionToken,
       interval: device.settings.heartbeat.interval,
-      location: helpers.transformLocation(location),
+      location: data,
     })
-    await store.save(STORE_KEY.DEVICE_SESSION_TOKEN, sessionToken)
-    console.log('😶‍🌫️ 💓 Heartbeat sent successfully')
+    await store.save(STORE_KEY.DEVICE_SESSION_TOKEN, newToken)
+    console.log('😶‍🌫️ 📍 Heartbeat sent successfully')
   } catch (error) {
-    console.error('😶🤬 💓 Error sending heartbeat:', error)
-  } finally {
-    sendingHeartbeat = false
+    console.error('😶‍🌫️ 🤬 📍 Error sending heartbeat:', error)
   }
 }
 
@@ -110,17 +105,18 @@ const HeadlessTask = async (event: HeadlessEvent) => {
 
   switch (event.name) {
     case 'heartbeat': {
-      console.log('😶‍🌫️ 💓 [heartbeat]', { device })
       await handleHeartbeat(device)
       return
     }
     case 'location': {
       const location = event.params as unknown as Location
       const data = { device, location }
-      console.log('😶‍🌫️ 📍 [location]', data)
       await handleLocationEvent(data)
       return
     }
+    case 'terminate':
+      console.log('😶‍🌫️ [terminate]')
+      return
     // Handle other headless events if needed
     default:
       console.log(`😶‍🌫️ [${event.name}]`, event.params)

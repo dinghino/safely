@@ -22,6 +22,7 @@ import type * as lib_devices_heartbeat from "../lib/devices/heartbeat.js";
 import type * as lib_devices_index from "../lib/devices/index.js";
 import type * as lib_devices_location from "../lib/devices/location.js";
 import type * as lib_devices_options from "../lib/devices/options.js";
+import type * as lib_index from "../lib/index.js";
 import type * as presence from "../presence.js";
 import type * as privateData from "../privateData.js";
 import type * as schemas_enums from "../schemas/enums.js";
@@ -67,6 +68,7 @@ declare const fullApi: ApiFromModules<{
   "lib/devices/index": typeof lib_devices_index;
   "lib/devices/location": typeof lib_devices_location;
   "lib/devices/options": typeof lib_devices_options;
+  "lib/index": typeof lib_index;
   presence: typeof presence;
   privateData: typeof privateData;
   "schemas/enums": typeof schemas_enums;

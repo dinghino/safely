@@ -100,9 +100,9 @@ function GeolocationProvider({ children }: GeolocationProviderProps) {
          * @see {@link https://github.com/transistorsoft/react-native-background-geolocation/blob/9ce1d4496ecf8ad37b1d4062322f152af1879407/CHANGELOG.md#L184-L195}
          */
         const taskid = await BackgroundGeolocation.startBackgroundTask()
+        const { location } = event
+        send('💓 plugin heartbeat')({ ...location })
         try {
-          const { location } = event
-          send('💓 plugin heartbeat')({ ...location })
           // if (lastLocationId.current === location.uuid) {
           //   console.log('💤 [BGL::onLocation] Duplicate location, skipping heartbeat')
           //   send('💤 duplicate location')(location)
@@ -119,6 +119,7 @@ function GeolocationProvider({ children }: GeolocationProviderProps) {
           await BackgroundGeolocation.getCurrentPosition(options)
         } catch (error) {
           console.warn('[onHeartbeat] ERROR:', error)
+          send('⚠️ heartbeat error')(error)
         } finally {
           BackgroundGeolocation.stopBackgroundTask(taskid)
         }
@@ -127,16 +128,16 @@ function GeolocationProvider({ children }: GeolocationProviderProps) {
     listeners.register(
       'enabled_change',
       BackgroundGeolocation.onEnabledChange((enabled) => {
-        send('🔌 enabled changed')(enabled)
         dispatch(action.update({ enabled }))
+        send('🔌 enabled changed')(enabled)
       }),
     )
 
     listeners.register(
       'motion_change',
-      BackgroundGeolocation.onMotionChange((state) => {
-        send('🏃 motion changed')({ isMoving: state.isMoving })
-        dispatch(action.update({ isMoving: state.isMoving }))
+      BackgroundGeolocation.onMotionChange(({ isMoving }) => {
+        dispatch(action.update({ isMoving }))
+        send('🏃 motion changed')({ isMoving })
       }),
     )
 
@@ -180,21 +181,14 @@ function GeolocationProvider({ children }: GeolocationProviderProps) {
 
     console.log(`✅ [BGL::events] Event listeners set up: ${listeners.current.length}`)
 
-    const cleanup = () => {
-      console.log('⚙️ [BGL::events] Cleaning up Geolocation subscriptions')
-      listeners.unregisterAll()
-
-      send('♻️ cleaned up event listeners')(listeners.current.names)
-    }
-
-    return cleanup
+    return cleanupListeners
   }, [heartbeat])
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: stable entities
   const cleanupListeners = useCallback(() => {
-    if (listeners.current.length === 0) return
     console.log('⚙️ [BGL::events] Cleaning up GeolocationContext')
     BackgroundGeolocation.removeAllListeners()
+    if (listeners.current.length === 0) return
     const data = listeners.current.names
     console.log('⚙️ [BGL::events] Cleaning up Geolocation subscriptions')
     listeners.unregisterAll()

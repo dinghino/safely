@@ -22,6 +22,7 @@ import {
   useActiveSession,
   useSendPosition,
 } from '../hooks'
+import { useDeviceToken } from '@/shared/hooks/use-device-token'
 
 export namespace SessionManager {
   export type Value = {
@@ -42,7 +43,7 @@ export { useSessionManager }
 
 const DEFAULT_INTERVAL = 60_000
 
-const parseSettings = createSettingsFactory<Device|null|undefined>((device) => ({
+const parseSettings = createSettingsFactory<Device | null | undefined>((device) => ({
   interval: device?.settings.location.timeout ?? DEFAULT_INTERVAL,
   trackingMode: device?.mode ?? 'off',
 }))
@@ -50,6 +51,7 @@ const parseSettings = createSettingsFactory<Device|null|undefined>((device) => (
 export const SessionManager: React.FC<SessionManager.Props> = (props) => {
   const { device } = useDeviceContext()
   const { actor: geo } = useGeolocationContext()
+  const [sessionToken] = useDeviceToken()
 
   const trackingRequest = useActiveRequest({ deviceId: device?._id })
   const activeSession = useActiveSession(device?._id)
@@ -121,10 +123,16 @@ export const SessionManager: React.FC<SessionManager.Props> = (props) => {
   // todo: move inside state machine ?:122
   useEffect(() => {
     if (!trackingRequest) return
+    if (!sessionToken) return
     const { _id: requestId, target } = trackingRequest
     if (target !== device?._id) return // not for us
-    acknowledge({ requestId })
-  }, [trackingRequest, acknowledge, device?._id])
+    console.log('✅ Acknowledging tracking request', {
+      request: trackingRequest,
+      token: sessionToken,
+      device,
+    })
+    acknowledge({ requestId, sessionToken })
+  }, [trackingRequest, acknowledge, device?._id, sessionToken])
 
   // update machine settings when device settings change
   useEffect(() => {

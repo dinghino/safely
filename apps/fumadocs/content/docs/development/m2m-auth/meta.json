@@ -5,6 +5,7 @@
   "icon": "key",
   "pages": [
     "index.mdx",
+    "tldr.mdx",
     "design.mdx",
     "lifecycle.mdx",
     "api-changes.mdx",

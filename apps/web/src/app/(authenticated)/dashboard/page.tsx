@@ -20,12 +20,12 @@ export default function Dashboard() {
       <section className="grid grid-cols-12 gap-4">
         <Card
           className={cn(
-            'col-span-full md:col-span-full lg:col-span-10',
+            'col-span-full lg:col-span-8 xl:col-span-10',
             'px-0 pb-0',
             'overflow-hidden',
           )}
         >
-          <Tabs className="h-full" defaultValue='map'>
+          <Tabs className="h-full" defaultValue="map">
             <CardHeader className="flex flex-row justify-between">
               <div className="space-y-1">
                 <CardTitle className="font-bold text-lg">Your devices</CardTitle>

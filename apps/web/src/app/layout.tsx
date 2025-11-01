@@ -4,9 +4,10 @@ import '@workspace/ui/globals.css'
 import './styles.css'
 import '@workspace/data-filter/styles.css'
 
-import Header from '@/components/header'
+import Header from '@/components/layout/header'
 import { RootProviders } from '@/components/providers'
 import { Toaster } from '@workspace/ui/components/sonner'
+
 import { cn } from '@/lib/utils'
 import { CodeIcon, HomeIcon, LayoutDashboardIcon, ListChecks, type LucideIcon } from 'lucide-react'
 
@@ -46,12 +47,11 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="en" suppressHydrationWarning>
       <body className={cn(geistSans.variable, geistMono.variable, 'relative antialiased')}>
         <RootProviders>
-          {/* <div className="grid h-svh grid-rows-[auto_1fr]"> */}
-          <div className="h-svh">
-            <div className="sticky top-0 z-50 min-h-[var(--header-height)] border-b bg-background">
+          <div className="min-h-svh w-full">
+            <div className="sticky top-0 z-50 inline-flex min-h-(--header-height) w-full items-center border-b bg-sidebar *:w-full">
               <Header links={links} />
             </div>
-            {children}
+            <div className="isolate">{children}</div>
           </div>
           <Toaster richColors />
         </RootProviders>

@@ -4,15 +4,17 @@ import '@workspace/ui/globals.css'
 import './styles.css'
 import '@workspace/data-filter/styles.css'
 
-import Header from '@/components/layout/header'
+import { cn } from '@/lib/utils'
+
 import { RootProviders } from '@/components/providers'
 import { Toaster } from '@workspace/ui/components/sonner'
 import { SidebarInset, SidebarProvider } from '@workspace/ui/components/sidebar'
 import { SidebarTrigger } from '@workspace/ui/components/sidebar'
 
-import { cn } from '@/lib/utils'
+import Header from '@/widgets/layouts/header'
+import { DashboardSidebar } from '@/widgets/layouts/sidebar'
+
 import { CodeIcon, HomeIcon, LayoutDashboardIcon, ListChecks, type LucideIcon } from 'lucide-react'
-import { DashboardSidebar } from '@/components/layout/dashboard-sidebar'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',

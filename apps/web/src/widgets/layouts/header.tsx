@@ -2,7 +2,7 @@
 import { SignInButton, UserButton } from '@clerk/nextjs'
 import { Authenticated, Unauthenticated } from 'convex/react'
 import Link from 'next/link'
-import { ModeToggle } from '../mode-toggle'
+import { ModeToggle } from '@/components/mode-toggle'
 import { Button } from '@workspace/ui/components/button'
 
 export namespace Header {

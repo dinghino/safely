@@ -20,6 +20,8 @@ import {
 } from '@workspace/ui/components/sidebar'
 import Link from 'next/link'
 
+import {SidebarDevicesList} from '@/features/device-manager/components'
+
 // Menu items.
 const items = [
   {
@@ -96,6 +98,7 @@ export function DashboardSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+        <SidebarDevicesList />
       </SidebarContent>
     </Sidebar>
   )

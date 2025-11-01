@@ -25,7 +25,7 @@ export default function AuthenticatedLayout({ children }: { children: React.Reac
           {/* <DeviceContextProvider> */}
 
           <AuthenticatedProviders>
-            <SubHeader />
+            {/* <SubHeader /> */}
             <main className="isolate flex-1">{children}</main>
           </AuthenticatedProviders>
 
@@ -44,6 +44,7 @@ export default function AuthenticatedLayout({ children }: { children: React.Reac
   )
 }
 
+// biome-ignore lint/correctness/noUnusedVariables: playground
 function SubHeader() {
   return (
     <div

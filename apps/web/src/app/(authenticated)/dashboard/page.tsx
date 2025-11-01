@@ -25,7 +25,7 @@ export default function Dashboard() {
             'overflow-hidden',
           )}
         >
-          <Tabs className="h-full">
+          <Tabs className="h-full" defaultValue='map'>
             <CardHeader className="flex flex-row justify-between">
               <div className="space-y-1">
                 <CardTitle className="font-bold text-lg">Your devices</CardTitle>

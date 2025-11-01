@@ -32,7 +32,7 @@ export default function AuthenticatedLayout({ children }: { children: React.Reac
             <div
               className={cn(
                 'inline-flex max-h-fit w-full gap-4 border-b p-2',
-                'sticky top-[var(--header-height)] z-50 h-[var(--header-height)] w-full bg-background',
+                'sticky top-(--header-height) z-50 h-(--header-height) w-full bg-background',
               )}
             >
               <Button asChild variant="ghost" size="sm">
@@ -45,7 +45,7 @@ export default function AuthenticatedLayout({ children }: { children: React.Reac
               <LastGeoTime />
               <LastHeartbeatTime />
             </div>
-            {children}
+            <main className="isolate">{children}</main>
           </AuthenticatedProviders>
 
           {/* </DeviceContextProvider> */}

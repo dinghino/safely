@@ -70,7 +70,15 @@ export function DashboardSidebar() {
             <SidebarMenu>
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild disabled={item.disabled}>
+                  <SidebarMenuButton
+                    asChild
+                    disabled={item.disabled}
+                    tooltip={{
+                      children: item.title,
+                      hidden: false,
+                      hideWhenDetached: true,
+                    }}
+                  >
                     {item.disabled ? (
                       <div>
                         <item.icon />

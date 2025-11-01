@@ -53,11 +53,11 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           <SidebarProvider>
             <DashboardSidebar />
             <SidebarInset>
-              <div className="min-h-svh w-full">
+              <div className="flex min-h-svh w-full flex-col">
                 <div className="sticky top-0 z-50 inline-flex min-h-(--header-height) w-full items-center border-b bg-sidebar *:w-full">
                   <Header links={links} left={<SidebarTrigger className="cursor-pointer" />} />
                 </div>
-                <div className="isolate">{children}</div>
+                <div className="isolate flex flex-1 flex-col">{children}</div>
               </div>
             </SidebarInset>
           </SidebarProvider>

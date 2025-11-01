@@ -1,4 +1,12 @@
-import { Calendar, Home, Inbox, Search, Settings } from 'lucide-react'
+import {
+  HomeIcon,
+  LayoutDashboardIcon,
+  ListTodoIcon,
+  MapIcon,
+  SettingsIcon,
+  SmartphoneIcon,
+  type LucideIcon,
+} from 'lucide-react'
 
 import {
   Sidebar,
@@ -10,39 +18,51 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@workspace/ui/components/sidebar'
+import Link from 'next/link'
 
 // Menu items.
 const items = [
   {
     title: 'Home',
     url: '/',
-    icon: Home,
+    icon: HomeIcon,
   },
   {
     title: 'Dashboard',
     url: '/dashboard',
-    icon: Inbox,
+    icon: LayoutDashboardIcon,
+  },
+  {
+    title: 'Maps',
+    url: '/maps',
+    icon: MapIcon,
   },
   {
     title: 'Devices',
     url: '/devices',
-    icon: Calendar,
+    icon: SmartphoneIcon,
   },
   {
     title: 'Tasks',
-    url: '/tasks',
-    icon: Search,
+    url: '/todos',
+    icon: ListTodoIcon,
   },
   {
     title: 'Settings',
     url: '/settings',
-    icon: Settings,
+    icon: SettingsIcon,
+    disabled: true,
   },
-]
+] satisfies {
+  title: string
+  url: React.ComponentProps<typeof Link>['href']
+  icon: LucideIcon
+  disabled?: boolean
+}[]
 
 export function DashboardSidebar() {
   return (
-    <Sidebar variant='sidebar' collapsible='icon'>
+    <Sidebar variant="sidebar" collapsible="icon">
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>Application</SidebarGroupLabel>
@@ -50,11 +70,18 @@ export function DashboardSidebar() {
             <SidebarMenu>
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <a href={item.url}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </a>
+                  <SidebarMenuButton asChild disabled={item.disabled}>
+                    {item.disabled ? (
+                      <div>
+                        <item.icon />
+                        <span>{item.title}</span>
+                      </div>
+                    ) : (
+                      <Link href={item.url}>
+                        <item.icon />
+                        <span>{item.title}</span>
+                      </Link>
+                    )}
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}

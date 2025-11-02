@@ -13,6 +13,21 @@ export function useActiveSession(deviceId: Id<'devices'> | undefined) {
   return useQuery(api.tracking.sessions.getActive, { deviceId })
 }
 
+export function useSession(sessionId: Id<'trackSession'>) {
+  return useQuery(api.tracking.sessions.get, { sessionId })
+}
+/**
+ * Get all sessions for a given device.
+ * @todo add options for pagination, filtering, sorting and grouping
+ */
+export function useAllSessions(deviceId: Id<'devices'> | undefined, _options = {}) {
+  return useQuery(api.tracking.sessions.getAllOfDevice, { deviceId })
+}
+
+export function useSessionData(sessionId: Id<'trackSession'>) {
+  return useQuery(api.tracking.locations.getSession, { sessionId })
+}
+
 export function useStartSession() {
   return useMutation(api.tracking.sessions.start)
 }
@@ -26,7 +41,7 @@ export function useSendPosition() {
 }
 
 // ----------------------------------------------------------------------------
-// requests
+// region requests
 
 /**
  * Get a function to create a new tracking request to a target device with

@@ -30,13 +30,13 @@ export default function DemoPage() {
   // const [deviceId] = useDeviceId()
   // const device = useQuery(api.devices.get, { deviceId })
   return (
-    <div className="space-y-4 py-8 content-grid">
+    <div className="@container space-y-4 py-8 content-grid">
       <GeolocationDemo />
-      <div className="flex flex-row gap-4 max-lg:flex-col">
+      <div className="flex flex-col gap-8">
         <div className="flex-1">
           <HeartbeatDebugger />
         </div>
-        <div className="flex-1">
+        <div className="flex-1 rounded border bg-card p-4">
           <SessionDebugger />
         </div>
       </div>

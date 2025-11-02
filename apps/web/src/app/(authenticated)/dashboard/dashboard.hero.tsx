@@ -1,17 +1,13 @@
 'use client'
 
 import { useUser } from '@clerk/nextjs'
-import { api } from '@workspace/backend/api'
-import { useQuery } from 'convex/react'
 
 export function DashboardHero() {
   const user = useUser()
-  const privateData = useQuery(api.privateData.get)
   return (
-    <header className="space-y-2 py-4">
-      <h1 className="font-bold text-2xl">Dashboard</h1>
-      <p>Welcome {user.user?.fullName}</p>
-      <p>privateData: {privateData?.message}</p>
+    <header className="space-y-1 py-4">
+      <h1 className="font-bold text-4xl">Dashboard</h1>
+      <p className="text-muted-foreground text-sm">Welcome back, {user.user?.firstName}</p>
     </header>
   )
 }

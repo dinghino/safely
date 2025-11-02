@@ -2,16 +2,17 @@ import { v } from 'convex/values'
 import { api } from '../_generated/api'
 import { internalMutation, mutation, query } from '../_generated/server'
 
-import { getCurrentUserOrThrow } from '../lib/auth'
-import { _getActiveSession, _getSession, geospatial, isSessionOpen } from './lib'
-
+// import { Service.auth.getCurrentUserOrThrow } from '../lib/auth'
+import { _getActiveSession, getSession, geospatial, isSessionOpen } from './lib'
+// import { isCurrentUserOwner } from '../lib/devices'
+import { Service } from '../lib'
 /**
  * Get a tracking session by its ID
  * @throws if no session or not owned by current user
  */
 export const get = query({
   args: { sessionId: v.id('trackSession') },
-  handler: async (ctx, args) => _getSession({ ctx, ...args }),
+  handler: async (ctx, args) => getSession({ ctx, ...args }),
 })
 
 /**
@@ -24,6 +25,7 @@ export const getActive = query({
   handler: async (ctx, args) => {
     const { deviceId } = args
     if (!deviceId) return null
+
     return _getActiveSession({ ctx, deviceId })
   },
 })
@@ -40,10 +42,11 @@ export const getAllOfDevice = query({
     if (!deviceId) return null
 
     const device = await ctx.db.get(deviceId)
-    const user = await getCurrentUserOrThrow(ctx)
-    if (!device || device.owner !== user._id) {
+    const isOwner = await Service.devices.isCurrentUserOwner({ ctx, device })
+    if (!device || !isOwner) {
       throw new Error('Device not found')
     }
+
     return ctx.db
       .query('trackSession')
       .withIndex('by_device', (q) => q.eq('device', device._id))
@@ -64,12 +67,13 @@ export const create = internalMutation({
   args: { deviceId: v.id('devices') },
   handler: async (ctx, args) => {
     const { deviceId } = args
-    const user = await getCurrentUserOrThrow(ctx)
+    const user = await Service.auth.getCurrentUserOrThrow(ctx)
 
     // allows only the target device to create a session from a request with
     // the authed user being required to be logged in and owning the device
     const device = await ctx.db.get(deviceId)
-    if (!device || device.owner !== user._id) {
+    const isOwner = await Service.devices.isCurrentUserOwner({ ctx, device })
+    if (!device || !isOwner) {
       throw new Error('Device not found')
     }
 
@@ -105,11 +109,13 @@ export const close = internalMutation({
   args: { deviceId: v.id('devices') },
   handler: async (ctx, args) => {
     const { deviceId } = args
-    const user = await getCurrentUserOrThrow(ctx)
+
     const device = await ctx.db.get(deviceId)
-    if (!device || device.owner !== user._id) {
+    const isOwner = await Service.devices.isCurrentUserOwner({ ctx, device })
+    if (!device || !isOwner) {
       throw new Error('Device not found')
     }
+
     const session = await _getActiveSession({ ctx, deviceId })
     if (!session) throw new Error('No active session found for this device')
     if (!isSessionOpen(session)) throw new Error('Session already closed')
@@ -142,9 +148,10 @@ export const close = internalMutation({
 export const start = mutation({
   args: { deviceId: v.id('devices') },
   handler: async (ctx, args) => {
-    const user = await getCurrentUserOrThrow(ctx)
+    const user = await Service.auth.getCurrentUserOrThrow(ctx)
     const device = await ctx.db.get(args.deviceId)
-    if (!device || device.owner !== user._id) {
+    const isOwner = await Service.devices.isCurrentUserOwner({ ctx, device })
+    if (!device || !isOwner) {
       throw new Error('Device not found')
     }
 
@@ -185,7 +192,7 @@ export const stop = mutation({
   args: { sessionId: v.id('trackSession') },
   handler: async (ctx, args) => {
     const { sessionId } = args
-    const session = await _getSession({ ctx, sessionId })
+    const session = await getSession({ ctx, sessionId })
 
     if (!session) throw new Error('Session not found')
     if (!isSessionOpen(session)) throw new Error('Session already closed')
@@ -208,7 +215,7 @@ export const remove = mutation({
   args: { sessionId: v.id('trackSession') },
   handler: async (ctx, args) => {
     const { sessionId } = args
-    const session = await _getSession({ ctx, sessionId })
+    const session = await getSession({ ctx, sessionId })
     if (!session) throw new Error('Session not found')
     if (isSessionOpen(session)) throw new Error('Cannot delete an open session')
 

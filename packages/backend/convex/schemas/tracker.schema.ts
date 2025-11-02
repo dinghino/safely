@@ -8,7 +8,7 @@ import {
   trackingRequestType,
   // trackingRequestStatus
 } from './enums'
-
+import { locationMetadata } from '../schemas/shared'
 /**
  * Table to store tracking sessions for devices.
  * Each entry represents a tracking session with its status and timestamp.
@@ -29,17 +29,6 @@ export const trackSession = defineTable({
   .index('by_endedAt', ['endedAt'])
   .index('active', ['device', 'endedAt'])
 
-export const trackLocationMetadata = v.object({
-  accuracy: v.optional(v.number()),
-  altitude: v.optional(v.number()),
-  altitudeAccuracy: v.optional(v.number()),
-  // todo: these can be either received or evaluated on the server if missing
-  // using the previous point and timestamp to calculate speed (and heading)
-  // if the current meta don't have them but previous do.
-  heading: v.optional(v.number()),
-  speed: v.optional(v.number()),
-})
-
 /**
  * Table to store geospatial metadata for tracking sessions.
  * Actual location data is stored with the geospatial component referring
@@ -49,7 +38,7 @@ export const trackLocation = defineTable({
   session: v.id('trackSession'),
   user: v.id('users'),
   // should come from the device location API / GPS information
-  metadata: trackLocationMetadata,
+  metadata: locationMetadata,
 })
   .index('by_session', ['session'])
   .index('by_user', ['user'])

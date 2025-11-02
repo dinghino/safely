@@ -4,7 +4,8 @@ import { internal } from '../_generated/api'
 
 import { getCurrentUserOrThrow } from '../lib/auth'
 import { trackingRequestType } from '../schemas/enums'
-import type { Id } from '../_generated/dataModel'
+import type { Doc, Id } from '../_generated/dataModel'
+import { getSessionByToken } from '../lib/devices/heartbeat'
 
 /**
  * Returns THE open request for the given target device, if any.
@@ -105,20 +106,34 @@ export const remove = mutation({
  * use those to send location points.
  */
 export const acknowledge = mutation({
-  args: { requestId: v.id('trackRequests') },
+  args: {
+    requestId: v.id('trackRequests'),
+    // from the device acknowledging the request, that should be the target device
+    sessionToken: v.string(),
+  },
   handler: async (ctx, args) => {
-    const { requestId } = args
+    const { requestId, sessionToken } = args
 
-    const user = await getCurrentUserOrThrow(ctx)
+    // validate tokens, by getting session entry
+    if (!sessionToken) throw new Error('Unauthorized')
+
+    const session = await getSessionByToken(ctx, { sessionToken })
+    // todo: when added, make sure the session token is valid and not expired
+    if (!session) throw new Error('Invalid session token')
+
     const request = await ctx.db.get(requestId)
-    // todo: acknowledgement should be done by the target device
-    // todo: move request ownership above this
-    if (!isOwnedByTheUser(request, user)) throw new Error('Request not found')
+
+    // todo: ensure session token belongs to target device of the request
+    if (!isRequestForSessionOwner(request, session))
+      throw new Error('This device is not the target of the request')
+
+    if (!isRequestOpen(request)) throw new Error('Request already acknowledged')
 
     // ensure that the device in the request exists and the request is for it
     const device = await ctx.db.get(request.target)
-    if (!device || !isRequestForDevice(request, device))
-      throw new Error('Request not for this device')
+    // type guard on device. should never happen since we already check on session
+    // and device *should* exist if session exists
+    if (!device) throw new Error('Request not for this device')
 
     // the client acknowledged the request
     await ctx.db.patch(request._id, { acknowledged: true })
@@ -151,6 +166,7 @@ export const acknowledge = mutation({
       //   outer fails?
       //   otherwise we can make some inner to handle different requests
     }
+    return false
   },
 })
 
@@ -165,6 +181,7 @@ async function dispatchCreateSession(
 ) {
   const session = await ctx.runMutation(internal.tracking.sessions.create, { deviceId })
   await ctx.db.patch(requestId, { session, acknowledged: true })
+  return true
 }
 
 async function dispatchCloseSession(
@@ -174,6 +191,7 @@ async function dispatchCloseSession(
 ) {
   const session = await ctx.runMutation(internal.tracking.sessions.close, { deviceId })
   await ctx.db.patch(requestId, { session, acknowledged: true })
+  return true
 }
 
 // todo: move to root `lib`
@@ -195,13 +213,15 @@ function isSameOwner(device1: { owner: string }, device2: { owner: string }) {
   return device1.owner === device2.owner
 }
 
-/**
- * Type guard to check if a request is for a given device
- * @returns true if request is not null and is for the given device
- */
-function isRequestForDevice<T extends { target: string }>(
-  request: T | null,
-  device: { _id: string } | null,
-): request is T {
-  return request !== null && device !== null && request.target === device._id
+function isRequestOpen(request: Doc<'trackRequests'> | null): request is Doc<'trackRequests'> {
+  return request !== null && request.acknowledged === false
+}
+
+function isRequestForSessionOwner(
+  request: Doc<'trackRequests'> | null,
+  session: Doc<'deviceSessions'> | null,
+): request is Doc<'trackRequests'> {
+  if (!request) return false
+  if (!session) return false
+  return request.target === session.deviceId
 }

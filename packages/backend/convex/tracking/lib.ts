@@ -1,18 +1,20 @@
-import { GeospatialIndex } from '@convex-dev/geospatial'
-import { components } from '../_generated/api'
+import { GeospatialIndex, type Point } from '@convex-dev/geospatial'
+import { api, components } from '../_generated/api'
 
 import type { Doc, Id } from '../_generated/dataModel'
-import type { QueryCtx } from '../_generated/server'
+import type { MutationCtx, QueryCtx } from '../_generated/server'
 
 import { getCurrentUserOrThrow } from '../lib/auth'
+import type { LocationMetadata } from '../../types'
 
-export const geospatial = new GeospatialIndex<
-  Id<'trackLocation'>,
-  {
-    session: Id<'trackSession'>
-    user: Id<'users'>
-  }
->(components.geospatial)
+type TrackingGisFilters = {
+  // allows to get all point of a session
+  session: Id<'trackSession'>
+}
+
+export const geospatial = new GeospatialIndex<Id<'trackLocation'>, TrackingGisFilters>(
+  components.geospatial,
+)
 
 export function isSessionOpen(session: { endedAt?: number }) {
   return session.endedAt === undefined
@@ -32,7 +34,7 @@ export function isSessionOfDevice(session: Doc<'trackSession'>, device: Doc<'dev
  * Retrieve a session and verify it belongs to the current user
  * @throws if no session or not owned by current user
  */
-export async function _getSession(options: { ctx: QueryCtx; sessionId: Id<'trackSession'> }) {
+export async function getSession(options: { ctx: QueryCtx; sessionId: Id<'trackSession'> }) {
   const { ctx, sessionId } = options
   const user = await getCurrentUserOrThrow(ctx)
   const session = await ctx.db.get(sessionId)
@@ -44,13 +46,8 @@ export async function _getSession(options: { ctx: QueryCtx; sessionId: Id<'track
 
 export async function _getActiveSession(options: { ctx: QueryCtx; deviceId: Id<'devices'> }) {
   const { ctx, deviceId } = options
-  const user = await getCurrentUserOrThrow(ctx)
   const device = await ctx.db.get(deviceId)
-
-  if (!device || device.owner !== user._id) {
-    // throw new Error('Device not found')
-    return null
-  }
+  if (!device) return null
 
   const session = await ctx.db
     .query('trackSession')
@@ -59,4 +56,69 @@ export async function _getActiveSession(options: { ctx: QueryCtx; deviceId: Id<'
     .order('desc')
     .first()
   return session
+}
+/**
+ * Add a location point to a tracking session.
+ * @note verify ownership of session against user and/or device before calling
+ * this, as we assume that everything is verified and valid here.
+ */
+export async function addLocationPoint(options: {
+  ctx: MutationCtx
+  session: Doc<'trackSession'> | null
+  data: {
+    point: Point
+    metadata?: LocationMetadata | undefined
+  }
+}) {
+  const { ctx, session, data } = options
+  if (!session || !isSessionOpen(session)) {
+    throw new Error('Session not found or closed')
+  }
+
+  // validate session ownership on device
+  const device = await ctx.db.get(session.device)
+  if (!device) throw new Error(`Device not found for session ${session._id} session`)
+  if (!isSessionOfDevice(session, device)) {
+    throw new Error(`Session ${session._id} does not belong to device ${device._id}`)
+  }
+
+  const { point, metadata } = data
+
+  // create trackLocation first - need the ID for geospatial
+  const locationId = await ctx.db.insert('trackLocation', {
+    session: session._id,
+    user: session.owner,
+    metadata: metadata ?? {},
+  })
+  // run updates
+
+  /**
+   * also update last known location since this is likely more recent or accurate
+   * due to tracking being usually with tighter options.
+   * fixme: cleanup heartbeat system or remove from here
+   *
+   * since we update last known with heartbeat, we might want to either send a heartbeat
+   * here and/or set up things so that the heartbeat knows last updated and figures out
+   * when to send the next one in sync with tracking updates
+   * (i.e. we reset timer on tracking update or tell clients to disable heartbeat when tracking is active)
+   */
+  const updateLastKnown = ctx.runMutation(api.devices.location.setLast, {
+    deviceId: device._id,
+    point,
+    metadata,
+  })
+
+  // update session data
+  const patchSession = ctx.db.patch(session._id, {
+    pointsCount: session.pointsCount + 1,
+    lastUpdatedAt: Date.now(),
+  })
+  // create the GIS point for the location
+  const addPoint = geospatial.insert(ctx, locationId, point, {
+    session: session._id,
+  })
+
+  // resolve all updates in parallel
+  await Promise.all([updateLastKnown, patchSession, addPoint])
+  return locationId
 }

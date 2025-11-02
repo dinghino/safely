@@ -1,0 +1,54 @@
+---
+title: App features
+description: Safely pet current features
+---
+
+# Current Features
+
+## Web Dashboard
+
+The web dashboard provides a comprehensive interface for users to manage their devices:
+
+- **Device Registration**: Users can register web devices with the platform, creating new entries in the database with associated metadata.
+- **Device Management**: View all registered devices, including their current status and configuration.
+- **Device Configuration**: Adjust device settings, such as heartbeat intervals and tracking preferences.
+- **Active Tracking Sessions**: Initiate and manage on-demand tracking sessions for devices.
+- **Real-time Monitoring**: Observe device status updates and location data as they come in.
+
+## Mobile App
+
+The mobile application serves as a critical component for location data collection:
+
+- **Device Registration**: Register mobile devices with the system, obtaining a unique device ID and session token for future communications.
+- **Background Geolocation**: Utilizes TransistorSoft's React Native Background Geolocation plugin for continuous location tracking.
+- **Headless Mode Support**: Implements headless functionality to continue location reporting even when the app is terminated (though this feature has current implementation challenges).
+- **Debug Views and Controls**: Provides debugging interfaces and manual controls for testing and troubleshooting.
+- **GPS Relay Beacon**: Primarily functions as a beacon to relay GPS data to the backend.
+
+## Backend (Convex)
+
+The backend handles all server-side logic and data management:
+
+- **Authentication**: Integrated with Clerk for user authentication, enabling protected routes and rudimentary role-based access control (RBAC).
+- **Device Heartbeat System**: Implements a configurable heartbeat mechanism (`packages/backend/convex/devices/heartbeat.ts`) where devices report their online status and optionally location data.
+- **Location Management**: Stores last known locations as ephemeral data and, for active tracking sessions, saves historical location data for mapping and analytics.
+- **Session Management**: Generates and manages session tokens for devices, intended for machine-to-machine communications.
+- **Real-time RPC**: Provides real-time remote procedure calls for device commands, queries, and updates.
+- **Database Schema**: Manages entities like users, devices, device sessions, and location data with appropriate indexing.
+
+## Core Functionality Flow
+
+1. **Device Registration**: Users register devices through web or mobile interfaces, receiving a device ID and session token.
+2. **Heartbeat Reporting**: Devices periodically send heartbeats to the backend, reporting status and optional location.
+3. **Location Processing**: Received locations update the device's last known position and, if tracking is active, add to the session's location history.
+4. **Command Issuance**: Users can remotely command devices through the web dashboard.
+5. **Alert Generation**: The system monitors for geofence crossings, low battery, and other events (alert system not yet fully implemented).
+
+## Technical Stack
+
+- **Frontend**: React-based web dashboard and React Native mobile app
+- **Backend**: Convex for real-time database and RPC
+- **Authentication**: Clerk for user management
+- **Geolocation**: TransistorSoft React Native Background Geolocation plugin
+- **Build System**: Turborepo for monorepo management
+- **Documentation**: Fumadocs for project documentation

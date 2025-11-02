@@ -100,10 +100,12 @@ const working = config.createStateConfig({
           service: context.geolocatorActor,
           options: { maximumAge: context.interval },
         }),
-        onDone: {
-          target: 'dispatching',
-          actions: assign({ position: ({ event }) => event.output }),
-        },
+        onDone: [
+          {
+            target: 'dispatching',
+            actions: [assign({ position: ({ event }) => event.output })],
+          },
+        ],
         onError: { target: 'dispatching' },
       },
       on: {
@@ -226,13 +228,15 @@ const machine = config.createMachine({
     disconnect: { target: '.disconnecting', guard: ({ context }) => !!context.token },
     setInterval: [
       {
-        target: '.idle',
-        description:
-          'update interval and restart idle to update the `after` timer.\ntransition will be ignored if interval is 0 or no deviceId',
         actions: [
           assign({ interval: ({ event }) => event.interval }),
           emit(({ context }) => ({ type: 'intervalChanged', interval: context.interval })),
         ],
+      },
+      {
+        target: '.working',
+        description:
+          'update interval and send a new heartbeat to update the `after` timer.\ntransition will be ignored if interval is 0 or no deviceId',
         guard: ({ context, event }) =>
           !!context.deviceId && event.interval > 0 && event.interval !== context.interval,
       },

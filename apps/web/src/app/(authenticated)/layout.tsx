@@ -6,8 +6,9 @@ import Loader from '@/components/loader'
 // import { UserPresenceProvider } from '@/features/presence/contexts'
 // import { DeviceContextProvider } from '@/features/device-tracking'
 
-import { AuthenticatedProviders } from '@/components/providers'
+import { cn } from '@/lib/utils'
 
+import { AuthenticatedProviders } from '@/components/providers'
 import { LastGeoTime } from '@/features/geolocation/components'
 import { LastHeartbeatTime } from '@/features/heartbeat/components'
 
@@ -24,14 +25,8 @@ export default function AuthenticatedLayout({ children }: { children: React.Reac
           {/* <DeviceContextProvider> */}
 
           <AuthenticatedProviders>
-            <div>
-              <div className="inline-flex max-h-fit w-full gap-4 border-b p-2">
-                <div className="flex-1" />
-                <LastGeoTime />
-                <LastHeartbeatTime />
-              </div>
-              {children}
-            </div>
+            {/* <SubHeader /> */}
+            <main className="isolate flex-1">{children}</main>
           </AuthenticatedProviders>
 
           {/* </DeviceContextProvider> */}
@@ -46,5 +41,23 @@ export default function AuthenticatedLayout({ children }: { children: React.Reac
         </AuthLoading>
       </ClerkLoaded>
     </>
+  )
+}
+
+// biome-ignore lint/correctness/noUnusedVariables: playground
+function SubHeader() {
+  return (
+    <div
+      className={cn(
+        'sticky',
+        'top-(--header-height) right-0 h-(--header-height)',
+        'max-h-fit gap-4 border-b p-2',
+        'inline-flex justify-end',
+        'z-50 bg-background',
+      )}
+    >
+      <LastGeoTime />
+      <LastHeartbeatTime />
+    </div>
   )
 }

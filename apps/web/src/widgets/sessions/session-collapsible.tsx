@@ -1,4 +1,3 @@
-
 import { useMemo } from 'react'
 import dayjs from 'dayjs'
 import Link from 'next/link'
@@ -24,11 +23,12 @@ import { DeleteSessionButton } from './delete-session-button'
 export namespace SessionTitle {
   export type Props = {
     session: Doc<'trackSession'>
+    className?: string
   }
 }
 
 export const SessionTitle: React.FC<SessionTitle.Props> = (props) => {
-  const { session } = props
+  const { session, className } = props
   const start = useMemo(() => dayjs(session.startedAt), [session.startedAt])
   const end = useMemo(() => (session.endedAt ? dayjs(session.endedAt) : null), [session.endedAt])
 
@@ -57,7 +57,7 @@ export const SessionTitle: React.FC<SessionTitle.Props> = (props) => {
   }, [start, end, session])
 
   return (
-    <h3 className="inline-flex w-full items-center gap-0.5 text-start text-xs">
+    <h3 className={cn('inline-flex w-full items-center gap-0.5 text-start text-xs', className)}>
       from {started}
       {ended && <span>to</span>}
       {ended}

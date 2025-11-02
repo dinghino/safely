@@ -1,3 +1,7 @@
+'use client'
+
+import { Authenticated } from 'convex/react'
+
 import {
   HomeIcon,
   LayoutDashboardIcon,
@@ -98,7 +102,9 @@ export function DashboardSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-        <SidebarDevicesList />
+        <Authenticated>
+          <SidebarDevicesList />
+        </Authenticated>
       </SidebarContent>
     </Sidebar>
   )

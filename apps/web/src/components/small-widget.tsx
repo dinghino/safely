@@ -20,8 +20,8 @@ export const SmallWidget = (props: SmallWidget.Props) => {
     <div
       className={cn(
         'flex items-center gap-3 rounded-md p-2',
-        'border border-muted-foreground/10 bg-muted',
-        layout === 'vertical' ? 'flex-col' : 'flex-row',
+        'border border-muted-foreground/10 bg-muted/75',
+        isVertical(layout) ? 'flex-col' : 'flex-row',
       )}
     >
       <Icon className="size-6 text-muted-foreground" />
@@ -31,4 +31,8 @@ export const SmallWidget = (props: SmallWidget.Props) => {
       </div>
     </div>
   )
+}
+
+function isVertical(layout: SmallWidget.Props['layout']) {
+  return layout === 'vertical'
 }

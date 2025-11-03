@@ -19,7 +19,8 @@ export const SmallWidget = (props: SmallWidget.Props) => {
   return (
     <div
       className={cn(
-        'flex items-center gap-3 rounded-md bg-sidebar p-2',
+        'flex items-center gap-3 rounded-md p-2',
+        'border border-muted-foreground/10 bg-muted',
         layout === 'vertical' ? 'flex-col' : 'flex-row',
       )}
     >

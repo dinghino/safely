@@ -8,7 +8,15 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from '@workspace/ui/components/chart'
-import { CartesianGrid, AreaChart, Area } from 'recharts'
+import { CartesianGrid, AreaChart, Area, YAxis } from 'recharts'
+import { smoothData } from '@/lib/smooth-dataset'
+
+const config = {
+  speed: {
+    label: 'km/h',
+    color: '#8884d8',
+  },
+} satisfies ChartConfig
 
 export function SpeedChart({
   data,
@@ -16,27 +24,19 @@ export function SpeedChart({
   data: { metadata: LocationMetadata; _creationTime: number }[]
 }) {
   const chartData = useMemo(() => {
-    return smoothSpeedData(
-      data
-        ?.filter((i) => i.metadata.speed && i.metadata.speed >= 0)
-        .map((meta) => ({
-          timestamp: meta._creationTime,
-          speed: msToKmh(meta.metadata.speed!),
-        }))
-        .sort((a, b) => a.timestamp - b.timestamp),
-      10,
-    )
+    const speedData = data
+      ?.filter((i) => i.metadata.speed && i.metadata.speed >= 0)
+      .map((meta) => ({
+        timestamp: meta._creationTime,
+        speed: Math.max(0, meta.metadata.speed!),
+      }))
+      .sort((a, b) => a.timestamp - b.timestamp)
+
+    return smoothData({ data: speedData, windowSize: 10, key: 'speed' }).map((item) => ({
+      ...item,
+      speed: +(item.speed * 3.6).toFixed(2),
+    }))
   }, [data])
-  const config = useMemo(
-    () =>
-      ({
-        speed: {
-          label: 'km/h',
-          color: '#8884d8',
-        },
-      }) satisfies ChartConfig,
-    [],
-  )
 
   return (
     <ChartContainer config={config} className="h-[150px] w-full">
@@ -49,23 +49,9 @@ export function SpeedChart({
           fillOpacity={0.4}
           stroke="var(--color-speed)"
         />
+        <YAxis hide domain={['dataMin', 'dataMax']} />
         <ChartTooltip content={<ChartTooltipContent />} />
       </AreaChart>
     </ChartContainer>
   )
-}
-
-function msToKmh(ms: number) {
-  return ms * 3.6
-}
-
-function smoothSpeedData(data: { speed: number }[], windowSize: number): { speed: number }[] {
-  const smoothedData = data.map((_, index) => {
-    const start = Math.max(0, index - Math.floor(windowSize / 2))
-    const end = Math.min(data.length, index + Math.ceil(windowSize / 2))
-    const window = data.slice(start, end)
-    const averageSpeed = window.reduce((sum, point) => sum + point.speed, 0) / window.length
-    return { speed: averageSpeed }
-  })
-  return smoothedData
 }

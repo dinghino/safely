@@ -8,7 +8,15 @@ import {
   ChartTooltipContent,
   type ChartConfig,
 } from '@workspace/ui/components/chart'
-import { CartesianGrid, AreaChart, Area } from 'recharts'
+import { CartesianGrid, AreaChart, Area, YAxis } from 'recharts'
+import { smoothData } from '@/lib/smooth-dataset'
+
+const config = {
+  elevation: {
+    label: 'meters',
+    color: '#82ca9d',
+  },
+} satisfies ChartConfig
 
 export function ElevationChart({
   data,
@@ -23,18 +31,9 @@ export function ElevationChart({
         elevation: meta.metadata.altitude!,
       }))
       .sort((a, b) => a.timestamp - b.timestamp)
-    return elevations
+    return smoothData({ data: elevations, windowSize: 10, key: 'elevation' })
   }, [data])
-  const config = useMemo(
-    () =>
-      ({
-        elevation: {
-          label: 'meters',
-          color: '#82ca9d',
-        },
-      }) satisfies ChartConfig,
-    [],
-  )
+
   return (
     <ChartContainer config={config} className="h-[150px] w-full">
       <AreaChart accessibilityLayer data={chartData} margin={{ left: 0, right: 0 }}>
@@ -46,6 +45,8 @@ export function ElevationChart({
           fillOpacity={0.4}
           stroke="var(--color-elevation)"
         />
+        <YAxis hide domain={['dataMin - 10', 'dataMax + 10']} />
+
         <ChartTooltip content={<ChartTooltipContent />} />
       </AreaChart>
     </ChartContainer>

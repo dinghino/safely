@@ -16,9 +16,17 @@ const borders: Record<DeviceStatus, string> = {
   unknown: 'border-gray-500',
 } as const
 
+const rings: Record<DeviceStatus, string> = {
+  active: 'ring-cyan-500',
+  online: 'ring-green-500',
+  offline: 'ring-red-500',
+  idle: 'ring-yellow-500',
+  unknown: 'ring-gray-500',
+} as const
+
 export function getDeviceStatusColor(
   device: { status: DeviceStatus },
-  type: 'background' | 'border' = 'background',
+  type: 'background' | 'border' | 'ring' = 'background',
 ): string {
   let set: Record<DeviceStatus, string>
   switch (type) {
@@ -27,6 +35,9 @@ export function getDeviceStatusColor(
       break
     case 'border':
       set = borders
+      break
+    case 'ring':
+      set = rings
       break
   }
   return set[device.status] || set.unknown

@@ -47,7 +47,7 @@ type Props = {
 }
 
 const DEBUG_CLASS = '**:outline **:outline-red-500/10'
-const DEBUGGING = false
+const DEBUGGING = true
 
 // todo: extract map (also see session-map.tsx)
 // todo: add active session layer if active session exists
@@ -80,17 +80,11 @@ export default function DevicePage({ params }: Props) {
       <div className="space-y-4 py-4 content-grid">
         <DevicePageHeader device={device} />
       </div>
+
       <div className="space-y-4 content-grid">
-        <section>
-          <div className="rounded-lg border">
-            <Suspense fallback={<div className="p-4">Loading map...</div>}>
-              <DeviceMap device={device} />
-            </Suspense>
-          </div>
-        </section>
-        <section className="flex flex-col gap-4 min-lg:flex-row">
-          <div className="min-w-fit flex-1 space-y-4 p-4">
-            <h2 className="mb-2 font-bold text-2xl">Sessions list</h2>
+        <div className="inline-flex items-start gap-4">
+          <section className="min-w-fit space-y-4">
+            {/* <h2 className="mb-2 font-bold text-2xl">Sessions list</h2> */}
             <div className="flex w-full flex-col gap-2">
               {closedSessions?.map((session) => (
                 <Button
@@ -103,16 +97,25 @@ export default function DevicePage({ params }: Props) {
                 </Button>
               ))}
             </div>
-          </div>
-          <div className="max-w-[300px] p-4">
-            <h2 className="mb-2 font-bold text-2xl">Selected session data</h2>
-            {selectedSession && (
-              <Suspense fallback={<div>Loading session...</div>}>
-                <SessionInfo sessionId={selectedSession} />
+          </section>
+          <section className="h-full flex-1">
+            <div className="h-full rounded-lg border">
+              <Suspense fallback={<div className="p-4">Loading map...</div>}>
+                <DeviceMap device={device} />
               </Suspense>
-            )}
-          </div>
-        </section>
+            </div>
+          </section>
+          <section className="flex flex-col gap-4 min-lg:flex-row">
+            <div className="max-w-[300px]">
+              {/* <h2 className="mb-2 font-bold text-2xl">Selected session data</h2> */}
+              {selectedSession && (
+                <Suspense fallback={<div>Loading session...</div>}>
+                  <SessionInfo sessionId={selectedSession} />
+                </Suspense>
+              )}
+            </div>
+          </section>
+        </div>
       </div>
     </div>
   )

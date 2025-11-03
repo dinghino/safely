@@ -50,7 +50,7 @@ const links = [
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={cn(geistSans.variable, geistMono.variable, 'relative antialiased')}>
+      <body className={cn(geistSans.variable, geistMono.variable, 'antialiased')}>
         <RootProviders>
           <SidebarProvider>
             <DashboardSidebar />

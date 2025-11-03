@@ -3,7 +3,6 @@
 import { Authenticated } from 'convex/react'
 
 import {
-  HomeIcon,
   LayoutDashboardIcon,
   ListTodoIcon,
   MapIcon,
@@ -72,12 +71,18 @@ const items = [
 
 export function DashboardSidebar() {
   return (
-    <Sidebar variant="sidebar" collapsible="icon" className="top(--header-height) relative">
-      <SidebarHeader className="h-(--header-height) border-b px-4">
-        {/* <Link href="/" className="flex items-center space-x-2">
-          <PawPrintIcon className="size-4" />
-          <span className="font-bold text-lg">Safely</span>
-        </Link> */}
+    <Sidebar variant="sidebar" collapsible="icon">
+      <SidebarHeader className="h-(--header-height) border-b">
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild>
+              <Link href="/">
+                <PawPrintIcon />
+                <span>Safely</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>

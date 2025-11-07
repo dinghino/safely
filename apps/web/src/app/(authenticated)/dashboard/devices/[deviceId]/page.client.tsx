@@ -18,7 +18,7 @@ import dayjs from '@/lib/dayjs'
 
 import { DeviceName, DeviceStatusBadge } from '@/entities/device/components'
 import { SessionLocationsTable } from '@/widgets/geospatial-table'
-import { SessionButton } from '@/features/device-tracking'
+import { SessionButton, useAllSessions } from '@/features/device-tracking'
 import { SessionMap } from '@/views/session-map'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@workspace/ui/components/tabs'
 import { Duration, SessionCollapsible } from '@/widgets/sessions'
@@ -33,8 +33,8 @@ export function DevicePageClient({ deviceId }: { deviceId: Id<'devices'> }) {
   // fixme: this is ugly but need for a quick deployment test. this whole page is going to go anyway
   const device = useQuery(api.devices.get.one, { deviceId }) ?? undefined
 
-  const active = useQuery(api.tracking.sessions.getActive, { deviceId: device?._id })
-  const sessions = useQuery(api.tracking.sessions.getAllOfDevice, { deviceId: device?._id }) ?? []
+  const active = useQuery(api.tracking.sessions.getActive, { deviceId })
+  const sessions = useAllSessions(deviceId)
 
   if (!device) return <div>Device not found</div>
 
@@ -65,9 +65,9 @@ export function DevicePageClient({ deviceId }: { deviceId: Id<'devices'> }) {
       </aside>
       <main className="flex-1">
         {/* <div className="border"> */}
-        <h2 className="p-4 font-bold">Sessions ({sessions.length})</h2>
+        <h2 className="p-4 font-bold">Sessions ({sessions?.length ?? 0})</h2>
         <div className="flex flex-col gap-2">
-          {sessions.map((s) => (
+          {sessions?.map((s) => (
             // <div key={s._id} className="p-2">
             <SessionItem session={s} key={s._id} />
             // </div>

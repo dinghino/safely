@@ -47,7 +47,7 @@ type Props = {
 }
 
 const DEBUG_CLASS = '**:outline **:outline-red-500/10'
-const DEBUGGING = true
+const DEBUGGING = process.env.NODE_ENV === 'development'
 
 // todo: extract map (also see session-map.tsx)
 // todo: add active session layer if active session exists

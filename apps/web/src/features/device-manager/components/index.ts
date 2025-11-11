@@ -1,7 +1,6 @@
 export * from '@/entities/device/components'
 export * from './register-button'
 export * from './forms/info-form'
-export * from './device-actions-menu'
 export * from './forms/options-forms'
 
 // layout components

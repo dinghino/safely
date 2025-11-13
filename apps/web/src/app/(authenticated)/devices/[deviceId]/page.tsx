@@ -1,7 +1,7 @@
 'use client'
-import { Suspense, use, useMemo } from 'react'
+import { use } from 'react'
 import { useQuery } from 'convex/react'
-import { HistoryIcon, MoreVerticalIcon } from 'lucide-react'
+
 import { useQueryState } from '@workspace/nuqs'
 
 import type { Device } from '@workspace/backend/types'
@@ -9,8 +9,15 @@ import { api } from '@workspace/backend/api'
 import type { Id } from '@workspace/backend/dataModel'
 
 import { ButtonGroup } from '@workspace/ui/components/button-group'
-import { Button } from '@workspace/ui/components/button'
-// import { Badge } from '@workspace/ui/components/badge'
+// import { Button } from '@workspace/ui/components/button'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@workspace/ui/components/card'
+import { Wireframe } from '@workspace/ui/components/wireframe'
 
 import { cn } from '@/lib/utils'
 import { dayjs } from '@/lib/dayjs'
@@ -25,6 +32,7 @@ import {
   MapZoomControl,
 } from '@/shared/modules/maps'
 import { AutoCenterMap } from '@/shared/modules/maps/components'
+import { Circle } from 'react-leaflet'
 
 // import { MapTiles } from '@/shared/modules/maps/map-layers'
 // import { MapMarker, MapTooltip } from '@/shared/modules/maps'
@@ -35,37 +43,23 @@ import { getDeviceStatusColor } from '@/entities/device/lib/device-status-color'
 import { LabeledBadge } from '@/components/labeled-badge'
 
 import { DeviceIcon } from '@/features/device-manager'
-import { SessionButton, useAllSessions, useSessionData } from '@/features/device-tracking'
+import { SessionButton, useSessionData } from '@/features/device-tracking'
 
 import { DeviceMarker, DevicePopup } from '@/widgets/maps'
-import { SessionSelect, SessionTitle } from '@/widgets/sessions'
 import { SessionLayer } from '@/views/session-map'
-import { SessionInfo } from '@/views/session-details-pane'
+import { DeviceActionsMenu } from '@/widgets/device-actions-menu'
 
 type Props = {
   params: Promise<{ deviceId: Id<'devices'> }>
 }
 
-const DEBUG_CLASS = '**:outline **:outline-red-500/10'
-const DEBUGGING = process.env.NODE_ENV === 'development'
+import { DeviceEventsLog } from '@/widgets/device-logs'
+import { BatteryIcon, ClockIcon, SignalIcon } from 'lucide-react'
+import { Badge } from '@workspace/ui/components/badge'
 
-// todo: extract map (also see session-map.tsx)
-// todo: add active session layer if active session exists
-// todo: add general stats about the device
-// todo: make RPC to get user profile by id for header
-
-export default function DevicePage({ params }: Props) {
+export default function PageWireframe({ params }: Props) {
   const { deviceId } = use(params)
   const device = useQuery(api.devices.get.one, { deviceId })
-  const sessions = useAllSessions(deviceId)
-
-  const closedSessions = useMemo(
-    () => sessions?.filter((session) => session.endedAt) ?? [],
-    [sessions],
-  )
-
-  // todo: move to separate dynamic route
-  const [selectedSession, selectSession] = useQuerySessionId()
 
   if (device === undefined) {
     return <div className="p-4">Loading...</div>
@@ -76,111 +70,125 @@ export default function DevicePage({ params }: Props) {
   }
 
   return (
-    <div className={cn({ [DEBUG_CLASS]: DEBUGGING })}>
-      <div className="space-y-4 py-4 content-grid">
-        <DevicePageHeader device={device} />
-      </div>
+    <div className={cn('relative isolate flex flex-col gap-4' /* DEBUG_CLASS */)}>
+      <header className="flex min-h-32 flex-col justify-between gap-4 p-4">
+        <div className="inline-flex w-full items-center gap-4">
+          <DeviceIcon
+            device={device}
+            className={cn(
+              'h-10 w-10 rounded-lg bg-sidebar p-2 ring-3',
+              getDeviceStatusColor(device, 'ring'),
+            )}
+          />
+          <h1 className="font-bold text-3xl">{device.name}</h1>
+          {/* actions */}
 
-      <div className="space-y-4 content-grid">
-        <div className="inline-flex items-start gap-4">
-          <section className="min-w-fit space-y-4">
-            {/* <h2 className="mb-2 font-bold text-2xl">Sessions list</h2> */}
-            <div className="flex w-full flex-col gap-2">
-              {closedSessions?.map((session) => (
-                <Button
-                  variant="outline"
-                  className={cn('inline-flex w-full cursor-pointer items-center gap-2 px-4')}
-                  key={session._id}
-                  onClick={() => selectSession(session._id)}
-                >
-                  <SessionTitle session={session} className="justify-start gap-1" />
-                </Button>
-              ))}
-            </div>
-          </section>
-          <section className="h-full flex-1">
-            <div className="h-full rounded-lg border">
-              <Suspense fallback={<div className="p-4">Loading map...</div>}>
-                <DeviceMap device={device} />
-              </Suspense>
-            </div>
-          </section>
-          <section className="flex flex-col gap-4 min-lg:flex-row">
-            <div className="max-w-[300px]">
-              {/* <h2 className="mb-2 font-bold text-2xl">Selected session data</h2> */}
-              {selectedSession && (
-                <Suspense fallback={<div>Loading session...</div>}>
-                  <SessionInfo sessionId={selectedSession} />
-                </Suspense>
-              )}
-            </div>
-          </section>
+          <div className="inline-flex w-full justify-end">
+            <ButtonGroup>
+              <SessionButton className="flex-1 justify-between" deviceId={device._id} />
+              <ButtonGroup>
+                <DeviceActionsMenu device={device} variant="outline" />
+              </ButtonGroup>
+            </ButtonGroup>
+          </div>
         </div>
+        <LabeledBadge label={device.status === 'online' ? 'Status' : 'Last Seen'}>
+          <span className={cn(getDeviceStatusColor(device), 'size-2 rounded-md')} />
+          {device.status === 'online' ? 'Online' : <LastSeen device={device} />}
+        </LabeledBadge>
+      </header>
+
+      <div className="flex w-full">
+        <Card className='flex-1 shrink-0'>
+          <CardHeader>
+            <CardTitle>Activity Feed</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Wireframe
+              type="widget"
+              className="sticky top-0 inline-flex h-12 w-full items-center gap-2 p-2"
+              title="EventsToolbar"
+            >
+              <Wireframe className="h-6 w-24" />
+              <Wireframe className="h-6 w-6" />
+            </Wireframe>
+            {/* <div className="space-y-2"> */}
+            <DeviceEventsLog deviceId={deviceId} />
+          </CardContent>
+        </Card>
+        <aside className="min-w-[650px] max-w-fit flex-0 shrink-0 px-4">
+          <div className="sticky top-(--header-height) space-y-4 pt-4">
+            {/* Status */}
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Status</CardTitle>
+                <CardDescription>
+                  Glance at some of the device details and location on the map.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-sm">
+                    <BatteryIcon className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-muted-foreground">Battery</span>
+                  </div>
+                  {/* <span className="font-medium">{device.battery}%</span> */}
+                  <span className="font-medium">84%</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-sm">
+                    <ClockIcon className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-muted-foreground">Last Seen</span>
+                  </div>
+
+                  <span className="font-medium">
+                    {device.status === 'online' ? 'online' : dayjs(device.last_seen).toNow(true)}
+                  </span>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* map */}
+            <Card className="overflow-hidden p-0!">
+              <CardContent className="aspect-square max-w-full p-0!">
+                {device && <DeviceMap device={device} />}
+              </CardContent>
+            </Card>
+
+            <section className="space-y-2 p-2">
+              <h2 className="font-bold">Information</h2>
+
+              <Wireframe className="h-8 w-full" />
+              <Wireframe className="h-8 w-9/10" />
+            </section>
+            <Wireframe type="view" className="space-y-2 p-2" title="latest sessions">
+              <h2 className="font-bold">Latest Sessions</h2>
+              <Wireframe type="widget" className="h-8 w-full" />
+              <Wireframe type="widget" className="h-8 w-full" />
+              <Wireframe type="widget" className="h-8 w-full" />
+            </Wireframe>
+          </div>
+        </aside>
+        {/* </div> */}
       </div>
     </div>
   )
 }
 
-function DevicePageHeader({ device }: { device: Device }) {
-  const [selectedSession, selectSession] = useQuerySessionId()
+// ----------------------------------------------------------------------------
+// OLD PAGE
+//
+// region old page
+// ----------------------------------------------------------------------------
 
-  const badges = (
-    <div className="relative inline-flex flex-1 flex-nowrap items-center gap-3 overflow-x-scroll py-3">
-      <LabeledBadge label={<>Status</>}>
-        <span className={cn(getDeviceStatusColor(device), 'size-2 rounded-full')} />
-        <span className="text-xs">{device.status === 'online' ? 'Online' : 'Offline'}</span>
-      </LabeledBadge>
-      <LabeledBadge label="Last seen">
-        {device.last_seen
-          ? dayjs.duration(dayjs(device.last_seen).diff(dayjs())).humanize(true)
-          : 'never'}
-      </LabeledBadge>
-      <LabeledBadge label="Mode">{device.mode}</LabeledBadge>
-    </div>
-  )
+function LastSeen({ device }: { device: Device }) {
+  if (!device.last_seen) {
+    return <span className="text-xs">never</span>
+  }
 
-  return (
-    <>
-      <header className="flex w-full flex-col gap-2">
-        <div className="inline-flex items-center gap-4">
-          <DeviceIcon
-            device={device}
-            className={cn(
-              'h-10 w-10 rounded-full bg-sidebar p-2 ring-3',
-              getDeviceStatusColor(device, 'ring'),
-            )}
-          />
-          <h1 className="font-bold text-3xl">{device.name}</h1>
-        </div>
-        <p className="text-muted-foreground text-xs">
-          owned by <span className="rounded-md bg-sidebar p-1 font-mono">{device.owner}</span>
-        </p>
-      </header>
-
-      <div className="inline-flex max-w-full items-center justify-between p-1">
-        {badges}
-
-        <ButtonGroup>
-          <SessionButton deviceId={device._id} />
-          <ButtonGroup>
-            <div className="flex items-center rounded-lg border bg-muted p-2 text-muted-foreground">
-              <HistoryIcon className="size-4" />
-            </div>
-            <SessionSelect
-              deviceId={device._id}
-              onValueChange={selectSession}
-              defaultValue={selectedSession ?? undefined}
-            />
-          </ButtonGroup>
-          <ButtonGroup>
-            <Button size="icon" variant="secondary">
-              <MoreVerticalIcon />
-            </Button>
-          </ButtonGroup>
-        </ButtonGroup>
-      </div>
-    </>
-  )
+  const lastSeen = dayjs.duration(dayjs(device.last_seen).diff(dayjs())).humanize(true)
+  return <span className="text-xs">{lastSeen}</span>
 }
 
 function DeviceMap(props: { device: Device }) {
@@ -200,9 +208,17 @@ function DeviceMap(props: { device: Device }) {
         {sessionId && <SelectedSessionLayer sessionId={sessionId} />}
         <MapLayerGroup name="device">
           {device && (
-            <DeviceMarker device={device}>
-              <DevicePopup />
-            </DeviceMarker>
+            <>
+              <DeviceMarker device={device}>
+                <DevicePopup />
+              </DeviceMarker>
+              {location?.metadata.accuracy && (
+                <Circle
+                  center={formatLatLng(location.coordinates)}
+                  radius={location.metadata.accuracy}
+                />
+              )}
+            </>
           )}
         </MapLayerGroup>
 

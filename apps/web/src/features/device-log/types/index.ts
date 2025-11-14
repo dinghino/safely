@@ -1,3 +1,5 @@
+import type { Id } from "@workspace/backend/types"
+
 type DeviceAdded = {
   type: 'registered'
   payload: {}
@@ -41,7 +43,7 @@ type DeviceUnshared = {
 type RequestIssued = {
   type: 'request_issued'
   payload: {
-    commandId: string // Id<'commands'>
+    requestId: string // Id<'commands'>
   }
 }
 
@@ -55,19 +57,19 @@ type RequestAcknowledged = {
 type SessionStarted = {
   type: 'session_started'
   payload: {
-    sessionId: string // Id<'sessions'>
+    sessionId: Id<'trackSession'>
   }
 }
 type SessionEnded = {
   type: 'session_ended'
   payload: {
-    sessionId: string // Id<'sessions'>
+    sessionId: Id<'trackSession'>
   }
 }
 type RegisteredSession = {
   type: 'registered_session'
   payload: {
-    sessionId: string // Id<'sessions'>
+    sessionId: Id<'trackSession'>
   }
 }
 

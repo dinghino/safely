@@ -2,6 +2,7 @@ import dayjs from '@/lib/dayjs'
 import type { DeviceLogEntry, DeviceLogPayload, DeviceLogType } from './types'
 import { generateId } from '@/lib/nanoid'
 import type { Dayjs } from 'dayjs'
+import type { Id } from '@workspace/backend/types'
 
 function defaultTitleForType(type: DeviceLogType): string {
   switch (type) {
@@ -28,8 +29,8 @@ function defaultTitleForType(type: DeviceLogType): string {
   }
 }
 
-const deviceId = 'jd729zvqqbbtdzgaj47dh0wmg17tbf61'
-const _sessionId = 'jn70begr5ps8aw6t5wn736t1gs7td2dn'
+const deviceId = 'jd729zvqqbbtdzgaj47dh0wmg17tbf61' as Id<'devices'>
+const _sessionId = 'jn70begr5ps8aw6t5wn736t1gs7td2dn' as Id<'trackSession'>
 
 const macca = {
   _id: 'j972k3byqra36b4ep2xqfgyvgh7rfbfs',
@@ -56,15 +57,14 @@ class Logs {
   }
   add<T extends DeviceLogType>(
     type: T,
-    // args: Omit<DeviceLogEntry<T>, 'type' | 'deviceId' | '_id' | '_creationTime'>,
-    args: {
-      title?: string
-      payload: DeviceLogPayload<T>
-    },
-    offset: number,
-    unit?: dayjs.ManipulateType | undefined,
+    args: { title?: string; payload: DeviceLogPayload<T> },
+    add: [offset: number, unit?: dayjs.ManipulateType | undefined][] = [],
   ): this {
-    this.last = this.last.add(offset, unit)
+    for (const [offset, unit] of add) {
+      // random seconds between 5 and 25
+      const seconds = 5 + Math.floor(Math.random() * 20)
+      this.last = this.last.add(offset, unit).add(seconds, 'second')
+    }
     const time = this.last.unix() * 1000
     const entry = {
       _id: generateId(),
@@ -86,16 +86,20 @@ class Logs {
 // IDs are hardcoded to match real and fake data in other places
 
 const logs = new Logs(deviceId, dayjs().subtract(7, 'day'))
-  .add('registered', { payload: {} }, 0)
-  .add('connected', { payload: {} }, 1, 'hour')
-  .add('shared', { payload: { users: [toma, macca] } }, 7, 'hour')
-  .add('disconnected', { payload: {} }, 30, 'minutes')
-  .add('unshared', { payload: { users: [macca] } }, 2, 'hour')
-  .add('connected', { payload: {} }, 3, 'hour')
-  .add('session_started', { payload: { sessionId: _sessionId } }, 1, 'day')
-  .add('disconnected', { payload: {} }, 25, 'minutes')
-  .add('connected', { payload: {} }, 3, 'minutes')
-  .add('session_ended', { payload: { sessionId: _sessionId } }, 2, 'hour')
-  .add('disconnected', { payload: {} }, 5, 'hour')
+  .add('registered', { payload: {} })
+  .add('connected', { payload: {} }, [[1, 'hour']])
+  .add('shared', { payload: { users: [toma, macca] } }, [[7, 'hour']])
+  .add('disconnected', { payload: {} }, [[30, 'minutes']])
+  .add('unshared', { payload: { users: [macca] } }, [[2, 'hour']])
+  .add('connected', { payload: {} }, [[3, 'hour']])
+  .add('session_started', { payload: { sessionId: _sessionId } }, [[1, 'day']])
+  .add('disconnected', { payload: {} }, [[25, 'minutes']])
+  .add('connected', { payload: {} }, [[3, 'minutes']])
+  .add('session_ended', { payload: { sessionId: _sessionId } }, [[2, 'hour']])
+  .add('disconnected', { payload: {} }, [[5, 'hour']])
+  .add('request_issued', { payload: { requestId: 'req_123' }, title: 'Tracking request' }, [
+    [1, 'day'],
+  ])
+  .add('request_acknowledged', { payload: { requestId: 'req_123' } }, [[3, 'second']])
   .unwrap()
 export default logs

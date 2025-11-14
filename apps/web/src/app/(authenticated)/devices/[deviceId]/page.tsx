@@ -54,8 +54,7 @@ type Props = {
 }
 
 import { DeviceEventsLog } from '@/widgets/device-logs'
-import { BatteryIcon, ClockIcon, SignalIcon } from 'lucide-react'
-import { Badge } from '@workspace/ui/components/badge'
+import { BatteryIcon, ClockIcon } from 'lucide-react'
 
 export default function PageWireframe({ params }: Props) {
   const { deviceId } = use(params)
@@ -99,11 +98,11 @@ export default function PageWireframe({ params }: Props) {
       </header>
 
       <div className="flex w-full">
-        <Card className='flex-1 shrink-0'>
+        <Card className="flex-1 shrink-0">
           <CardHeader>
-            <CardTitle>Activity Feed</CardTitle>
+            <CardTitle className="font-bold text-xl">Activity Feed</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
             <Wireframe
               type="widget"
               className="sticky top-0 inline-flex h-12 w-full items-center gap-2 p-2"

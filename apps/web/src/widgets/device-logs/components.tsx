@@ -1,22 +1,27 @@
-import type { DeviceLogPayload, DeviceLogEntry, DeviceLogType } from '@/features/device-log/types'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@workspace/ui/components/tooltip'
-import {
-  CassetteTapeIcon,
-  CircleQuestionMarkIcon,
-  MailIcon,
-  PartyPopperIcon,
-  PauseIcon,
-  PlayIcon,
-  PowerIcon,
-  PowerOffIcon,
-  Share2Icon,
-  XCircleIcon,
-  type LucideIcon,
-} from 'lucide-react'
+import Link from 'next/link'
+
 import { cn } from '@/lib/utils'
+
+import { Tooltip, TooltipContent, TooltipTrigger } from '@workspace/ui/components/tooltip'
+import { Skeleton } from '@workspace/ui/components/skeleton'
+import { Badge } from '@workspace/ui/components/badge'
+import { Button } from '@workspace/ui/components/button'
+
 import { UserBadge } from '@/entities/users/components'
 
+import type { DeviceLogPayload, DeviceLogEntry, DeviceLogType } from '@/features/device-log/types'
+import { useSessionData } from '@/features/device-tracking'
+import { getEventColor, getEventIcon } from '@/features/device-log/lib'
+
 export function LogPayload({ data }: { data: DeviceLogEntry }) {
+  const component = <LogPayload_Inner data={data} />
+  if (!component) {
+    return null
+  }
+  return <div className="py-2">{component}</div>
+}
+
+export function LogPayload_Inner({ data }: { data: DeviceLogEntry }) {
   switch (data.type) {
     // case 'registered':
     // case 'unregistered':
@@ -27,10 +32,10 @@ export function LogPayload({ data }: { data: DeviceLogEntry }) {
     // case 'request_issued':
     // case 'request_acknowledged':
     //   return null
-    // case 'session_started':
-    // case 'session_ended':
-    // case 'registered_session':
-    //   return null
+    case 'session_started':
+    case 'session_ended':
+    case 'registered_session':
+      return <SessionDataPayload data={data.payload} />
     case 'shared':
     case 'unshared':
       return <DeviceSharedPayload data={data.payload} type={data.type} />
@@ -38,8 +43,10 @@ export function LogPayload({ data }: { data: DeviceLogEntry }) {
   if (!data.payload || Object.keys(data.payload).length === 0) {
     return null
   }
-  return <pre>{data.payload ? JSON.stringify(data.payload, null, 2) : 'no payload'}</pre>
+  // return <pre>{data.payload ? JSON.stringify(data.payload, null, 2) : 'no payload'}</pre>
 }
+
+// region payload elements
 
 export namespace DeviceSharedPayload {
   export type Props = {
@@ -63,46 +70,68 @@ export const DeviceSharedPayload = ({ data, type }: DeviceSharedPayload.Props) =
   )
 }
 
+export namespace SessionDataPayload {
+  export type Props = {
+    data: DeviceLogPayload<'session_started' | 'session_ended' | 'registered_session'>
+  }
+}
+
+export const SessionDataPayload = (props: SessionDataPayload.Props) => {
+  const {
+    data: { sessionId },
+  } = props
+  const session = useSessionData(sessionId)
+
+  if (session === undefined) {
+    return (
+      <div className="inline-flex items-center gap-2">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <Skeleton className="h-4 w-20" key={i} />
+        ))}
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-2">
+      <div className="inline-flex items-center gap-2">
+        <Badge variant="outline" className="text-xs">
+          badge 1
+        </Badge>
+        <Badge variant="outline" className="text-xs">
+          badge 2
+        </Badge>
+        <Badge variant="outline" className="text-xs">
+          badge 3
+        </Badge>
+      </div>
+      <div>
+        <Button size="sm" variant="secondary" asChild>
+          <Link href={`/dashboard/sessions/${sessionId}`}>View Session</Link>
+        </Button>
+      </div>
+    </div>
+  )
+}
+
 // region icon
 
-const icons: Record<DeviceLogType, LucideIcon> = {
-  registered: PartyPopperIcon,
-  unregistered: XCircleIcon,
-  connected: PowerIcon,
-  disconnected: PowerOffIcon,
-  shared: Share2Icon,
-  unshared: Share2Icon,
-  request_issued: MailIcon,
-  request_acknowledged: MailIcon,
-  session_started: PlayIcon,
-  session_ended: PauseIcon,
-  registered_session: CassetteTapeIcon,
+export namespace DeviceLogIcon {
+  export type Props = {
+    data: DeviceLogEntry
+    className?: string
+  }
 }
 
-const colors: Record<DeviceLogType, string> = {
-  //lifecycle
-  registered: 'text-green-500 bg-green-300/15 dark:bg-green-700/15',
-  unregistered: 'text-red-500 bg-red-300/15 dark:bg-red-700/15',
-  connected: 'text-green-500 bg-green-300/15 dark:bg-green-700/15',
-  disconnected: 'text-red-500 bg-red-300/15 dark:bg-red-700/15',
-  // social sharing
-  shared: 'text-blue-500 bg-blue-300/15 dark:bg-blue-700/15',
-  unshared: 'text-blue-500 bg-blue-300/15 dark:bg-blue-700/15',
-  // sessions and commands
-  request_issued: 'text-yellow-500 bg-yellow-300/15 dark:bg-yellow-700/15',
-  request_acknowledged: 'text-green-500 bg-green-300/15 dark:bg-green-700/15',
-  session_started: 'text-green-500 bg-green-300/15 dark:bg-green-700/15',
-  session_ended: 'text-teal-500 bg-teal-300/15 dark:bg-teal-700/15',
-  registered_session: 'text-purple-500 bg-purple-300/15 dark:bg-purple-700/15',
-}
-
-export function DeviceLogIcon({ data }: { data: DeviceLogEntry }) {
-  const Icon = icons[data.type] || CircleQuestionMarkIcon
+export function DeviceLogIcon(props: DeviceLogIcon.Props) {
+  const { data, className } = props
+  const Icon = getEventIcon(data.type)
+  const colors = getEventColor(data.type)
 
   return (
     <Tooltip>
       <TooltipTrigger>
-        <div className={cn('grid place-items-center rounded-lg p-2', colors[data.type])}>
+        <div className={cn('grid place-items-center rounded-lg p-2', colors, className)}>
           {/* <BadgeIcon className='size-8 text-muted-foreground' strokeWidth={1.5}/> */}
           <Icon className={cn('size-4')} />
         </div>

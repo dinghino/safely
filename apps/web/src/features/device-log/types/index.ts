@@ -1,4 +1,4 @@
-import type { Id } from "@workspace/backend/types"
+import type { Id } from '@workspace/backend/types'
 
 type DeviceAdded = {
   type: 'registered'
@@ -73,6 +73,14 @@ type RegisteredSession = {
   }
 }
 
+type SessionShared = {
+  type: 'session_shared'
+  payload: {
+    sessionId: Id<'trackSession'>
+    users: SharedUserInfo[]
+  }
+}
+
 // region public API
 
 export type DeviceLogData =
@@ -87,6 +95,7 @@ export type DeviceLogData =
   | SessionStarted
   | SessionEnded
   | RegisteredSession
+  | SessionShared
 
 export type DeviceLogType = DeviceLogData['type']
 

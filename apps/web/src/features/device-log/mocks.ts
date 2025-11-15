@@ -24,13 +24,20 @@ function defaultTitleForType(type: DeviceLogType): string {
       return 'Session Ended'
     case 'registered_session':
       return 'Session Registered'
+    case 'session_shared':
+      return 'Session Shared'
+    case 'request_issued':
+      return 'Request Issued'
+    case 'request_acknowledged':
+      return 'Request Acknowledged'
+
     default:
       return 'Device Log Entry'
   }
 }
 
 const deviceId = 'jd729zvqqbbtdzgaj47dh0wmg17tbf61' as Id<'devices'>
-const _sessionId = 'jn70begr5ps8aw6t5wn736t1gs7td2dn' as Id<'trackSession'>
+const sessionId = 'jn70begr5ps8aw6t5wn736t1gs7td2dn' as Id<'trackSession'>
 
 const macca = {
   _id: 'j972k3byqra36b4ep2xqfgyvgh7rfbfs',
@@ -43,6 +50,12 @@ const toma = {
   username: 'toma',
   image:
     'https://img.clerk.com/eyJ0eXBlIjoiZGVmYXVsdCIsImlpZCI6Imluc18zMmtDbjUyRnBKb0psOE1WbVNJQ3dLYTdmWUIiLCJyaWQiOiJ1c2VyXzMydmxvd0RjdWhjR3RCcmhaVHNSZjJNeXdsdSIsImluaXRpYWxzIjoiQVQifQ',
+}
+const gianni = {
+  _id: 'j9790rsfqqgvpm43qp3h9sfbcx7qv2a0',
+  username: 'giamba',
+  image:
+    'https://img.clerk.com/eyJ0eXBlIjoicHJveHkiLCJzcmMiOiJodHRwczovL2ltYWdlcy5jbGVyay5kZXYvb2F1dGhfZ29vZ2xlL2ltZ18zMnRESjlkcHo5WDFQN0YxU0loSTRsbmlCODIifQ',
 }
 
 class Logs {
@@ -88,18 +101,21 @@ class Logs {
 const logs = new Logs(deviceId, dayjs().subtract(7, 'day'))
   .add('registered', { payload: {} })
   .add('connected', { payload: {} }, [[1, 'hour']])
-  .add('shared', { payload: { users: [toma, macca] } }, [[7, 'hour']])
+  .add('shared', { payload: { users: [gianni] } }, [[7, 'hour']])
+  .add('shared', { payload: { users: [toma] } }, [[7, 'hour']])
+  .add('shared', { payload: { users: [macca] } }, [[7, 'hour']])
   .add('disconnected', { payload: {} }, [[30, 'minutes']])
   .add('unshared', { payload: { users: [macca] } }, [[2, 'hour']])
   .add('connected', { payload: {} }, [[3, 'hour']])
-  .add('session_started', { payload: { sessionId: _sessionId } }, [[1, 'day']])
-  .add('disconnected', { payload: {} }, [[25, 'minutes']])
-  .add('connected', { payload: {} }, [[3, 'minutes']])
-  .add('session_ended', { payload: { sessionId: _sessionId } }, [[2, 'hour']])
-  .add('disconnected', { payload: {} }, [[5, 'hour']])
   .add('request_issued', { payload: { requestId: 'req_123' }, title: 'Tracking request' }, [
     [1, 'day'],
   ])
   .add('request_acknowledged', { payload: { requestId: 'req_123' } }, [[3, 'second']])
+  .add('session_started', { payload: { sessionId } }, [[1, 'day']])
+  .add('disconnected', { payload: {} }, [[25, 'minutes']])
+  .add('connected', { payload: {} }, [[3, 'minutes']])
+  .add('session_ended', { payload: { sessionId } }, [[2, 'hour']])
+  .add('session_shared', { payload: { sessionId, users: [gianni] } }, [[5, 'minutes']])
+  .add('disconnected', { payload: {} }, [[5, 'hour']])
   .unwrap()
 export default logs

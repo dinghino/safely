@@ -9,9 +9,10 @@ import { Button } from '@workspace/ui/components/button'
 
 import { UserBadge } from '@/entities/users/components'
 
-import type { DeviceLogPayload, DeviceLogEntry, DeviceLogType } from '@/features/device-log/types'
+import type { DeviceLogPayload, DeviceLogEntry } from '@/features/device-log/types'
 import { useSessionData } from '@/features/device-tracking'
 import { getEventColor, getEventIcon } from '@/features/device-log/lib'
+import { Separator } from '@workspace/ui/components/separator'
 
 export function LogPayload({ data }: { data: DeviceLogEntry }) {
   const component = <LogPayload_Inner data={data} />
@@ -31,14 +32,36 @@ export function LogPayload_Inner({ data }: { data: DeviceLogEntry }) {
     //   return null
     // case 'request_issued':
     // case 'request_acknowledged':
-    //   return null
+    //   return <span className="text-muted-foreground text-xs">Device acknowledged request</span>
     case 'session_started':
     case 'session_ended':
     case 'registered_session':
       return <SessionDataPayload data={data.payload} />
+    case 'session_shared':
+      return (
+        <>
+          <DeviceSharedPayload
+            data={data.payload}
+            title={(users) => <>Shared session with {users}</>}
+          />
+          <Separator className="my-1" />
+          <SessionDataPayload data={data.payload} />
+        </>
+      )
     case 'shared':
+      return (
+        <DeviceSharedPayload
+          data={data.payload}
+          title={(users) => <>You shared this device with {users}</>}
+        />
+      )
     case 'unshared':
-      return <DeviceSharedPayload data={data.payload} type={data.type} />
+      return (
+        <DeviceSharedPayload
+          data={data.payload}
+          title={(users) => <>Removed access to {users}</>}
+        />
+      )
   }
   if (!data.payload || Object.keys(data.payload).length === 0) {
     return null
@@ -50,23 +73,20 @@ export function LogPayload_Inner({ data }: { data: DeviceLogEntry }) {
 
 export namespace DeviceSharedPayload {
   export type Props = {
-    type: DeviceLogType
     data: DeviceLogPayload<'shared' | 'unshared'>
+    title: (users: React.ReactElement[]) => React.ReactElement
   }
 }
 
-export const DeviceSharedPayload = ({ data, type }: DeviceSharedPayload.Props) => {
+export const DeviceSharedPayload = (props: DeviceSharedPayload.Props) => {
+  const { data, title } = props
   if (!data.users || data.users.length === 0) {
     return <div>No users</div>
   }
 
-  const action = type === 'shared' ? 'shared' : 'removed sharing'
-
   const links = data.users.map((user) => <UserBadge user={user} />)
   return (
-    <p className="inline-flex items-center gap-2 text-muted-foreground text-sm">
-      You {action} this device with {links}
-    </p>
+    <p className="inline-flex items-center gap-2 text-muted-foreground text-sm">{title(links)}</p>
   )
 }
 
@@ -131,7 +151,7 @@ export function DeviceLogIcon(props: DeviceLogIcon.Props) {
   return (
     <Tooltip>
       <TooltipTrigger>
-        <div className={cn('grid place-items-center rounded-lg p-2', colors, className)}>
+        <div className={cn('grid place-items-center rounded-lg bg-muted p-2', colors, className)}>
           {/* <BadgeIcon className='size-8 text-muted-foreground' strokeWidth={1.5}/> */}
           <Icon className={cn('size-4')} />
         </div>

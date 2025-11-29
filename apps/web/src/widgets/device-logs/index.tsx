@@ -6,11 +6,17 @@ import { useDeviceLogs } from '@/features/device-log/hooks'
 import type { DeviceLogEntry } from '@/features/device-log/types'
 import { DeviceEventIcon } from '@/features/device-log/components'
 import { LogPayload } from './components'
+import { EmptyLogs } from './empty-log'
 
 export * from './components'
+export * from './empty-log'
 
 export function DeviceEventsLog({ deviceId }: { deviceId: Id<'devices'> }) {
   const events = useDeviceLogs(deviceId)
+
+  if (events.length === 0) {
+    return <EmptyLogs />
+  }
 
   return (
     <section

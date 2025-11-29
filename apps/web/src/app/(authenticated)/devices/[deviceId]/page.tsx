@@ -1,6 +1,7 @@
 'use client'
 import { use } from 'react'
 import { useQuery } from 'convex/react'
+import { BatteryIcon, ClockIcon } from 'lucide-react'
 
 import { useQueryState } from '@workspace/nuqs'
 
@@ -54,7 +55,6 @@ type Props = {
 }
 
 import { DeviceEventsLog } from '@/widgets/device-logs'
-import { BatteryIcon, ClockIcon } from 'lucide-react'
 
 export default function PageWireframe({ params }: Props) {
   const { deviceId } = use(params)
@@ -97,20 +97,20 @@ export default function PageWireframe({ params }: Props) {
         </LabeledBadge>
       </header>
 
-      <div className="flex w-full px-4 pb-4 max-lg:flex-col">
+      <div className="flex w-full pb-4 max-lg:flex-col">
         <div className="flex-1 shrink-0">
           <CardHeader>
             <CardTitle className="font-bold text-xl">Activity Feed</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <Wireframe
+            {/* <Wireframe
               type="widget"
               className="sticky top-0 inline-flex h-12 w-full items-center gap-2 p-2"
               title="EventsToolbar"
             >
               <Wireframe className="h-6 w-24" />
               <Wireframe className="h-6 w-6" />
-            </Wireframe>
+            </Wireframe> */}
             {/* <div className="space-y-2"> */}
             <DeviceEventsLog deviceId={deviceId} />
           </CardContent>

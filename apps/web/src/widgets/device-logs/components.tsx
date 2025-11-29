@@ -1,8 +1,5 @@
 import Link from 'next/link'
 
-import { cn } from '@/lib/utils'
-
-import { Tooltip, TooltipContent, TooltipTrigger } from '@workspace/ui/components/tooltip'
 import { Skeleton } from '@workspace/ui/components/skeleton'
 import { Badge } from '@workspace/ui/components/badge'
 import { Button } from '@workspace/ui/components/button'
@@ -11,9 +8,11 @@ import { UserBadge } from '@/entities/users/components'
 
 import type { DeviceLogPayload, DeviceLogEntry } from '@/features/device-log/types'
 import { useSessionData } from '@/features/device-tracking'
-import { getEventColor, getEventIcon } from '@/features/device-log/lib'
 import { Separator } from '@workspace/ui/components/separator'
 
+/**
+ * Renders the payload of a device log entry with appropriate components
+ */
 export function LogPayload({ data }: { data: DeviceLogEntry }) {
   const component = <LogPayload_Inner data={data} />
   if (!component) {
@@ -22,6 +21,9 @@ export function LogPayload({ data }: { data: DeviceLogEntry }) {
   return <div className="py-2">{component}</div>
 }
 
+/**
+ * Inner component to decide which payload to render
+ */
 export function LogPayload_Inner({ data }: { data: DeviceLogEntry }) {
   switch (data.type) {
     // case 'registered':
@@ -38,16 +40,7 @@ export function LogPayload_Inner({ data }: { data: DeviceLogEntry }) {
     case 'registered_session':
       return <SessionDataPayload data={data.payload} />
     case 'session_shared':
-      return (
-        <>
-          <DeviceSharedPayload
-            data={data.payload}
-            title={(users) => <>Shared session with {users}</>}
-          />
-          <Separator className="my-1" />
-          <SessionDataPayload data={data.payload} />
-        </>
-      )
+      return <SessionSharedPayload data={data.payload} />
     case 'shared':
       return (
         <DeviceSharedPayload
@@ -84,7 +77,7 @@ export const DeviceSharedPayload = (props: DeviceSharedPayload.Props) => {
     return <div>No users</div>
   }
 
-  const links = data.users.map((user) => <UserBadge user={user} />)
+  const links = data.users.map((user) => <UserBadge key={user._id} user={user} />)
   return (
     <p className="inline-flex items-center gap-2 text-muted-foreground text-sm">{title(links)}</p>
   )
@@ -134,29 +127,19 @@ export const SessionDataPayload = (props: SessionDataPayload.Props) => {
   )
 }
 
-// region icon
-
-export namespace DeviceLogIcon {
+export namespace SessionSharedPayload {
   export type Props = {
-    data: DeviceLogEntry
-    className?: string
+    data: DeviceLogPayload<'session_shared'>
   }
 }
 
-export function DeviceLogIcon(props: DeviceLogIcon.Props) {
-  const { data, className } = props
-  const Icon = getEventIcon(data.type)
-  const colors = getEventColor(data.type)
-
+export const SessionSharedPayload = (props: SessionSharedPayload.Props) => {
+  const { data } = props
   return (
-    <Tooltip>
-      <TooltipTrigger>
-        <div className={cn('grid place-items-center rounded-lg bg-muted p-2', colors, className)}>
-          {/* <BadgeIcon className='size-8 text-muted-foreground' strokeWidth={1.5}/> */}
-          <Icon className={cn('size-4')} />
-        </div>
-      </TooltipTrigger>
-      <TooltipContent>{data.type.replace('_', ' ')}</TooltipContent>
-    </Tooltip>
+    <>
+      <DeviceSharedPayload data={data} title={(users) => <>Shared session with {users}</>} />
+      <Separator className="my-1" />
+      <SessionDataPayload data={data} />
+    </>
   )
 }

@@ -1,10 +1,11 @@
 import type { Id } from '@workspace/backend/types'
 import dayjs from '@/lib/dayjs'
 
-import { useDeviceLogs } from '@/features/device-log/hooks'
-import { DeviceLogIcon, LogPayload } from './components'
-import type { DeviceLogEntry } from '@/features/device-log/types'
 import { cn } from '@/lib/utils'
+import { useDeviceLogs } from '@/features/device-log/hooks'
+import type { DeviceLogEntry } from '@/features/device-log/types'
+import { DeviceEventIcon } from '@/features/device-log/components'
+import { LogPayload } from './components'
 
 export * from './components'
 
@@ -22,7 +23,7 @@ export function DeviceEventsLog({ deviceId }: { deviceId: Id<'devices'> }) {
         <article key={entry._id} className={cn('group flex gap-4')}>
           <div className="relative flex flex-col items-center">
             <div className="inline-flex min-h-10 w-10 flex-0 items-center justify-center">
-              <DeviceLogIcon data={entry} className="" />
+              <DeviceEventIcon data={entry} className="" />
             </div>
             <Line index={index} count={events.length} />
           </div>

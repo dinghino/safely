@@ -97,8 +97,8 @@ export default function PageWireframe({ params }: Props) {
         </LabeledBadge>
       </header>
 
-      <div className="flex w-full">
-        <Card className="flex-1 shrink-0">
+      <div className="flex w-full px-4 pb-4 max-lg:flex-col">
+        <div className="flex-1 shrink-0">
           <CardHeader>
             <CardTitle className="font-bold text-xl">Activity Feed</CardTitle>
           </CardHeader>
@@ -114,9 +114,9 @@ export default function PageWireframe({ params }: Props) {
             {/* <div className="space-y-2"> */}
             <DeviceEventsLog deviceId={deviceId} />
           </CardContent>
-        </Card>
-        <aside className="min-w-[650px] max-w-fit flex-0 shrink-0 px-4">
-          <div className="sticky top-(--header-height) space-y-4 pt-4">
+        </div>
+        <aside className="min-w-[250px] flex-0 shrink-0 px-4 md:min-w-[300px] lg:min-w-[650px]">
+          <div className="-mt-4 sticky top-(--header-height) space-y-4 pt-4">
             {/* Status */}
 
             <Card>

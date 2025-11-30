@@ -55,6 +55,7 @@ type Props = {
 }
 
 import { DeviceEventsLog } from '@/widgets/device-logs'
+import { Separator } from '@workspace/ui/components/separator'
 
 export default function PageWireframe({ params }: Props) {
   const { deviceId } = use(params)
@@ -69,8 +70,9 @@ export default function PageWireframe({ params }: Props) {
   }
 
   return (
-    <div className={cn('relative isolate flex flex-col gap-4' /* DEBUG_CLASS */)}>
-      <header className="flex min-h-32 flex-col justify-between gap-4 p-4">
+    <div className={cn('relative isolate flex flex-col' /* DEBUG_CLASS */)}>
+      {/* <header className="flex min-h-32 flex-col justify-between gap-4 px-4 py-16 bg-muted"> */}
+      <header className="justify-between gap-4 bg-muted px-4 py-16 content-grid">
         <div className="inline-flex w-full items-center gap-4">
           <DeviceIcon
             device={device}
@@ -97,80 +99,80 @@ export default function PageWireframe({ params }: Props) {
         </LabeledBadge>
       </header>
 
-      <div className="flex w-full pb-4 max-lg:flex-col">
-        <div className="flex-1 shrink-0">
-          <CardHeader>
-            <CardTitle className="font-bold text-xl">Activity Feed</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {/* <Wireframe
-              type="widget"
-              className="sticky top-0 inline-flex h-12 w-full items-center gap-2 p-2"
-              title="EventsToolbar"
-            >
-              <Wireframe className="h-6 w-24" />
-              <Wireframe className="h-6 w-6" />
-            </Wireframe> */}
-            {/* <div className="space-y-2"> */}
-            <DeviceEventsLog deviceId={deviceId} />
-          </CardContent>
-        </div>
-        <aside className="min-w-[250px] flex-0 shrink-0 px-4 md:min-w-[300px] lg:min-w-[650px]">
-          <div className="-mt-4 sticky top-(--header-height) space-y-4 pt-4">
-            {/* Status */}
+      <Separator className="mb-4 h-px" />
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Status</CardTitle>
-                <CardDescription>
-                  Glance at some of the device details and location on the map.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-sm">
-                    <BatteryIcon className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-muted-foreground">Battery</span>
-                  </div>
-                  {/* <span className="font-medium">{device.battery}%</span> */}
-                  <span className="font-medium">84%</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-sm">
-                    <ClockIcon className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-muted-foreground">Last Seen</span>
-                  </div>
-
-                  <span className="font-medium">
-                    {device.status === 'online' ? 'online' : dayjs(device.last_seen).toNow(true)}
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* map */}
-            <Card className="overflow-hidden p-0!">
-              <CardContent className="aspect-square max-w-full p-0!">
-                {device && <DeviceMap device={device} />}
-              </CardContent>
-            </Card>
-
-            <section className="space-y-2 p-2">
-              <h2 className="font-bold">Information</h2>
-
-              <Wireframe className="h-8 w-full" />
-              <Wireframe className="h-8 w-9/10" />
-            </section>
-            <Wireframe type="view" className="space-y-2 p-2" title="latest sessions">
-              <h2 className="font-bold">Latest Sessions</h2>
-              <Wireframe type="widget" className="h-8 w-full" />
-              <Wireframe type="widget" className="h-8 w-full" />
-              <Wireframe type="widget" className="h-8 w-full" />
-            </Wireframe>
+      <section className="content-grid">
+        <div className="flex w-full pb-4 max-lg:flex-col">
+          <div className="flex-1 shrink-0">
+            {/* <CardHeader> */}
+              <h3 className="mb-8 font-bold text-xl">Activity Feed</h3>
+            {/* </CardHeader> */}
+            {/* <CardContent className="space-y-4"> */}
+              {/* <Wireframe
+                type="widget"
+                className="sticky top-0 inline-flex h-12 w-full items-center gap-2 p-2"
+                title="EventsToolbar"
+              >
+                <Wireframe className="h-6 w-24" />
+                <Wireframe className="h-6 w-6" />
+              </Wireframe> */}
+              {/* <div className="space-y-2"> */}
+              <DeviceEventsLog deviceId={deviceId} />
+            {/* </CardContent> */}
           </div>
-        </aside>
-        {/* </div> */}
-      </div>
+          <aside className="min-w-[250px] flex-0 shrink-0 px-4 md:min-w-[300px] lg:min-w-[650px]">
+            <div className="-mt-4 sticky top-(--header-height) space-y-4 pt-4">
+              {/* Status */}
+              <Card className="shadow-none">
+                <CardHeader>
+                  <CardTitle>Status</CardTitle>
+                  <CardDescription>
+                    Glance at some of the device details and location on the map.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-sm">
+                      <BatteryIcon className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-muted-foreground">Battery</span>
+                    </div>
+                    {/* <span className="font-medium">{device.battery}%</span> */}
+                    <span className="font-medium">84%</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-sm">
+                      <ClockIcon className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-muted-foreground">Last Seen</span>
+                    </div>
+                    <span className="font-medium">
+                      {device.status === 'online' ? 'online' : dayjs(device.last_seen).toNow(true)}
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
+              {/* map */}
+              <Card className="overflow-hidden p-0! shadow-none">
+                <CardContent className="aspect-square max-w-full p-0!">
+                  {device && <DeviceMap device={device} />}
+                </CardContent>
+              </Card>
+              {/*
+              <section className="space-y-2 p-2">
+                <h2 className="font-bold">Information</h2>
+                <Wireframe className="h-8 w-full" />
+                <Wireframe className="h-8 w-9/10" />
+              </section>
+              <Wireframe type="view" className="space-y-2 p-2" title="latest sessions">
+                <h2 className="font-bold">Latest Sessions</h2>
+                <Wireframe type="widget" className="h-8 w-full" />
+                <Wireframe type="widget" className="h-8 w-full" />
+                <Wireframe type="widget" className="h-8 w-full" />
+              </Wireframe> */}
+            </div>
+          </aside>
+          {/* </div> */}
+        </div>
+      </section>
     </div>
   )
 }

@@ -4,6 +4,7 @@ import {
   CircleQuestionMarkIcon,
   MailIcon,
   PartyPopperIcon,
+  PencilIcon,
   PlayIcon,
   PowerIcon,
   PowerOffIcon,
@@ -13,13 +14,14 @@ import {
   XCircleIcon,
   type LucideIcon,
 } from 'lucide-react'
-import type { DeviceLogType } from '../types'
+import type { DeviceLogType } from '@workspace/backend/types'
 
 // region icon
 
-export const icons: Record<DeviceLogType, LucideIcon> = {
+export const icons: Partial<Record<DeviceLogType, LucideIcon>> = {
   registered: PartyPopperIcon,
   unregistered: XCircleIcon,
+  renamed: PencilIcon,
   connected: PowerIcon,
   disconnected: PowerOffIcon,
   shared: UserRoundPlusIcon,
@@ -32,7 +34,7 @@ export const icons: Record<DeviceLogType, LucideIcon> = {
   session_shared: Share2Icon,
 }
 
-export const colors: Record<DeviceLogType, string> = {
+export const colors: Partial<Record<DeviceLogType, string>> = {
   //lifecycle
   registered: 'text-green-500 bg-green-300/15 dark:bg-green-700/15',
   unregistered: 'text-red-500 bg-red-300/15 dark:bg-red-700/15',

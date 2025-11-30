@@ -1,9 +1,8 @@
-import type { Id } from '@workspace/backend/types'
+import type { DeviceActivityLog, Id } from '@workspace/backend/types'
 import dayjs from '@/lib/dayjs'
 
 import { cn } from '@/lib/utils'
 import { useDeviceLogs } from '@/features/device-log/hooks'
-import type { DeviceLogEntry } from '@/features/device-log/types'
 import { DeviceEventIcon } from '@/features/device-log/components'
 import { LogPayload } from './components'
 import { EmptyLogs } from './empty-log'
@@ -14,7 +13,11 @@ export * from './empty-log'
 export function DeviceEventsLog({ deviceId }: { deviceId: Id<'devices'> }) {
   const events = useDeviceLogs(deviceId)
 
-  if (events.length === 0) {
+  if (events === undefined) {
+    return null
+  }
+
+  if (events?.length === 0) {
     return <EmptyLogs />
   }
 
@@ -56,7 +59,13 @@ function Line({ index, count }: { index: number; count: number }) {
   return <div className="mt-1 h-full min-h-4 w-px bg-border" />
 }
 
-function EventTimestamp({ entry, relative }: { entry: DeviceLogEntry; relative?: boolean }) {
+function EventTimestamp({
+  entry,
+  relative,
+}: {
+  entry: DeviceActivityLog
+  relative?: boolean
+}) {
   const time = dayjs(entry._creationTime)
   const formatted = relative ? time.fromNow() : time.format('YYYY-MM-DD HH:mm:ss')
   return <span className="text-muted-foreground text-xs">{formatted}</span>

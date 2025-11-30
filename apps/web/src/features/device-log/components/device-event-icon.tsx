@@ -1,11 +1,12 @@
 import { cn } from '@/lib/utils'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@workspace/ui/components/tooltip'
-import type { DeviceLogEntry } from '@/features/device-log/types'
+import type { DeviceActivityLog } from '@workspace/backend/types'
+
 import { getEventColor, getEventIcon } from '@/features/device-log/lib'
 
 export namespace DeviceEventIcon {
   export type Props = {
-    data: DeviceLogEntry
+    data: DeviceActivityLog
     className?: string
   }
 }
@@ -25,4 +26,4 @@ export function DeviceEventIcon(props: DeviceEventIcon.Props) {
       <TooltipContent>{data.type.replace('_', ' ')}</TooltipContent>
     </Tooltip>
   )
-} 
+}

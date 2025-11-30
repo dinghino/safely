@@ -1,6 +1,7 @@
-import MOCK_LOGS from '@/features/device-log/mocks'
+import { api } from '@workspace/backend/api'
 import type { Id } from '@workspace/backend/types'
+import { useQuery } from 'convex/react'
 
-export function useDeviceLogs(_deviceId: Id<'devices'> | undefined) {
-  return MOCK_LOGS.sort((a, b) => b._creationTime - a._creationTime)
+export function useDeviceLogs(deviceId: Id<'devices'>) {
+  return useQuery(api.devices.activities.getAll, { deviceId })
 }

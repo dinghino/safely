@@ -25,12 +25,12 @@ const variants = tv({
 export namespace UserBadge {
   export type User = {
     _id: string // Id<'users'>
-    username: string
-    image: string
+    username: string | undefined
+    image: string | undefined
   }
   type BadgeProps = Omit<React.ComponentProps<typeof Badge>, 'children'>
   type Variants = VariantProps<typeof variants>
-  
+
   export type Props = Variants &
     BadgeProps & {
       user: User
@@ -50,7 +50,7 @@ export const UserBadge = ({ user, ...rest }: UserBadge.Props) => {
     >
       <Avatar key={user._id} className="size-4">
         <AvatarImage src={user.image} alt={`@${user.username}`} />
-        <AvatarFallback>{user.username.charAt(0).toUpperCase()}</AvatarFallback>
+        <AvatarFallback>{user.username?.charAt(0).toUpperCase() ?? 'User'}</AvatarFallback>
       </Avatar>
       {user.username}
     </Badge>

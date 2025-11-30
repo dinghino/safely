@@ -6,14 +6,14 @@ import { Button } from '@workspace/ui/components/button'
 
 import { UserBadge } from '@/entities/users/components'
 
-import type { DeviceLogPayload, DeviceLogEntry } from '@/features/device-log/types'
 import { useSessionData } from '@/features/device-tracking'
 import { Separator } from '@workspace/ui/components/separator'
+import type { DeviceActivityLog, DeviceLogPayload } from '@workspace/backend/types'
 
 /**
  * Renders the payload of a device log entry with appropriate components
  */
-export function LogPayload({ data }: { data: DeviceLogEntry }) {
+export function LogPayload({ data }: { data: DeviceActivityLog }) {
   const component = <LogPayload_Inner data={data} />
   if (!component) {
     return null
@@ -24,7 +24,7 @@ export function LogPayload({ data }: { data: DeviceLogEntry }) {
 /**
  * Inner component to decide which payload to render
  */
-export function LogPayload_Inner({ data }: { data: DeviceLogEntry }) {
+export function LogPayload_Inner({ data }: { data: DeviceActivityLog }) {
   switch (data.type) {
     // case 'registered':
     // case 'unregistered':
@@ -35,6 +35,15 @@ export function LogPayload_Inner({ data }: { data: DeviceLogEntry }) {
     // case 'request_issued':
     // case 'request_acknowledged':
     //   return <span className="text-muted-foreground text-xs">Device acknowledged request</span>
+    case 'renamed':
+      return (
+        <span className="text-muted-foreground text-sm">
+          Name changed from{' '}
+          <strong>{data.payload.previousName}</strong> to <strong>
+            {data.payload.newName}
+          </strong>
+        </span>
+      )
     case 'session_started':
     case 'session_ended':
     case 'registered_session':

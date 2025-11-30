@@ -1,8 +1,3 @@
-@import "tailwindcss";
-@source "../../../apps/**/*.{ts,tsx}";
-@source "../../../packages/**/*.{ts,tsx}";
-@source "../**/*.{ts,tsx}";
-
 @import "tw-animate-css";
 
 @import "./content-grid.css";

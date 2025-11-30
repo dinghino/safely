@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
-import '@workspace/ui/globals.css'
+// import '@workspace/ui/globals.css'
 import './styles.css'
 import '@workspace/data-filter/styles.css'
 

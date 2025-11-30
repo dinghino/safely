@@ -159,7 +159,7 @@ export const sessionStarted = v.object({
   ...base.fields,
   type: ACTIVITY_TYPE.SESSION_STARTED,
   payload: v.object({
-    sessionId: v.id('deviceSessions'),
+    sessionId: v.id('trackSession'),
   }),
 })
 
@@ -167,7 +167,7 @@ export const sessionEnded = v.object({
   ...base.fields,
   type: ACTIVITY_TYPE.SESSION_ENDED,
   payload: v.object({
-    sessionId: v.id('deviceSessions'),
+    sessionId: v.id('trackSession'),
   }),
 })
 
@@ -181,7 +181,7 @@ export const registeredSession = v.object({
   ...base.fields,
   type: ACTIVITY_TYPE.REGISTERED_SESSION,
   payload: v.object({
-    sessionId: v.id('deviceSessions'),
+    sessionId: v.id('trackSession'),
     // todo: add session summary data?
   }),
 })
@@ -195,7 +195,7 @@ export const sessionShared = v.object({
   ...base.fields,
   type: ACTIVITY_TYPE.SESSION_SHARED,
   payload: v.object({
-    sessionId: v.id('deviceSessions'),
+    sessionId: v.id('trackSession'),
     users: v.array(v.id('users')),
   }),
 })

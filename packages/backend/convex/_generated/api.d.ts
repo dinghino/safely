@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as devices_activities from "../devices/activities.js";
 import type * as devices_get from "../devices/get.js";
 import type * as devices_heartbeat from "../devices/heartbeat.js";
 import type * as devices_location from "../devices/location.js";
@@ -55,6 +56,7 @@ import type {
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  "devices/activities": typeof devices_activities;
   "devices/get": typeof devices_get;
   "devices/heartbeat": typeof devices_heartbeat;
   "devices/location": typeof devices_location;

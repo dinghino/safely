@@ -1,4 +1,5 @@
-import type { DeviceLogType } from '../../schemas/device-activities.schema'
+import type { Id } from '../../_generated/dataModel'
+import type { DeviceLogPayload, DeviceLogType } from '../../schemas/device-activities.schema'
 
 /**
  * Normalizes a default title for a given device activity type.
@@ -13,6 +14,8 @@ export function defaultTitleForActivityType(type: DeviceLogType): string {
       return 'Device Unregistered'
     case 'ownership_changed':
       return 'Device Ownership Changed'
+    case 'renamed':
+      return 'Device Renamed'
     case 'connected':
       return 'Device Connected'
     case 'disconnected':
@@ -36,5 +39,22 @@ export function defaultTitleForActivityType(type: DeviceLogType): string {
 
     default:
       return 'Device Log Entry'
+  }
+}
+
+export type CreateLogOptions<T extends DeviceLogType> = {
+  type: T
+  deviceId: Id<'devices'>
+  payload: DeviceLogPayload<T>
+}
+
+export function createActivityLog<T extends DeviceLogType>(options: CreateLogOptions<T>) {
+  const { deviceId, type, payload } = options
+  return {
+    deviceId,
+    type,
+    timestamp: Date.now(),
+    title: defaultTitleForActivityType(type),
+    payload,
   }
 }

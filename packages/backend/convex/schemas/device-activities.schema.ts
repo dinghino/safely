@@ -25,6 +25,24 @@ const base = v.object({
   title: v.string(),
 })
 
+// region event types
+const ACTIVITY_TYPE = {
+  ADDED: v.literal('registered'),
+  UNREGISTERED: v.literal('unregistered'),
+  RENAMED: v.literal('renamed'),
+  OWNERSHIP_CHANGED: v.literal('ownership_changed'),
+  CONNECTED: v.literal('connected'),
+  DISCONNECTED: v.literal('disconnected'),
+  SHARED: v.literal('shared'),
+  UNSHARED: v.literal('unshared'),
+  REQUEST_ISSUED: v.literal('request_issued'),
+  REQUEST_ACKNOWLEDGED: v.literal('request_acknowledged'),
+  SESSION_STARTED: v.literal('session_started'),
+  SESSION_ENDED: v.literal('session_ended'),
+  REGISTERED_SESSION: v.literal('registered_session'),
+  SESSION_SHARED: v.literal('session_shared'),
+} as const
+
 // region Platform
 
 /**
@@ -33,7 +51,7 @@ const base = v.object({
  */
 export const deviceAdded = v.object({
   ...base.fields,
-  type: v.literal('registered'),
+  type: ACTIVITY_TYPE.ADDED,
   payload: v.object({}),
 })
 
@@ -44,7 +62,7 @@ export const deviceAdded = v.object({
  */
 export const deviceUnregistered = v.object({
   ...base.fields,
-  type: v.literal('unregistered'),
+  type: ACTIVITY_TYPE.UNREGISTERED,
   payload: v.object({}),
 })
 
@@ -54,10 +72,19 @@ export const deviceUnregistered = v.object({
  */
 export const ownershipChanged = v.object({
   ...base.fields,
-  type: v.literal('ownership_changed'),
+  type: ACTIVITY_TYPE.OWNERSHIP_CHANGED,
   payload: v.object({
     newOwnerId: v.id('users'),
     previousOwnerId: v.id('users'),
+  }),
+})
+
+export const deviceRenamed = v.object({
+  ...base.fields,
+  type: ACTIVITY_TYPE.RENAMED,
+  payload: v.object({
+    newName: v.string(),
+    previousName: v.string(),
   }),
 })
 
@@ -68,7 +95,7 @@ export const ownershipChanged = v.object({
  */
 export const deviceConnected = v.object({
   ...base.fields,
-  type: v.literal('connected'),
+  type: ACTIVITY_TYPE.CONNECTED,
   payload: v.object({}),
 })
 
@@ -77,7 +104,7 @@ export const deviceConnected = v.object({
  */
 export const deviceDisconnected = v.object({
   ...base.fields,
-  type: v.literal('disconnected'),
+  type: ACTIVITY_TYPE.DISCONNECTED,
   payload: v.object({}),
 })
 
@@ -90,7 +117,7 @@ export const deviceDisconnected = v.object({
  */
 export const deviceShared = v.object({
   ...base.fields,
-  type: v.literal('shared'),
+  type: ACTIVITY_TYPE.SHARED,
   payload: v.object({ users: v.array(v.id('users')) }),
 })
 
@@ -100,7 +127,7 @@ export const deviceShared = v.object({
  */
 export const deviceUnshared = v.object({
   ...base.fields,
-  type: v.literal('unshared'),
+  type: ACTIVITY_TYPE.UNSHARED,
   payload: v.object({ users: v.array(v.id('users')) }),
 })
 
@@ -112,7 +139,7 @@ export const deviceUnshared = v.object({
  */
 export const requestReceived = v.object({
   ...base.fields,
-  type: v.literal('request_issued'),
+  type: ACTIVITY_TYPE.REQUEST_ISSUED,
   payload: v.object({
     requestId: v.id('commands'),
   }),
@@ -120,7 +147,7 @@ export const requestReceived = v.object({
 
 export const requestAcknowledged = v.object({
   ...base.fields,
-  type: v.literal('request_acknowledged'),
+  type: ACTIVITY_TYPE.REQUEST_ACKNOWLEDGED,
   payload: v.object({
     requestId: v.id('requests'),
   }),
@@ -130,7 +157,7 @@ export const requestAcknowledged = v.object({
 
 export const sessionStarted = v.object({
   ...base.fields,
-  type: v.literal('session_started'),
+  type: ACTIVITY_TYPE.SESSION_STARTED,
   payload: v.object({
     sessionId: v.id('deviceSessions'),
   }),
@@ -138,7 +165,7 @@ export const sessionStarted = v.object({
 
 export const sessionEnded = v.object({
   ...base.fields,
-  type: v.literal('session_ended'),
+  type: ACTIVITY_TYPE.SESSION_ENDED,
   payload: v.object({
     sessionId: v.id('deviceSessions'),
   }),
@@ -152,7 +179,7 @@ export const sessionEnded = v.object({
  */
 export const registeredSession = v.object({
   ...base.fields,
-  type: v.literal('registered_session'),
+  type: ACTIVITY_TYPE.REGISTERED_SESSION,
   payload: v.object({
     sessionId: v.id('deviceSessions'),
     // todo: add session summary data?
@@ -166,7 +193,7 @@ export const registeredSession = v.object({
  */
 export const sessionShared = v.object({
   ...base.fields,
-  type: v.literal('session_shared'),
+  type: ACTIVITY_TYPE.SESSION_SHARED,
   payload: v.object({
     sessionId: v.id('deviceSessions'),
     users: v.array(v.id('users')),
@@ -175,10 +202,34 @@ export const sessionShared = v.object({
 
 // region Public API
 
-export const deviceActivities = v.union(
+/**
+ * Union type of all device activity types, exported for sanity in actual APIs.
+ */
+export const deviceActivityType = v.union(
+  ACTIVITY_TYPE.ADDED,
+  ACTIVITY_TYPE.UNREGISTERED,
+  ACTIVITY_TYPE.OWNERSHIP_CHANGED,
+  ACTIVITY_TYPE.RENAMED,
+  ACTIVITY_TYPE.CONNECTED,
+  ACTIVITY_TYPE.DISCONNECTED,
+  ACTIVITY_TYPE.SHARED,
+  ACTIVITY_TYPE.UNSHARED,
+  ACTIVITY_TYPE.REQUEST_ISSUED,
+  ACTIVITY_TYPE.REQUEST_ACKNOWLEDGED,
+  ACTIVITY_TYPE.SESSION_STARTED,
+  ACTIVITY_TYPE.SESSION_ENDED,
+  ACTIVITY_TYPE.REGISTERED_SESSION,
+  ACTIVITY_TYPE.SESSION_SHARED,
+)
+
+/**
+ * Union type of all device activity log entries.
+ */
+export const deviceActivityEvent = v.union(
   deviceAdded,
   deviceUnregistered,
   ownershipChanged,
+  deviceRenamed,
   deviceConnected,
   deviceDisconnected,
   deviceShared,
@@ -191,7 +242,7 @@ export const deviceActivities = v.union(
   sessionShared,
 )
 
-type DeviceActivityLogUnion = Infer<typeof deviceActivities>
+type DeviceActivityLogUnion = Infer<typeof deviceActivityEvent>
 
 export type DeviceLogType = DeviceActivityLogUnion['type']
 export type DeviceActivityLog<T extends DeviceLogType = DeviceLogType> = Extract<

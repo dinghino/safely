@@ -2,7 +2,7 @@ import { defineTable } from 'convex/server'
 import { v } from 'convex/values'
 import { deviceStatus, trackingMode, gpsAccuracy, deviceType } from './enums'
 import { locationMetadata } from '../schemas/shared'
-import { deviceActivities } from './device-activities.schema'
+import { deviceActivityEvent } from './device-activities.schema'
 
 /**
  * registered devices for a user
@@ -109,10 +109,10 @@ export const deviceLocations = defineTable({
 /**
  * Device activity logs, for activity feed, auditing and debugging purposes.
  */
-export const deviceActivitiesLog = defineTable(deviceActivities)
+export const deviceActivitiesLog = defineTable(deviceActivityEvent)
   .index('device', ['deviceId'])
-  .index('timestamp', ['timestamp'])
-  .index('type', ['type'])
+  .index('timestamp', ['deviceId', 'timestamp'])
+  .index('type', ['deviceId', 'type'])
 
 /*
 type LocationOptions = {

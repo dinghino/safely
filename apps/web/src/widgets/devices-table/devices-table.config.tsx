@@ -12,8 +12,9 @@ import { createColumnConfigHelper } from '@workspace/data-filter'
 import type { Device } from '@/entities/device/types'
 import { DeviceName, DevicePlatform, DeviceStatusBadge } from '@/entities/device/components'
 
-import { DeviceActionsMenu } from '@/features/device-manager/components'
 import { SessionButton } from '@/features/device-tracking/components'
+// todo: move table to views for FSD
+import { DeviceActionsMenu } from '@/widgets/device-actions-menu'
 
 export type DeviceWithId = Device & { id: string }
 

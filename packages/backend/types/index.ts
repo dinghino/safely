@@ -21,8 +21,13 @@ export type { Doc, Id } from '../convex/_generated/dataModel'
 export type Device = NonNullable<FunctionReturnType<typeof api.devices.get.one>>
 export type GPSAccuracy = Device['settings']['location']['accuracy']
 
-export type {
-  DeviceLogType,
+import type { DeviceLogType } from '../convex/schemas/device-activities.schema'
+export type { DeviceLogType }
+
+export type DeviceActivityLog = NonNullable<
+  FunctionReturnType<typeof api.devices.activities.getAll>
+>[number]
+export type DeviceLogPayload<T extends DeviceLogType = DeviceLogType> = Extract<
   DeviceActivityLog,
-  DeviceLogPayload,
-} from '../convex/schemas/device-activities.schema'
+  { type: T }
+>['payload']

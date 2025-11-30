@@ -5,8 +5,9 @@ import { mutation } from '../_generated/server'
 import { locationMetadata } from '../schemas/shared'
 
 import { helpers } from '../lib/devices'
-import { api } from '../_generated/api'
+import { api, internal } from '../_generated/api'
 import { _getActiveSession, addLocationPoint } from '../tracking/lib'
+import { createActivityLog } from '../lib/devices/logs'
 
 // region heartbeat.send
 
@@ -53,6 +54,13 @@ export const send = mutation({
     ///
     ///
 
+    const device = await helpers.get.deviceById(ctx, deviceId)
+    // used to ping events and other internal logic
+    if (device.status === 'offline') {
+      await ctx.runMutation(internal.devices.activities.add, {
+        data: createActivityLog({ deviceId, type: 'connected', payload: {} }),
+      })
+    }
     // update device data - we do not update user since devices could be IoT
     // to update other entities we need some discriminator on the devices
 
@@ -99,6 +107,11 @@ export const disconnect = mutation({
     const sessionId = session._id
 
     const device = await helpers.get.deviceById(ctx, session.deviceId)
+    if (device.status === 'online') {
+      await ctx.runMutation(internal.devices.activities.add, {
+        data: createActivityLog({ deviceId: device._id, type: 'disconnected', payload: {} }),
+      })
+    }
     await ctx.db.patch(device._id, { status: 'offline' })
     await helpers.heartbeat.removeScheduleDisconnect(ctx, sessionId)
   },

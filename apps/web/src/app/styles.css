@@ -1,12 +1,3 @@
-@import "@workspace/ui/globals.css";
-
-@import "tailwindcss";
-@source "../../**/*.{ts,tsx}";
-@source "../../../packages/ui/src/**/*.{ts,tsx}";
-@source "../../../packages/data-table/src/**/*.{ts,tsx}";
-@source "../../../packages/data-filter/src/**/*.{ts,tsx}";
-@source "../../../packages/form/src/**/*.{ts,tsx}";
-
 @import "@clerk/themes/shadcn.css";
 
 :root {

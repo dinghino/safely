@@ -21,11 +21,16 @@ export const add = mutation({
     const { sessionId, point, metadata = {} } = args
     const session = await lib.getSession({ ctx, sessionId })
 
+    // first update metadata so we have correct counts and last insert location
+    await lib.upsertSessionMetadata({ ctx, session, point })
+
     const locationId = await lib.addLocationPoint({
       ctx,
       session,
       data: { point, metadata },
     })
+    // update session metadata
+
     return locationId
   },
 })

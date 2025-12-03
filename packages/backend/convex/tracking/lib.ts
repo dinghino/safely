@@ -7,6 +7,8 @@ import type { MutationCtx, QueryCtx } from '../_generated/server'
 import { getCurrentUserOrThrow } from '../lib/auth'
 import type { LocationMetadata } from '../../types'
 
+import * as gis from '../lib/gis'
+
 type TrackingGisFilters = {
   // allows to get all point of a session
   session: Id<'trackSession'>
@@ -121,4 +123,63 @@ export async function addLocationPoint(options: {
   // resolve all updates in parallel
   await Promise.all([updateLastKnown, patchSession, addPoint])
   return locationId
+}
+
+type MetadataValues = Omit<Doc<'trackMetadata'>, '_id' | 'session' | '_creationTime'>
+
+export async function upsertSessionMetadata(options: {
+  ctx: MutationCtx
+  session: Doc<'trackSession'>
+  point: Point
+}) {
+  const { ctx, session, point } = options
+  // get current metadata if any
+  const current = await ctx.db
+    .query('trackMetadata')
+    .withIndex('session', (q) => q.eq('session', session._id))
+    .first()
+
+  // calculate new values
+  let points = current?.points ?? 0
+  let distance = current?.distance ?? 0
+  let duration = current?.duration ?? 0
+
+  // get last location to calculate distance delta
+  const prevLocation = await ctx.db
+    .query('trackLocation')
+    .withIndex('by_session', (q) => q.eq('session', session._id))
+    .order('desc')
+    .first()
+
+  if (prevLocation) {
+    const prevPoint = await geospatial.get(ctx, prevLocation._id)
+    const lastCoords = prevPoint?.coordinates || null
+    distance += lastCoords ? gis.distanceInMeters(lastCoords, point) : 0
+  }
+
+  // add the time delta between last update and now - cascade last time from metadata
+  // to session start time as last option
+  const lastUpdate = current?.lastUpdated ?? session.lastUpdatedAt ?? session.startedAt
+  const lastUpdated = Date.now()
+  duration += Date.now() - lastUpdate
+  points += 1
+
+  // patch or insert
+  const data: MetadataValues = {
+    points,
+    distance,
+    duration,
+    lastUpdated,
+  }
+
+  if (current) {
+    await ctx.db.patch(current._id, data)
+    return current._id
+  }
+
+  const metadataId = await ctx.db.insert('trackMetadata', {
+    session: session._id,
+    ...data,
+  })
+  return metadataId
 }

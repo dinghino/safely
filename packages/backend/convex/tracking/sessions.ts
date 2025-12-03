@@ -234,3 +234,17 @@ export const remove = mutation({
     return true
   },
 })
+
+export const getMetadata = query({
+  args: { sessionId: v.id('trackSession') },
+  handler: async (ctx, args) => {
+    const { sessionId } = args
+    const session = await getSession({ ctx, sessionId })
+    if (!session) throw new Error('Session not found')
+    const metadata = await ctx.db
+      .query('trackMetadata')
+      .withIndex('session', (q) => q.eq('session', session._id))
+      .first()
+    return metadata || null
+  },
+})

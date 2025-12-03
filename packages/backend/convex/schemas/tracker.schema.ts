@@ -75,3 +75,11 @@ export const trackRequests = defineTable({
   .index('type', ['type'])
 // .index('status', ['status']) // get requests by status
 // .index('session', ['session']) // get request by session
+
+export const trackMetadata = defineTable({
+  session: v.id('trackSession'),
+  points: v.number(),
+  distance: v.number(),
+  duration: v.number(),
+  lastUpdated: v.number(),
+}).index('session', ['session'])

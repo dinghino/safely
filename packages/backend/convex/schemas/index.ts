@@ -9,5 +9,5 @@ export {
   deviceActivitiesLog
 } from './devices.schema'
 export { todos } from './todos.schema'
-export { trackLocation, trackSession, trackRequests } from './tracker.schema'
+export { trackLocation, trackSession, trackRequests, trackMetadata } from './tracker.schema'
 export { users } from './users.schema'

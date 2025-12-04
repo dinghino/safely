@@ -127,6 +127,15 @@ export async function addLocationPoint(options: {
 
 type MetadataValues = Omit<Doc<'trackMetadata'>, '_id' | 'session' | '_creationTime'>
 
+/**
+ * Given a session and a NEW coordinate point, evaluate and upsert metadata for
+ * the session.
+ * @note this is going to be expanded and probably refactored a bit, requiring
+ * more information than just the coordinates for the new point.
+ * 
+ * This is currently only used in `tracking.locations.add` but it might be moved
+ * and/or
+ */
 export async function upsertSessionMetadata(options: {
   ctx: MutationCtx
   session: Doc<'trackSession'>

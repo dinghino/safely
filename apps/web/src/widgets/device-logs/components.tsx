@@ -1,14 +1,17 @@
 import Link from 'next/link'
 
 import { Skeleton } from '@workspace/ui/components/skeleton'
-import { Badge } from '@workspace/ui/components/badge'
 import { Button } from '@workspace/ui/components/button'
 
 import { UserBadge } from '@/entities/users/components'
 
-import { useSessionData } from '@/features/device-tracking'
+import { useSessionMetadata } from '@/features/device-tracking'
 import { Separator } from '@workspace/ui/components/separator'
 import type { DeviceActivityLog, DeviceLogPayload } from '@workspace/backend/types'
+import dayjs from 'dayjs'
+import { ButtonGroup } from '@workspace/ui/components/button-group'
+import { LabeledBadge } from '@/components/labeled-badge'
+import { useMemo } from 'react'
 
 /**
  * Renders the payload of a device log entry with appropriate components
@@ -38,10 +41,8 @@ export function LogPayload_Inner({ data }: { data: DeviceActivityLog }) {
     case 'renamed':
       return (
         <span className="text-muted-foreground text-sm">
-          Name changed from{' '}
-          <strong>{data.payload.previousName}</strong> to <strong>
-            {data.payload.newName}
-          </strong>
+          Name changed from <strong>{data.payload.previousName}</strong> to{' '}
+          <strong>{data.payload.newName}</strong>
         </span>
       )
     case 'session_started':
@@ -102,9 +103,18 @@ export const SessionDataPayload = (props: SessionDataPayload.Props) => {
   const {
     data: { sessionId },
   } = props
-  const session = useSessionData(sessionId)
+  const data = useSessionMetadata(sessionId)
+  const distance = useMemo(() => {
+    // meters or km based on value
+    const distance = data?.distance
+    if (!distance) return null
+    if (distance < 1500) {
+      return `${distance.toFixed(2)} meters`
+    }
+    return `${(distance / 1000).toFixed(2)} km`
+  }, [data])
 
-  if (session === undefined) {
+  if (data === undefined) {
     return (
       <div className="inline-flex items-center gap-2">
         {Array.from({ length: 3 }).map((_, i) => (
@@ -114,23 +124,23 @@ export const SessionDataPayload = (props: SessionDataPayload.Props) => {
     )
   }
 
+  if (!data) {
+    return <div>Session data not found</div>
+  }
   return (
     <div className="space-y-2">
       <div className="inline-flex items-center gap-2">
-        <Badge variant="outline" className="text-xs">
-          badge 1
-        </Badge>
-        <Badge variant="outline" className="text-xs">
-          badge 2
-        </Badge>
-        <Badge variant="outline" className="text-xs">
-          badge 3
-        </Badge>
-      </div>
-      <div>
-        <Button size="sm" variant="secondary" asChild>
+        {/* <ButtonGroup> */}
+        <Button size="sm" variant="secondary" asChild className="py-0!">
           <Link href={`/dashboard/sessions/${sessionId}`}>View Session</Link>
         </Button>
+        {/* </ButtonGroup> */}
+        <LabeledBadge label="Distance">{distance}</LabeledBadge>
+        <LabeledBadge label="Duration">
+          {dayjs.duration(data.duration, 'ms').humanize()}
+        </LabeledBadge>
+        {/* </div>
+      <div> */}
       </div>
     </div>
   )

@@ -29,7 +29,7 @@ export function DeviceEventsLog({ deviceId }: { deviceId: Id<'devices'> }) {
       )}
     >
       {events.map((entry, index) => (
-        <article key={entry._id} className={cn('group flex gap-4')}>
+        <article key={entry._id} className={cn('group flex gap-1')}>
           <div className="relative flex flex-col items-center">
             <div className="inline-flex min-h-10 w-10 flex-0 items-center justify-center">
               <DeviceEventIcon data={entry} className="" />

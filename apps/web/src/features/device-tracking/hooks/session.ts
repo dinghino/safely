@@ -16,6 +16,11 @@ export function useActiveSession(deviceId: Id<'devices'> | undefined) {
 export function useSession(sessionId: Id<'trackSession'>) {
   return useQuery(api.tracking.sessions.get, { sessionId })
 }
+
+export function useSessionMetadata(sessionId: Id<'trackSession'>) {
+  return useQuery(api.tracking.sessions.getMetadata, { sessionId })
+}
+
 /**
  * Get all sessions for a given device.
  * @todo add options for pagination, filtering, sorting and grouping

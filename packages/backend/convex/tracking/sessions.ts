@@ -163,6 +163,8 @@ export const start = mutation({
       return existing._id
     }
 
+    // handle new active session
+
     const newSession = await ctx.db.insert('trackSession', {
       device: device._id,
       owner: user._id,
@@ -171,10 +173,21 @@ export const start = mutation({
       pointsCount: 0,
     })
 
-    await Promise.all([
-      // modify device settings to handle tracking properly
-      ctx.runMutation(api.devices.manage.setTrackingMode, { deviceId: device._id, mode: 'active' }),
-    ])
+    const createMetadata = ctx.db.insert('trackMetadata', {
+      session: newSession,
+      points: 0,
+      distance: 0,
+      duration: 0,
+      lastUpdated: Date.now(),
+    })
+
+    // modify device settings to handle tracking properly
+    const updateTrackingMode = ctx.runMutation(api.devices.manage.setTrackingMode, {
+      deviceId: device._id,
+      mode: 'active',
+    })
+
+    await Promise.all([createMetadata, updateTrackingMode])
     return newSession
   },
 })

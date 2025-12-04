@@ -5,13 +5,6 @@ import { internalMutation } from './_generated/server'
 import { geospatial } from './tracking/lib'
 import * as gis from './lib/gis'
 
-const world = {
-  west: -180,
-  south: -90,
-  east: 180,
-  north: 90,
-}
-
 export const migrateTrackMetadata = internalMutation({
   handler: async (ctx) => {
     const sessions = await ctx.db.query('trackSession').collect()

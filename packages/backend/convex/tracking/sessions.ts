@@ -1,6 +1,8 @@
 import { v } from 'convex/values'
 import { api } from '../_generated/api'
-import { internalMutation, mutation, query } from '../_generated/server'
+import { internalMutation, mutation, type MutationCtx, query } from '../_generated/server'
+import type { Id } from '../_generated/dataModel'
+import type { DeviceActivityLog, DeviceLogType } from '../schemas/device-activities.schema'
 
 // import { Service.auth.getCurrentUserOrThrow } from '../lib/auth'
 import {
@@ -280,9 +282,38 @@ export const remove = mutation({
       deleteMeta = ctx.db.delete(metadata._id)
     }
 
-    await Promise.all([ctx.db.delete(session._id), deleteMeta])
+    const deleteActivities = deleteSessionActivityLog(ctx, session.device, session._id)
+    await Promise.all([ctx.db.delete(session._id), deleteMeta, deleteActivities])
     return true
   },
 })
 
-// local helpers
+// region local helpers
+
+// clear up activities for this sessions otherwise things crash because we
+// try to retrieve info that does not exist anymore
+async function deleteSessionActivityLog(
+  ctx: MutationCtx,
+  deviceId: Id<'devices'>,
+  sessionId: Id<'trackSession'>,
+) {
+  const activitiesToDelete: DeviceLogType[] = [
+    'session_started',
+    'session_ended',
+    'session_shared',
+    'registered_session',
+  ]
+  type Filtered = DeviceActivityLog<
+    'session_started' | 'session_ended' | 'session_shared' | 'registered_session'
+  >
+  const activities = ctx.db
+    .query('deviceActivitiesLog')
+    .withIndex('device', (q) => q.eq('deviceId', deviceId))
+    .collect()
+
+  const toDelete = (await activities)
+    .filter((item) => activitiesToDelete.includes(item.type))
+    .filter((item) => (item as Filtered).payload.sessionId === sessionId)
+
+  await Promise.all(toDelete.map((item) => ctx.db.delete(item._id)))
+}

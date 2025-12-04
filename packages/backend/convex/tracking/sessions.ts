@@ -3,7 +3,16 @@ import { api } from '../_generated/api'
 import { internalMutation, mutation, query } from '../_generated/server'
 
 // import { Service.auth.getCurrentUserOrThrow } from '../lib/auth'
-import { _getActiveSession, getSession, geospatial, isSessionOpen } from './lib'
+import {
+  _getActiveSession,
+  getSession,
+  geospatial,
+  isSessionOpen,
+  logSessionCreated,
+  logSessionEnded,
+  createSessionMetadata,
+  getSessionMetadata,
+} from './lib'
 // import { isCurrentUserOwner } from '../lib/devices'
 import { Service } from '../lib'
 /**
@@ -13,6 +22,27 @@ import { Service } from '../lib'
 export const get = query({
   args: { sessionId: v.id('trackSession') },
   handler: async (ctx, args) => getSession({ ctx, ...args }),
+})
+/**
+ * Returns metadata for a given session
+ * @throws if no session or not owned by current user
+ * @note this is separate from the base `get` for sessions since metadata changes
+ * frequently when locations are added, so keeping them separate allows for better
+ * caching and performance
+ */
+export const getMetadata = query({
+  args: { sessionId: v.id('trackSession') },
+  handler: async (ctx, args) => {
+    const { sessionId } = args
+    const session = await getSession({ ctx, sessionId })
+    if (!session) throw new Error('Session not found')
+
+    const metadata = await ctx.db
+      .query('trackMetadata')
+      .withIndex('session', (q) => q.eq('session', session._id))
+      .first()
+    return metadata!
+  },
 })
 
 /**
@@ -94,10 +124,14 @@ export const create = internalMutation({
     // - a global settings object with the same conditions
     // - the request itself (i.e. the sender can request a specific mode)
     // for now we just use `active` and we'll figure out the rest later
-    await ctx.runMutation(api.devices.manage.setTrackingMode, {
-      deviceId: device._id,
-      mode: 'active',
-    })
+    await Promise.all([
+      ctx.runMutation(api.devices.manage.setTrackingMode, {
+        deviceId: device._id,
+        mode: 'active',
+      }),
+      createSessionMetadata({ ctx, session: newSession }),
+      logSessionCreated({ ctx, deviceId: device._id, sessionId: newSession }),
+    ])
     return newSession
   },
 })
@@ -126,6 +160,7 @@ export const close = internalMutation({
         mode: 'passive',
       }),
       ctx.db.patch(session._id, { endedAt: Date.now() }),
+      logSessionEnded({ ctx, deviceId: device._id, sessionId: session._id }),
     ])
   },
 })
@@ -173,13 +208,7 @@ export const start = mutation({
       pointsCount: 0,
     })
 
-    const createMetadata = ctx.db.insert('trackMetadata', {
-      session: newSession,
-      points: 0,
-      distance: 0,
-      duration: 0,
-      lastUpdated: Date.now(),
-    })
+    const createMetadata = createSessionMetadata({ ctx, session: newSession })
 
     // modify device settings to handle tracking properly
     const updateTrackingMode = ctx.runMutation(api.devices.manage.setTrackingMode, {
@@ -187,7 +216,9 @@ export const start = mutation({
       mode: 'active',
     })
 
-    await Promise.all([createMetadata, updateTrackingMode])
+    const logActivity = logSessionCreated({ ctx, deviceId: device._id, sessionId: newSession })
+
+    await Promise.all([createMetadata, updateTrackingMode, logActivity])
     return newSession
   },
 })
@@ -242,22 +273,16 @@ export const remove = mutation({
       locations.map((loc) => [ctx.db.delete(loc._id), geospatial.remove(ctx, loc._id)]),
     )
 
-    // then delete the session itself
-    await ctx.db.delete(session._id)
+    // then delete the session itself and its metadata
+    const metadata = await getSessionMetadata({ ctx, sessionId })
+    let deleteMeta: Promise<void> = Promise.resolve()
+    if (metadata) {
+      deleteMeta = ctx.db.delete(metadata._id)
+    }
+
+    await Promise.all([ctx.db.delete(session._id), deleteMeta])
     return true
   },
 })
 
-export const getMetadata = query({
-  args: { sessionId: v.id('trackSession') },
-  handler: async (ctx, args) => {
-    const { sessionId } = args
-    const session = await getSession({ ctx, sessionId })
-    if (!session) throw new Error('Session not found')
-    const metadata = await ctx.db
-      .query('trackMetadata')
-      .withIndex('session', (q) => q.eq('session', session._id))
-      .first()
-    return metadata || null
-  },
-})
+// local helpers

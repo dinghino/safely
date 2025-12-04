@@ -1,5 +1,5 @@
 import { GeospatialIndex, type Point } from '@convex-dev/geospatial'
-import { api, components } from '../_generated/api'
+import { api, components, internal } from '../_generated/api'
 
 import type { Doc, Id } from '../_generated/dataModel'
 import type { MutationCtx, QueryCtx } from '../_generated/server'
@@ -8,6 +8,7 @@ import { getCurrentUserOrThrow } from '../lib/auth'
 import type { LocationMetadata } from '../../types'
 
 import * as gis from '../lib/gis'
+import { helpers } from '../lib/devices'
 
 type TrackingGisFilters = {
   // allows to get all point of a session
@@ -127,12 +128,23 @@ export async function addLocationPoint(options: {
 
 type MetadataValues = Omit<Doc<'trackMetadata'>, '_id' | 'session' | '_creationTime'>
 
+// region session metadata
+export async function getSessionMetadata(options: {
+  ctx: QueryCtx
+  sessionId: Id<'trackSession'>
+}) {
+  const { ctx, sessionId } = options
+  return ctx.db
+    .query('trackMetadata')
+    .withIndex('session', (q) => q.eq('session', sessionId))
+    .first()
+}
 /**
  * Given a session and a NEW coordinate point, evaluate and upsert metadata for
  * the session.
  * @note this is going to be expanded and probably refactored a bit, requiring
  * more information than just the coordinates for the new point.
- * 
+ *
  * This is currently only used in `tracking.locations.add` but it might be moved
  * and/or
  */
@@ -143,10 +155,7 @@ export async function upsertSessionMetadata(options: {
 }) {
   const { ctx, session, point } = options
   // get current metadata if any
-  const current = await ctx.db
-    .query('trackMetadata')
-    .withIndex('session', (q) => q.eq('session', session._id))
-    .first()
+  const current = await getSessionMetadata({ ctx, sessionId: session._id })
 
   // calculate new values
   let points = current?.points ?? 0
@@ -191,4 +200,42 @@ export async function upsertSessionMetadata(options: {
     ...data,
   })
   return metadataId
+}
+
+export async function createSessionMetadata(options: {
+  ctx: MutationCtx
+  session: Id<'trackSession'>
+}) {
+  const { ctx, session } = options
+  return ctx.db.insert('trackMetadata', {
+    session,
+    points: 0,
+    distance: 0,
+    duration: 0,
+    lastUpdated: Date.now(),
+  })
+}
+
+// region logging and activities
+
+export async function logSessionCreated(options: {
+  ctx: MutationCtx
+  deviceId: Id<'devices'>
+  sessionId: Id<'trackSession'>
+}) {
+  const { ctx, sessionId, deviceId } = options
+  return ctx.runMutation(internal.devices.activities.add, {
+    data: helpers.createActivityLog({ deviceId, type: 'session_started', payload: { sessionId } }),
+  })
+}
+
+export async function logSessionEnded(options: {
+  ctx: MutationCtx
+  deviceId: Id<'devices'>
+  sessionId: Id<'trackSession'>
+}) {
+  const { ctx, sessionId, deviceId } = options
+  return ctx.runMutation(internal.devices.activities.add, {
+    data: helpers.createActivityLog({ deviceId, type: 'session_ended', payload: { sessionId } }),
+  })
 }

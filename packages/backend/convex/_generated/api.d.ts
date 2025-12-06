@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as devices_activities from "../devices/activities.js";
 import type * as devices_get from "../devices/get.js";
 import type * as devices_heartbeat from "../devices/heartbeat.js";
 import type * as devices_location from "../devices/location.js";
@@ -21,6 +22,7 @@ import type * as lib_devices_get from "../lib/devices/get.js";
 import type * as lib_devices_heartbeat from "../lib/devices/heartbeat.js";
 import type * as lib_devices_index from "../lib/devices/index.js";
 import type * as lib_devices_location from "../lib/devices/location.js";
+import type * as lib_devices_logs from "../lib/devices/logs.js";
 import type * as lib_devices_options from "../lib/devices/options.js";
 import type * as lib_index from "../lib/index.js";
 import type * as presence from "../presence.js";
@@ -54,6 +56,7 @@ import type {
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  "devices/activities": typeof devices_activities;
   "devices/get": typeof devices_get;
   "devices/heartbeat": typeof devices_heartbeat;
   "devices/location": typeof devices_location;
@@ -67,6 +70,7 @@ declare const fullApi: ApiFromModules<{
   "lib/devices/heartbeat": typeof lib_devices_heartbeat;
   "lib/devices/index": typeof lib_devices_index;
   "lib/devices/location": typeof lib_devices_location;
+  "lib/devices/logs": typeof lib_devices_logs;
   "lib/devices/options": typeof lib_devices_options;
   "lib/index": typeof lib_index;
   presence: typeof presence;

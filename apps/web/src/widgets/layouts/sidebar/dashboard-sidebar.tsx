@@ -3,10 +3,10 @@
 import { Authenticated } from 'convex/react'
 
 import {
-  HomeIcon,
   LayoutDashboardIcon,
   ListTodoIcon,
   MapIcon,
+  PawPrintIcon,
   SettingsIcon,
   SmartphoneIcon,
   type LucideIcon,
@@ -18,35 +18,38 @@ import {
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
+  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarRail,
+  SidebarSeparator,
 } from '@workspace/ui/components/sidebar'
 import Link from 'next/link'
 
-import {SidebarDevicesList} from '@/features/device-manager/components'
+import { SidebarDevicesList } from '@/features/device-manager/components'
 
 // Menu items.
 const items = [
-  {
-    title: 'Home',
-    url: '/',
-    icon: HomeIcon,
-  },
+  // {
+  //   title: 'Home',
+  //   url: '/',
+  //   icon: HomeIcon,
+  // },
   {
     title: 'Dashboard',
     url: '/dashboard',
     icon: LayoutDashboardIcon,
   },
   {
-    title: 'Maps',
-    url: '/maps',
-    icon: MapIcon,
-  },
-  {
     title: 'Devices',
     url: '/devices',
     icon: SmartphoneIcon,
+  },
+  {
+    title: 'Maps',
+    url: '/maps',
+    icon: MapIcon,
   },
   {
     title: 'Tasks',
@@ -69,6 +72,18 @@ const items = [
 export function DashboardSidebar() {
   return (
     <Sidebar variant="sidebar" collapsible="icon">
+      <SidebarHeader className="h-(--header-height) border-b">
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild>
+              <Link href="/">
+                <PawPrintIcon />
+                <span>Safely</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>Application</SidebarGroupLabel>
@@ -76,26 +91,11 @@ export function DashboardSidebar() {
             <SidebarMenu>
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    asChild
-                    disabled={item.disabled}
-                    tooltip={{
-                      children: item.title,
-                      hidden: false,
-                      hideWhenDetached: true,
-                    }}
-                  >
-                    {item.disabled ? (
-                      <div>
-                        <item.icon />
-                        <span>{item.title}</span>
-                      </div>
-                    ) : (
-                      <Link href={item.url}>
-                        <item.icon />
-                        <span>{item.title}</span>
-                      </Link>
-                    )}
+                  <SidebarMenuButton asChild disabled={item.disabled} tooltip={item.title}>
+                    <Link href={item.url}>
+                      <item.icon />
+                      <span>{item.title}</span>
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
@@ -106,6 +106,7 @@ export function DashboardSidebar() {
           <SidebarDevicesList />
         </Authenticated>
       </SidebarContent>
+      <SidebarRail />
     </Sidebar>
   )
 }

@@ -2,7 +2,7 @@ import { v } from 'convex/values'
 
 import { internalMutation, mutation, type MutationCtx } from '../_generated/server'
 import type { Id } from '../_generated/dataModel'
-import { api } from '../_generated/api'
+import { api, internal } from '../_generated/api'
 
 import { generateDeviceSessionToken, getCurrentUserOrThrow } from '../lib/auth'
 import { deviceStatus, trackingMode } from '../schemas/enums'
@@ -42,6 +42,11 @@ export const register = mutation({
 
     // await ctx.runMutation(api.devices.heartbeat.send, { sessionToken })
     await helpers.heartbeat.scheduleDisconnect(ctx, { sessionId, sessionToken, interval: 10_000 })
+
+    await ctx.runMutation(internal.devices.activities.add, {
+      data: helpers.createActivityLog({ deviceId: id, type: 'registered', payload: {} }),
+    })
+
     return { deviceId: id, sessionToken }
   },
 })
@@ -79,7 +84,9 @@ export const unregister = mutation({
     // todo: maybe (?) cleanup sessions location history
 
     await Promise.all(cleanupMutations.flat())
-
+    await ctx.runMutation(internal.devices.activities.add, {
+      data: helpers.createActivityLog({ deviceId: device._id, type: 'unregistered', payload: {} }),
+    })
     return await ctx.db.delete(device._id)
     // todo: soft delete, anonymize or cascade delete all device data?
   },
@@ -98,6 +105,13 @@ export const rename = mutation({
     if (device.owner !== user._id) {
       throw new Error('You do not own this device')
     }
+    await ctx.runMutation(internal.devices.activities.add, {
+      data: helpers.createActivityLog({
+        deviceId: device._id,
+        type: 'renamed',
+        payload: { newName: args.name, previousName: device.name || '' },
+      }),
+    })
     return ctx.db.patch(device._id, { name: args.name })
   },
 })

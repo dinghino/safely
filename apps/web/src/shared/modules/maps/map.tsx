@@ -421,7 +421,9 @@ function MapLayersControl({
                 key={layerGroup.name}
                 checked={activeLayerGroups.includes(layerGroup.name)}
                 disabled={layerGroup.disabled}
-                onCheckedChange={(checked) => handleLayerGroupToggle(layerGroup.name, checked)}
+                onCheckedChange={(checked: boolean) =>
+                  handleLayerGroupToggle(layerGroup.name, checked)
+                }
               >
                 {layerGroup.name}
               </DropdownMenuCheckboxItem>

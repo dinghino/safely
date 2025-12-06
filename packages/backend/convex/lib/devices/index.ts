@@ -12,11 +12,13 @@ export const helpers = {
   location,
   determineDeviceType,
   createDevice,
+  createActivityLog,
 }
 
 import type { DeviceType, Doc, Id } from '../../../types'
 import type { MutationCtx, QueryCtx } from '../../_generated/server'
 import { getCurrentUserOrThrow } from '../auth'
+import { createActivityLog } from './logs'
 
 type FromExpo = 'ios' | 'android' | 'windows' | 'macos' | 'web'
 type FromNavigator = 'MacIntel' | 'Win32' | 'Linux x86_64'

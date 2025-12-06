@@ -16,7 +16,6 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarMenuAction,
-  SidebarMenuSkeleton,
   SidebarGroupAction,
 } from '@workspace/ui/components/sidebar'
 import { Skeleton } from '@workspace/ui/components/skeleton'
@@ -32,10 +31,10 @@ export function SidebarDevicesList() {
   return (
     <Collapsible defaultOpen className="group/collapsible">
       <SidebarGroup>
-        <SidebarGroupLabel className="inline-flex items-center justify-start">
-          <CollapsibleTrigger className="inline-flex flex-1 items-center justify-start gap-2 py-2">
-            Devices
+        <SidebarGroupLabel className="inline-flex items-center justify-start rounded-md px-2 hover:bg-muted">
+          <CollapsibleTrigger className="inline-flex flex-1 cursor-pointer items-center justify-start gap-2 py-2">
             <ChevronDown className="size-4 transition-transform group-data-[state=open]/collapsible:rotate-180" />
+            Devices
           </CollapsibleTrigger>
           <SidebarGroupAction
             onClick={() => {

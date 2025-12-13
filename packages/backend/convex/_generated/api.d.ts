@@ -47,14 +47,6 @@ import type {
   FunctionReference,
 } from "convex/server";
 
-/**
- * A utility for referencing Convex functions in your app's API.
- *
- * Usage:
- * ```js
- * const myFunctionReference = api.myModule.myFunction;
- * ```
- */
 declare const fullApi: ApiFromModules<{
   "devices/activities": typeof devices_activities;
   "devices/get": typeof devices_get;
@@ -89,14 +81,30 @@ declare const fullApi: ApiFromModules<{
   "users/clerk": typeof users_clerk;
   "users/get": typeof users_get;
 }>;
-declare const fullApiWithMounts: typeof fullApi;
 
+/**
+ * A utility for referencing Convex functions in your app's public API.
+ *
+ * Usage:
+ * ```js
+ * const myFunctionReference = api.myModule.myFunction;
+ * ```
+ */
 export declare const api: FilterApi<
-  typeof fullApiWithMounts,
+  typeof fullApi,
   FunctionReference<any, "public">
 >;
+
+/**
+ * A utility for referencing Convex functions in your app's internal API.
+ *
+ * Usage:
+ * ```js
+ * const myFunctionReference = internal.myModule.myFunction;
+ * ```
+ */
 export declare const internal: FilterApi<
-  typeof fullApiWithMounts,
+  typeof fullApi,
   FunctionReference<any, "internal">
 >;
 
@@ -221,6 +229,11 @@ export declare const components: {
         "query",
         "internal",
         {
+          filtering: Array<{
+            filterKey: string;
+            filterValue: string | number | boolean | null | bigint;
+            occur: "should" | "must";
+          }>;
           levelMod: number;
           logLevel: "DEBUG" | "INFO" | "WARN" | "ERROR";
           maxDistance?: number;
@@ -229,6 +242,9 @@ export declare const components: {
           minLevel: number;
           nextCursor?: string;
           point: { latitude: number; longitude: number };
+          sorting: {
+            interval: { endExclusive?: number; startInclusive?: number };
+          };
         },
         Array<{
           coordinates: { latitude: number; longitude: number };

@@ -38,7 +38,7 @@ export const edit = mutation({
   },
   handler: async (ctx, args) => {
     await getCurrentUserOrThrow(ctx)
-    await ctx.db.patch(args.id, { text: args.text })
+    await ctx.db.patch('todos', args.id, { text: args.text })
     return { success: true }
   },
 })
@@ -51,7 +51,7 @@ export const toggle = mutation({
   handler: async (ctx, args) => {
     await getCurrentUserOrThrow(ctx)
     // todo: verify that the todo belongs to the user
-    await ctx.db.patch(args.id, { completed: args.completed })
+    await ctx.db.patch('todos', args.id, { completed: args.completed })
     return { success: true }
   },
 })
@@ -63,7 +63,7 @@ export const deleteTodo = mutation({
   handler: async (ctx, args) => {
     await getCurrentUserOrThrow(ctx)
     // todo: verify that the todo belongs to the user
-    await ctx.db.delete(args.id)
+    await ctx.db.delete('todos', args.id)
     return { success: true }
   },
 })

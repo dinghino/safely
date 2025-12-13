@@ -75,7 +75,7 @@ export const unregister = mutation({
       .query('deviceOptions')
       .withIndex('device_mode', (q) => q.eq('deviceId', device._id))
       .collect()
-    cleanupMutations.push(options?.map((opt) => ctx.db.delete(opt._id)))
+    cleanupMutations.push(options?.map((opt) => ctx.db.delete('deviceOptions', opt._id)))
     // cleanup last known locations
     cleanupMutations.push(helpers.location.deleteLastKnown({ ctx, deviceId: device._id }))
 
@@ -87,7 +87,7 @@ export const unregister = mutation({
     await ctx.runMutation(internal.devices.activities.add, {
       data: helpers.createActivityLog({ deviceId: device._id, type: 'unregistered', payload: {} }),
     })
-    return await ctx.db.delete(device._id)
+    return await ctx.db.delete('devices', device._id)
     // todo: soft delete, anonymize or cascade delete all device data?
   },
 })
@@ -112,7 +112,7 @@ export const rename = mutation({
         payload: { newName: args.name, previousName: device.name || '' },
       }),
     })
-    return ctx.db.patch(device._id, { name: args.name })
+    return ctx.db.patch('devices', device._id, { name: args.name })
   },
 })
 
@@ -126,7 +126,7 @@ export const setState = internalMutation({
   args: { deviceId: v.id('devices'), status: deviceStatus },
   handler: async (ctx, args) => {
     const { deviceId, status } = args
-    await ctx.db.patch(deviceId, { status })
+    await ctx.db.patch('devices', deviceId, { status })
   },
 })
 
@@ -147,7 +147,7 @@ export const setTrackingMode = mutation({
     if (device.owner !== user._id) {
       throw new Error('You do not own this device')
     }
-    return await ctx.db.patch(device._id, { mode })
+    return await ctx.db.patch('devices', device._id, { mode })
   },
 })
 

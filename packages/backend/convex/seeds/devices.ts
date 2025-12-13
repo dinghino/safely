@@ -113,7 +113,7 @@ export async function addModeToAll(ctx: MutationCtx) {
   const promises: Promise<unknown>[] = []
   for (const device of devices) {
     if (device.mode) continue
-    promises.push(ctx.db.patch(device._id, { mode: 'off' }))
+    promises.push(ctx.db.patch('devices', device._id, { mode: 'off' }))
   }
   console.log(`🌱 Adding mode 'off' to ${promises.length} devices`)
   await Promise.all(promises)

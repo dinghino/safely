@@ -8,8 +8,8 @@
     "start": "next start"
   },
   "dependencies": {
-    "@clerk/nextjs": "^6.34.0",
-    "@clerk/themes": "^2.4.29",
+    "@clerk/nextjs": "^6.36.2",
+    "@clerk/themes": "^2.4.43",
     "@tanstack/react-form": "^1.23.0",
     "@workspace/backend": "workspace:*",
     "@workspace/data-filter": "workspace:*",
@@ -22,7 +22,7 @@
     "@workspace/react-utils": "workspace:*",
     "@workspace/ui": "workspace:*",
     "@xstate/react": "^6.0.0",
-    "convex": "^1.28.0",
+    "convex": "^1.31.0",
     "dayjs": "^1.11.18",
     "leaflet": "^1.9.4",
     "leaflet-defaulticon-compatibility": "^0.1.2",

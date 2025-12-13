@@ -13,7 +13,7 @@
     "ios": "expo run:ios"
   },
   "dependencies": {
-    "@clerk/clerk-expo": "^2.17.1",
+    "@clerk/clerk-expo": "^2.19.11",
     "@maplibre/maplibre-react-native": "^10.2.1",
     "@react-navigation/native": "^7.0.0",
     "@rn-primitives/avatar": "^1.2.0",
@@ -29,7 +29,7 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "connect": "^3.7.0",
-    "convex": "^1.28.0",
+    "convex": "^1.31.0",
     "expo": "^54.0.13",
     "expo-auth-session": "~7.0.8",
     "expo-constants": "^18.0.9",

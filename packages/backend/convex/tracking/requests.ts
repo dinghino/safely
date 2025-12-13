@@ -93,7 +93,7 @@ export const remove = mutation({
 
     if (!isOwnedByTheUser(request, user)) throw new Error('Request not found')
 
-    await ctx.db.delete(requestId)
+    await ctx.db.delete('trackRequests', requestId)
   },
 })
 
@@ -136,7 +136,7 @@ export const acknowledge = mutation({
     if (!device) throw new Error('Request not for this device')
 
     // the client acknowledged the request
-    await ctx.db.patch(request._id, { acknowledged: true })
+    await ctx.db.patch('trackRequests', request._id, { acknowledged: true })
 
     // ------------------------------------------------------------------------
     // we can do all the checks we need in here to ensure the acknowledgement
@@ -180,7 +180,7 @@ async function dispatchCreateSession(
   requestId: Id<'trackRequests'>,
 ) {
   const session = await ctx.runMutation(internal.tracking.sessions.create, { deviceId })
-  await ctx.db.patch(requestId, { session, acknowledged: true })
+  await ctx.db.patch('trackRequests', requestId, { session, acknowledged: true })
   return true
 }
 
@@ -190,7 +190,7 @@ async function dispatchCloseSession(
   requestId: Id<'trackRequests'>,
 ) {
   const session = await ctx.runMutation(internal.tracking.sessions.close, { deviceId })
-  await ctx.db.patch(requestId, { session, acknowledged: true })
+  await ctx.db.patch('trackRequests', requestId, { session, acknowledged: true })
   return true
 }
 

@@ -72,6 +72,9 @@ export const save = mutation({
         heartbeat: data.heartbeat,
       })
     }
-    return await ctx.db.patch(existing._id, { location: data.location, heartbeat: data.heartbeat })
+    return await ctx.db.patch('deviceOptions', existing._id, {
+      location: data.location,
+      heartbeat: data.heartbeat,
+    })
   },
 })

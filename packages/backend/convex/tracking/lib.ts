@@ -109,7 +109,7 @@ export async function addLocationPoint(options: {
   })
 
   // update session data
-  const patchSession = ctx.db.patch(session._id, {
+  const patchSession = ctx.db.patch('trackSession', session._id, {
     pointsCount: session.pointsCount + 1,
     lastUpdatedAt: Date.now(),
   })

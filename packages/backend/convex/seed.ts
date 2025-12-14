@@ -9,9 +9,9 @@
  * biome-ignore-all lint/correctness/noUnusedVariables: seed functions might be unused temporarily
  */
 
-import { internal } from './_generated/api'
 import { internalMutation } from './_generated/server'
 import * as devices from './seeds/devices'
+import * as poiCategories from './seeds/poi_categories'
 
 /**
  * This mutation can be used to run momentary code to update or fix data
@@ -32,7 +32,7 @@ export const updates = internalMutation({
 const all = internalMutation({
   args: {},
   handler: async (ctx) => {
-    await ctx.runMutation(internal.seed.deviceOnly)
+    await Promise.all([devices.createOptions(ctx), poiCategories.seedPoiCategories(ctx)])
   },
 })
 
@@ -45,4 +45,8 @@ export default all
 
 export const deviceOnly = internalMutation({
   handler: async (ctx) => await devices.createOptions(ctx),
+})
+
+export const poiCategoriesOnly = internalMutation({
+  handler: async (ctx) => await poiCategories.seedPoiCategories(ctx),
 })

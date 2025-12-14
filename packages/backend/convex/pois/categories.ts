@@ -38,17 +38,18 @@ export const get = query({
   },
   handler: async (ctx, { id }) => {
     const category = await ctx.db.get('poiCategory', id)
+    if (!category) return null
     return await injectGroupData(ctx, category)
   },
 })
 
 export const list = query({
   args: {
-    pagination: paginationOptsValidator,
+    paginationOpts: paginationOptsValidator,
   },
-  handler: async (ctx, { pagination }) => {
-    const data = await ctx.db.query('poiCategory').paginate(pagination)
-    return injectInPaginated(ctx, data)
+  handler: async (ctx, { paginationOpts }) => {
+    const data = await ctx.db.query('poiCategory').paginate(paginationOpts)
+    return await injectInPaginated(ctx, data)
   },
 })
 
@@ -72,16 +73,50 @@ export const search = query({
 /**
  * Get paginated POI categories in a given group
  */
-export const getByGroup = query({
+export const getByGroupId = query({
   args: {
     groupId: v.id('poiCategoryGroup'),
-    pagination: paginationOptsValidator,
+    // paginationOpts: paginationOptsValidator,
   },
-  handler: async (ctx, { groupId, pagination }) => {
-    const data = await ctx.db
+  handler: async (ctx, { groupId }) => {
+    const categories = await ctx.db
       .query('poiCategory')
       .withIndex('groupId', (q) => q.eq('groupId', groupId))
-      .paginate(pagination)
-    return injectInPaginated(ctx, data)
+      .collect()
+    const withGroup = categories.map((category) => injectGroupData(ctx, category))
+    return await Promise.all(withGroup)
+  },
+  // handler: async (ctx, { groupId, paginationOpts }) => {
+  //   const data = await ctx.db
+  //     .query('poiCategory')
+  //     .withIndex('groupId', (q) => q.eq('groupId', groupId))
+  //     .paginate(paginationOpts)
+  //   return injectInPaginated(ctx, data)
+  // },
+})
+
+export const getByGroupSlug = query({
+  args: { slug: v.string() },
+  handler: async (ctx, { slug }) => {
+    // first get the group by slug
+    const group = await ctx.db
+      .query('poiCategoryGroup')
+      .withIndex('slug', (q) => q.eq('slug', slug))
+      .first()
+    if (!group) return null
+    // then get categories in that group
+    const categories = await ctx.db
+      .query('poiCategory')
+      .withIndex('groupId', (q) => q.eq('groupId', group._id))
+      .collect()
+    const withGroup = categories.map((category) => injectGroupData(ctx, category))
+    const page = await Promise.all(withGroup)
+    return page
+
+    // const data = await ctx.db
+    //   .query('poiCategory')
+    //   .withIndex('groupId', (q) => q.eq('groupId', group._id))
+    //   .paginate(paginationOpts)
+    // return injectInPaginated(ctx, data)
   },
 })

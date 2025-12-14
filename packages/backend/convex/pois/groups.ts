@@ -1,6 +1,5 @@
 import { v } from 'convex/values'
 import { mutation, query } from '../_generated/server'
-import { paginationOptsValidator } from 'convex/server'
 
 // region groups
 
@@ -35,7 +34,7 @@ export const deleteGroup = mutation({
   },
 })
 
-export const getGroup = query({
+export const get = query({
   args: {
     id: v.id('poiCategoryGroup'),
   },
@@ -44,11 +43,21 @@ export const getGroup = query({
   },
 })
 
-export const getAllGroups = query({
-  args: {
-    pagination: paginationOptsValidator,
+export const getAll = query({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.db.query('poiCategoryGroup').collect()
   },
-  handler: async (ctx, { pagination }) => {
-    return await ctx.db.query('poiCategoryGroup').paginate(pagination)
+})
+
+export const getBySlug = query({
+  args: {
+    slug: v.string(),
+  },
+  handler: async (ctx, { slug }) => {
+    return await ctx.db
+      .query('poiCategoryGroup')
+      .withIndex('slug', (q) => q.eq('slug', slug))
+      .first()
   },
 })

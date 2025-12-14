@@ -8,6 +8,7 @@ import { v } from 'convex/values'
 export const poiCategoryGroup = defineTable({
   name: v.string(),
   description: v.optional(v.string()),
+  slug: v.string(),
   /**
    * Color information for the POI category icon
    * Stored as an object to allow for different formats
@@ -17,7 +18,11 @@ export const poiCategoryGroup = defineTable({
     format: v.string(),
     value: v.string(),
   }),
-}).index('name', ['name'])
+})
+  .index('name', ['name'])
+  .index('slug', ['slug'])
+  .searchIndex('search_name', { searchField: 'name', filterFields: ['slug'] })
+  .searchIndex('search_slug', { searchField: 'slug', filterFields: ['name'] })
 
 /**
  * Point of Interest categories
@@ -27,6 +32,7 @@ export const poiCategoryGroup = defineTable({
 export const poiCategory = defineTable({
   name: v.string(),
   description: v.optional(v.string()),
+  slug: v.string(),
   /**
    * This is the icon NAME - we are currently using lucide,
    * so this should correspond to a lucide icon name.
@@ -39,9 +45,14 @@ export const poiCategory = defineTable({
 })
   .index('name', ['name'])
   .index('groupId', ['groupId'])
+  .index('search_slug', ['slug'])
   .searchIndex('search_name', {
     searchField: 'name',
-    filterFields: ['groupId'],
+    filterFields: ['groupId', 'slug'],
+  })
+  .searchIndex('slug', {
+    searchField: 'slug',
+    filterFields: ['groupId', 'name'],
   })
 
 export const pointOfInterest = defineTable({

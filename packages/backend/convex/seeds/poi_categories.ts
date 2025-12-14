@@ -1,6 +1,7 @@
 import type { WithoutSystemFields } from 'convex/server'
 import type { Doc, Id } from '../_generated/dataModel'
 import type { MutationCtx } from '../_generated/server'
+import { slugify } from '../lib'
 
 export type CategorySeed = Omit<
   WithoutSystemFields<Doc<'poiCategory'> & { groupName: GroupName }>,
@@ -19,7 +20,7 @@ export async function populatePoiCategoryGroups(ctx: MutationCtx): Promise<Group
       if (existing) {
         return { name: existing.name, id: existing._id }
       }
-      const id = await ctx.db.insert('poiCategoryGroup', group)
+      const id = await ctx.db.insert('poiCategoryGroup', { ...group, slug: slugify(group.name) })
       return { name: group.name, id }
     }),
   )
@@ -28,7 +29,7 @@ export async function populatePoiCategoryGroups(ctx: MutationCtx): Promise<Group
 // upsert a single category given the group mappings
 async function upsertCategory(
   ctx: MutationCtx,
-  category: CategorySeed,
+  category: Omit<CategorySeed, 'slug'>,
   groupMappings: GroupMapping[],
 ) {
   const groupId = groupMappings.find((g) => g.name === category.groupName)!.id
@@ -40,6 +41,7 @@ async function upsertCategory(
   const { groupName, ...categoryData } = category
   return ctx.db.insert('poiCategory', {
     ...categoryData,
+    slug: slugify(category.name),
     groupId,
   })
 }
@@ -79,7 +81,7 @@ const POI_CATEGORY_GROUPS = [
     color: { format: 'hex', value: '#0288D1' },
   },
   {
-    name: 'Health/Emergency',
+    name: 'Health & Emergency',
     description: 'Medical and emergency services for pets.',
     color: { format: 'hex', value: '#E53935' },
   },
@@ -93,7 +95,7 @@ const POI_CATEGORY_GROUPS = [
     description: 'Pet-related alerts, sightings, and community notifications.',
     color: { format: 'hex', value: '#FFB300' },
   },
-] as const satisfies CategoryGroupSeed[]
+] as const satisfies Omit<CategoryGroupSeed, 'slug'>[]
 
 type GroupName = (typeof POI_CATEGORY_GROUPS)[number]['name']
 
@@ -131,7 +133,7 @@ const POI_CATEGORIES = [
   {
     name: 'Vet Clinic',
     description: 'Regular veterinary clinic for non-emergency care.',
-    groupName: 'Health/Emergency',
+    groupName: 'Health & Emergency',
     icon: { name: 'cross' },
   },
   // these will be defined by category features later on and allow users to find
@@ -256,7 +258,7 @@ const POI_CATEGORIES = [
   {
     name: 'Animal Control Office',
     description: 'Local animal control or municipal pet services.',
-    groupName: 'Health/Emergency',
+    groupName: 'Health & Emergency',
     icon: { name: 'shield' },
   },
-] as const satisfies CategorySeed[]
+] as const satisfies Omit<CategorySeed, 'slug'>[]

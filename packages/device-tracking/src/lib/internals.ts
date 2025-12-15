@@ -28,7 +28,7 @@ export function setupEventListeners({
   // handle existing states if the geolocator actor already run its flow
   // and is ready and/or has a location already.
   const snapshot = service.getSnapshot()
-  console.log('session manager setup - geo permissions', snapshot)
+  // console.log('session manager setup - geo permissions', snapshot)
   // if the service has permissions, send the event immediately
   if (snapshot.context.permissionStatus === 'granted') {
     sendBack({ type: 'can_geolocate', canGeolocate: true })

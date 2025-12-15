@@ -68,7 +68,7 @@ export const CenterMapButton: React.FC<CenterMapButton.Props> = (_props) => {
 
   useEffect(() => {
     if (!autoCenter) return
-    console.log('Auto-centering map on user location')
+    // console.log('Auto-centering map on user location')
     handleClick()
   }, [autoCenter])
 

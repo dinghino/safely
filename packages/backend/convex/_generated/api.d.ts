@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as devices_activities from "../devices/activities.js";
 import type * as devices_get from "../devices/get.js";
 import type * as devices_heartbeat from "../devices/heartbeat.js";
 import type * as devices_location from "../devices/location.js";
@@ -21,7 +22,9 @@ import type * as lib_devices_get from "../lib/devices/get.js";
 import type * as lib_devices_heartbeat from "../lib/devices/heartbeat.js";
 import type * as lib_devices_index from "../lib/devices/index.js";
 import type * as lib_devices_location from "../lib/devices/location.js";
+import type * as lib_devices_logs from "../lib/devices/logs.js";
 import type * as lib_devices_options from "../lib/devices/options.js";
+import type * as lib_index from "../lib/index.js";
 import type * as presence from "../presence.js";
 import type * as privateData from "../privateData.js";
 import type * as schemas_enums from "../schemas/enums.js";
@@ -44,15 +47,8 @@ import type {
   FunctionReference,
 } from "convex/server";
 
-/**
- * A utility for referencing Convex functions in your app's API.
- *
- * Usage:
- * ```js
- * const myFunctionReference = api.myModule.myFunction;
- * ```
- */
 declare const fullApi: ApiFromModules<{
+  "devices/activities": typeof devices_activities;
   "devices/get": typeof devices_get;
   "devices/heartbeat": typeof devices_heartbeat;
   "devices/location": typeof devices_location;
@@ -66,7 +62,9 @@ declare const fullApi: ApiFromModules<{
   "lib/devices/heartbeat": typeof lib_devices_heartbeat;
   "lib/devices/index": typeof lib_devices_index;
   "lib/devices/location": typeof lib_devices_location;
+  "lib/devices/logs": typeof lib_devices_logs;
   "lib/devices/options": typeof lib_devices_options;
+  "lib/index": typeof lib_index;
   presence: typeof presence;
   privateData: typeof privateData;
   "schemas/enums": typeof schemas_enums;
@@ -83,14 +81,30 @@ declare const fullApi: ApiFromModules<{
   "users/clerk": typeof users_clerk;
   "users/get": typeof users_get;
 }>;
-declare const fullApiWithMounts: typeof fullApi;
 
+/**
+ * A utility for referencing Convex functions in your app's public API.
+ *
+ * Usage:
+ * ```js
+ * const myFunctionReference = api.myModule.myFunction;
+ * ```
+ */
 export declare const api: FilterApi<
-  typeof fullApiWithMounts,
+  typeof fullApi,
   FunctionReference<any, "public">
 >;
+
+/**
+ * A utility for referencing Convex functions in your app's internal API.
+ *
+ * Usage:
+ * ```js
+ * const myFunctionReference = internal.myModule.myFunction;
+ * ```
+ */
 export declare const internal: FilterApi<
-  typeof fullApiWithMounts,
+  typeof fullApi,
   FunctionReference<any, "internal">
 >;
 
@@ -215,6 +229,11 @@ export declare const components: {
         "query",
         "internal",
         {
+          filtering: Array<{
+            filterKey: string;
+            filterValue: string | number | boolean | null | bigint;
+            occur: "should" | "must";
+          }>;
           levelMod: number;
           logLevel: "DEBUG" | "INFO" | "WARN" | "ERROR";
           maxDistance?: number;
@@ -223,6 +242,9 @@ export declare const components: {
           minLevel: number;
           nextCursor?: string;
           point: { latitude: number; longitude: number };
+          sorting: {
+            interval: { endExclusive?: number; startInclusive?: number };
+          };
         },
         Array<{
           coordinates: { latitude: number; longitude: number };

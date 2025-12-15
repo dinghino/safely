@@ -4,6 +4,7 @@ import { useMemo } from 'react'
 import { cn } from '@/lib/utils'
 import { Badge } from '@workspace/ui/components/badge'
 import type { Device } from '@/entities/device/types'
+import { getDeviceStatusColor } from '@/entities/device/lib/device-status-color'
 
 export namespace DeviceStatusBadge {
   export type Props = {
@@ -29,17 +30,6 @@ export function DeviceStatusBadge(props: DeviceStatusBadge.Props) {
 
 export function DeviceStatusDot(props: { device: Device; className?: string }) {
   const { device, className } = props
-  const color = useMemo(() => {
-    switch (device.status) {
-      case 'online':
-        return 'bg-green-500'
-      case 'idle':
-        return 'bg-yellow-500'
-      case 'offline':
-        return 'bg-red-500'
-      default:
-        return 'bg-gray-500'
-    }
-  }, [device.status])
+  const color = useMemo(() => getDeviceStatusColor(device), [device])
   return <span className={cn('h-2 w-2 rounded-full', color, className)} />
 }

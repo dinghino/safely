@@ -17,14 +17,15 @@
   "license": "ISC",
   "description": "",
   "devDependencies": {
-    "@types/node": "^24.9.1",
+    "@types/node": "^25.0.1",
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@clerk/backend": "^2.19.0",
-    "@convex-dev/geospatial": "^0.1.9",
-    "@convex-dev/presence": "^0.2.1",
-    "convex": "^1.28.0",
-    "svix": "^1.76.1"
+    "@clerk/backend": "^2.27.0",
+    "@convex-dev/geospatial": "^0.2.1",
+    "@convex-dev/presence": "^0.3.0",
+    "convex": "^1.31.0",
+    "nanoid": "^5.1.6",
+    "svix": "^1.82.0"
   }
 }

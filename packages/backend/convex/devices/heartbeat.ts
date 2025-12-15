@@ -4,15 +4,16 @@ import { mutation } from '../_generated/server'
 
 import { locationMetadata } from '../schemas/shared'
 
-import { getCurrentUserOrThrow } from '../lib/auth'
-
 import { helpers } from '../lib/devices'
-import { api } from '../_generated/api'
+import { api, internal } from '../_generated/api'
+import { _getActiveSession, addLocationPoint } from '../tracking/lib'
+import { createActivityLog } from '../lib/devices/logs'
+
+// region heartbeat.send
 
 export const send = mutation({
   args: {
-    // deviceId: v.id('devices'),
-    deviceId: v.id('devices'),
+    sessionToken: v.string(),
     interval: v.optional(v.number()),
     location: v.optional(
       v.object({
@@ -25,48 +26,55 @@ export const send = mutation({
     sessionToken: v.string(),
   },
   handler: async (ctx, args) => {
-    const { deviceId, location, interval } = args
+    const { sessionToken, location, interval } = args
+
+    if (!sessionToken) {
+      throw new Error('Unathorized')
+    }
+
+    // ------------------------------------------------------------------------
+    // session lookup and ownership extraction
+    // we removed the ownership check on users since
+    //  1. devices could be IoT and not linked to users directly
+    //  2. we want to allow device sessions to be independent of users
+    // authorization and validation is done through session tokens and
+    // (in the future) either/or api keys or hmac signatures on payloads
+
+    const session = await helpers.heartbeat.getSessionByToken(ctx, { sessionToken })
+    if (!session) {
+      throw new Error('Invalid session token')
+    }
+    const sessionId = session._id
+    const deviceId = session.deviceId
 
     // ownership check -----------------------------------
 
-    const user = await getCurrentUserOrThrow(ctx)
+    await helpers.heartbeat.removeScheduleDisconnect(ctx, session._id)
+
+    ///
+    ///
+
     const device = await helpers.get.deviceById(ctx, deviceId)
-    if (device.owner !== user._id) {
-      throw new Error('You do not own this device')
+    // used to ping events and other internal logic
+    if (device.status === 'offline') {
+      await ctx.runMutation(internal.devices.activities.add, {
+        data: createActivityLog({ deviceId, type: 'connected', payload: {} }),
+      })
     }
-
-    // update or create session - single session per device
-    let sessionId: string
-    const session = await ctx.db
-      .query('deviceSessions')
-      .withIndex('deviceId', (q) => q.eq('deviceId', deviceId))
-      .unique()
-
-    if (session) {
-      sessionId = session.sessionId
-    } else {
-      sessionId = crypto.randomUUID()
-      await ctx.db.insert('deviceSessions', { deviceId, sessionId })
-    }
-
-    await helpers.heartbeat.removeScheduleDisconnect(ctx, sessionId)
-
-    ///
-    ///
-
     // update device data - we do not update user since devices could be IoT
     // to update other entities we need some discriminator on the devices
 
     const last_seen = Date.now()
-    await ctx.db.patch(deviceId, { last_seen, status: 'online' })
+    await ctx.db.patch('devices', deviceId, { last_seen, status: 'online' })
 
     // handle location data if provided by dispatching a last known location update.
     //
     if (location) {
       await ctx.runMutation(api.devices.location.setLast, { deviceId, ...location })
-      const tracking = await ctx.runQuery(api.tracking.sessions.getActive, { deviceId })
-      if (tracking) {
-        await ctx.runMutation(api.tracking.locations.add, { sessionId: tracking._id, ...location })
+      // fixme: getActive uses user auth and will fail when we only have device session tokens
+      const activeSession = await _getActiveSession({ ctx, deviceId })
+      if (activeSession) {
+        await addLocationPoint({ ctx, session: activeSession, data: location })
       }
     }
 
@@ -74,7 +82,7 @@ export const send = mutation({
     ///
 
     // Get or generate token to disconnect session.
-    const sessionToken = await helpers.heartbeat.getSessionToken(ctx, { sessionId })
+    // const sessionToken = await helpers.heartbeat.getSessionToken(ctx, { sessionId })
 
     // Schedule timeout to disconnect this session if no heartbeat is received
     // todo: chain scheduled with some `idle` function before full disconnect
@@ -84,26 +92,28 @@ export const send = mutation({
   },
 })
 
+// endregion
+
+// region heartbeat.disconnect
+
 export const disconnect = mutation({
   args: { sessionToken: v.string() },
   handler: async (ctx, args) => {
     const { sessionToken } = args
+    const session = await helpers.heartbeat.getSessionByToken(ctx, { sessionToken })
+    // todo: handle invalid or missing token
+    if (!session) return console.error('Session not found for token', sessionToken)
 
-    const tokenRecord = await helpers.heartbeat.getSessionTokenRecord(ctx, { sessionToken })
-    if (!tokenRecord) return
+    const sessionId = session._id
 
-    await ctx.db.delete(tokenRecord._id)
-
-    const { sessionId } = tokenRecord
-    const session = await helpers.heartbeat.getDeviceSession(ctx, sessionId)
-
-    if (!session) {
-      console.error('Session not found for token', sessionToken)
-      return
+    const device = await helpers.get.deviceById(ctx, session.deviceId)
+    if (device.status === 'online') {
+      await ctx.runMutation(internal.devices.activities.add, {
+        data: createActivityLog({ deviceId: device._id, type: 'disconnected', payload: {} }),
+      })
     }
-
-    await ctx.db.patch(session.deviceId, { status: 'offline' })
-
+    await ctx.db.patch('devices', device._id, { status: 'offline' })
     await helpers.heartbeat.removeScheduleDisconnect(ctx, sessionId)
   },
 })
+// // endregion

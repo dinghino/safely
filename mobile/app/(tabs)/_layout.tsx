@@ -9,7 +9,7 @@ import { DeviceManager } from '@/components/contexts/device-manager'
 import { RequestsManager } from '@/components/contexts/requests-manager'
 
 import { SheetProvider } from 'react-native-actions-sheet'
-import '@/constants/sheets'
+import '@/components/sheets'
 
 export default function TabLayout() {
   const { colorScheme } = useColorScheme()

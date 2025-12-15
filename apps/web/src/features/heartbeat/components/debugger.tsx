@@ -58,7 +58,7 @@ export const HeartbeatDebugger = () => {
         </Button>
       </ButtonGroup>
       <TimeRemaining actor={actor} />
-      <div className="inline-flex items-center gap-2">
+      <div className="inline-flex flex-wrap items-center gap-2">
         <LabeledBadge label="device" variants={{ value: 'secondary' }}>
           <div
             className={cn('aspect-square h-2 w-2 flex-1 rounded bg-purple-500', {
@@ -68,15 +68,14 @@ export const HeartbeatDebugger = () => {
             })}
           />
         </LabeledBadge>
+        <LabeledBadge label="machine" variants={{ value: 'secondary' }}>
+          {JSON.stringify(state.value)}
+        </LabeledBadge>
         <LabeledBadge label="every">
           {interval ? dayjs.duration(interval).humanize() : 'n/a'}
         </LabeledBadge>
         <LabeledBadge label="last sent" variants={{ value: 'secondary' }}>
           {lastSent ? dayjs(lastSent).format('HH:mm:ss') : 'never'}
-        </LabeledBadge>
-
-        <LabeledBadge label="machine" variants={{ value: 'secondary' }}>
-          {JSON.stringify(state.value)}
         </LabeledBadge>
       </div>
       <div>

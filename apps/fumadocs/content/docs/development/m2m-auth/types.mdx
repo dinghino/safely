@@ -1,0 +1,31 @@
+---
+title: Auth Types
+description: "Central type definitions for M2M auth docs (for AutoTypeTable)."
+---
+
+## Device Session Token
+
+<AutoTypeTable
+  type={`
+  import { Doc } from '@workspace/backend/types';
+  export type DeviceSessionToken = Omit<Doc<'deviceSessionTokens'>, '_id'|'_creationTime'>
+  `}
+/>
+
+## Device Session
+
+<AutoTypeTable
+  type={`
+  import { Doc } from '@workspace/backend/types';
+  export type DeviceSession = Omit<Doc<'deviceSessions'>, '_id'|'_creationTime'>
+  `}
+/>
+
+## Track Request
+
+<AutoTypeTable
+  type={`
+  import { Doc } from '@workspace/backend/types';
+  export type TrackRequest = Omit<Doc<'trackRequests'>, '_id'|'_creationTime'>
+  `}
+/>

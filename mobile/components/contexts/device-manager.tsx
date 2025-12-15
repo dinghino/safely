@@ -6,11 +6,10 @@ import { api } from '@workspace/backend/api'
 import type { Id, Device } from '@workspace/backend/types'
 // import { createContext } from '@workspace/react-utils'
 
-import { STORE_KEY } from '@/constants'
-import { useSecureStore } from '@/lib/hooks/use-secure-store'
 import type { Location } from 'react-native-background-geolocation'
 
 import * as helpers from '@/lib/geolocation'
+import { useDeviceId, useDeviceInfo, useSessionToken } from '@/lib/hooks/auth-hooks'
 
 export namespace DeviceManager {
   export type Value = {
@@ -48,48 +47,67 @@ export { useDeviceContext }
  * todo: remove internal deviceId storage and rely on the device entity only?
  */
 export const DeviceManager = ({ children }: DeviceManager.Props) => {
-  const [deviceId, saveId, clearId] = useSecureStore<Id<'devices'>>({
-    key: STORE_KEY.DEVICE_ID,
-  })
-  const [sessionToken, setSessionToken, clearSessionToken] = useSecureStore<string>({
-    key: STORE_KEY.DEVICE_SESSION_TOKEN,
-  })
-
+  // secure store
+  const [deviceId, saveId, clearId] = useDeviceId()
+  const [sessionToken, setSessionToken, clearSessionToken] = useSessionToken()
   // store the whole device entity locally for background tasks and offline use
   // this will update whenever the device changes, including settings and other metadata
-  const [_, storeDevice, clearDevice] = useSecureStore<Device>({
-    key: STORE_KEY.DEVICE,
-    loader: JSON.parse,
-    transformer: JSON.stringify,
-  })
+  const [_, storeDevice, clearDevice] = useDeviceInfo()
   // --------------------------------------------------------------------------
-  // db stuff
+  // db queries and mutations
   const device = useQuery(api.devices.get.one, { deviceId })
   const settings = useQuery(api.devices.get.settings, { deviceId })
   const registerMutation = useMutation(api.devices.manage.register)
+  const disconnectMutation = useMutation(api.devices.heartbeat.disconnect)
   const heartbeatMutation = useMutation(api.devices.heartbeat.send)
 
   // --------------------------------------------------------------------------
   // actions
 
   const register = async () => {
-    const id = await registerMutation({ platform: Platform.OS, deviceId })
-    console.info('Device registrationResult:', id)
-    return id ? saveId(id) : clearId()
+    try {
+      const response = await registerMutation({ platform: Platform.OS, sessionToken })
+      console.info('Device registrationResult:', response)
+      if (!response) throw new Error('Device registration failed')
+      saveId(response.deviceId)
+      setSessionToken(response.sessionToken)
+      // ping first heartbeat right away - session should be valid already
+      await heartbeatMutation({ sessionToken: response.sessionToken })
+    } catch (e) {
+      console.error('Device registration error:', e)
+      clearId()
+      clearSessionToken()
+    }
   }
+
+  // handle graceful disconnect on unmount
+  // todo: we need to "reconnect" in headless by sending a heartbeat again when it starts
+  // even if we don't have a location yet -- or we just wait for the geolocator to do
+  // its thing and send a normal heartbeat with location
+  useEffect(() => {
+    if (!deviceId || !sessionToken) return
+    heartbeatMutation({ sessionToken })
+    return () => {
+
+      console.log('💔 [Manager] Disconnecting device on unmount')
+      disconnectMutation({ sessionToken }).catch((e) => {
+        console.error('💔 [Manager] Error disconnecting device on unmount', e)
+      })
+    }
+  }, [deviceId, sessionToken, disconnectMutation, heartbeatMutation])
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: mutation is stable
   const heartbeat = useCallback(
     async (data: Location) => {
-      if (!deviceId) {
-        console.log('💔 [Manager::heartbeat] No device registered, skipping heartbeat')
+      if (!sessionToken) {
+        console.log('💔 [Manager::heartbeat] No token available, skipping heartbeat')
         return
       }
       // we need to extract the timestamp to avoid sending it to the server for now
       // todo: make server accept location timestamp
       const { timestamp, ...location } = helpers.transformLocation(data)
       console.log('💓 [Manager::heartbeat] Sending heartbeat with location')
-      const response = await heartbeatMutation({ deviceId, location })
+      const response = await heartbeatMutation({ sessionToken, location })
 
       const token = response.sessionToken
       if (token && token !== sessionToken) setSessionToken(token)

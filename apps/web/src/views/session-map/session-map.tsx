@@ -82,7 +82,7 @@ const formatLatLngAlt = (loc: Location): MaybeVec3 => {
   return coords
 }
 
-const SessionLayer = (props: { locations?: Location[]; name: string }) => {
+export const SessionLayer = (props: { locations?: Location[]; name: string }) => {
   const { locations, name } = props
   const coordinates = useMemo(() => {
     return (

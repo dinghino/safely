@@ -1,0 +1,127 @@
+---
+title: Current Server Flows
+description: "Sequence diagrams for the current implementation: device registration, heartbeat, scheduled disconnect, and request acknowledgement — based on the code in `packages/backend/convex`."
+---
+
+This page diagrams the current live flows implemented in the Convex codebase (files under `packages/backend/convex`). These are the flows you can compare against the POC design.
+
+Notes: the diagrams are derived from the following server files (live code):
+- `packages/backend/convex/devices/manage.ts` (register / unregister)
+- `packages/backend/convex/devices/heartbeat.ts` (heartbeat send / disconnect)
+- `packages/backend/convex/lib/devices/heartbeat.ts` (scheduler helpers, token helpers)
+- `packages/backend/convex/tracking/requests.ts` (requests.create / acknowledge)
+- `packages/backend/convex/tracking/sessions.ts` (session create / close)
+
+## 1) Device registration (current)
+
+```mermaid
+sequenceDiagram
+  participant Client
+  participant Server
+  participant DB
+
+  Client->>Server: devices.register({ name, platform, deviceId? })
+  alt deviceId provided
+    Server->>DB: get(deviceId)
+    DB-->>Server: device or null
+    Server->>Server: verify ownership
+    Server->>Server: runMutation(api.devices.heartbeat.send, { deviceId })
+    Server-->>Client: returns existing deviceId
+  else new registration
+    Server->>Server: getCurrentUserOrThrow()
+    Server->>DB: insert('devices', { owner, last_seen, status, type, mode })
+    DB-->>Server: deviceId
+    Server->>Server: helpers.options.populateDeviceOptions(ctx, device)
+    Server->>Server: runMutation(api.devices.heartbeat.send, { deviceId })
+    Server-->>Client: returns new deviceId
+  end
+```
+
+Notes: registration requires user-auth (via `getCurrentUserOrThrow`) and bootstraps the device record. It triggers an initial `heartbeat.send` for convenience.
+
+## 2) Heartbeat flow (current)
+
+```mermaid
+sequenceDiagram
+  participant Device
+  participant Server
+  participant DB
+  participant Scheduler
+
+  Device->>Server: devices.heartbeat.send({ deviceId, location?, interval? })
+  Server->>Server: getCurrentUserOrThrow()  // user-auth path in current code
+  Server->>DB: get(deviceId)
+  DB-->>Server: device
+  Server->>DB: query('deviceSessions').withIndex('deviceId')
+  alt session exists
+    Server->>Server: sessionId = existing.sessionId
+  else create session
+    Server->>Server: sessionId = crypto.randomUUID()
+    Server->>DB: insert('deviceSessions', { deviceId, sessionId })
+  end
+  Server->>Server: helpers.heartbeat.removeScheduleDisconnect(sessionId)
+  Server->>DB: patch(deviceId, { last_seen, status: 'online' })
+  alt location provided
+    Server->>Server: runMutation(api.devices.location.setLast, { deviceId, point, metadata })
+    Server->>Server: runQuery(api.tracking.sessions.getActive, { deviceId })
+    alt tracking active
+      Server->>Server: runMutation(api.tracking.locations.add, { sessionId, point, metadata })
+    end
+  end
+  Server->>Server: helpers.heartbeat.getSessionToken(ctx, { sessionId })
+  Server->>Server: helpers.heartbeat.scheduleDisconnect({ sessionId, sessionToken, interval })
+  Server-->>Device: { sessionToken }
+```
+
+Notes: the current server expects user-auth for `heartbeat.send` (via `getCurrentUserOrThrow`) and then creates/refreshes a session, returns a `sessionToken`, and schedules a disconnect.
+
+## 3) Scheduled disconnect (current)
+
+```mermaid
+sequenceDiagram
+  participant Scheduler
+  participant Server
+  participant DB
+
+  Scheduler->>Server: call api.devices.heartbeat.disconnect({ sessionToken })
+  Server->>Server: helpers.heartbeat.getSessionTokenRecord(ctx, { sessionToken })
+  Server->>DB: delete(tokenRecord._id)
+  Server->>Server: helpers.heartbeat.getDeviceSession(ctx, sessionId)
+  alt session exists
+    Server->>DB: patch(session.deviceId, { status: 'offline' })
+    Server->>Server: helpers.heartbeat.removeScheduleDisconnect(sessionId)
+  else
+    Server-->>Scheduler: log warning (session not found)
+  end
+```
+
+Notes: scheduled disconnects are implemented with Convex scheduler (`ctx.scheduler.runAfter`) and store the scheduledFunction id in `deviceSessionTimeouts`.
+
+## 4) Request / Acknowledge (current)
+
+```mermaid
+sequenceDiagram
+  participant UserClient
+  participant Server
+  participant DB
+
+  UserClient->>Server: tracking.requests.create({ target, from, type })
+  Server->>Server: getCurrentUserOrThrow()
+  Server->>DB: get(target), get(from)
+  Server->>DB: insert('trackRequests', { sender, target, owner, acknowledged: false, session: null })
+  Server-->>UserClient: requestId
+
+  Note over Server,Device: At a later time the target device (or user) acknowledges
+
+  Device->>Server: tracking.requests.acknowledge({ requestId }) // current code requires user-auth
+  Server->>Server: getCurrentUserOrThrow() // note: current implementation uses user auth
+  Server->>DB: patch(request._id, { acknowledged: true })
+  alt request.type == 'start'
+    Server->>Server: dispatchCreateSession -> runMutation(internal.tracking.sessions.create, { deviceId })
+    Server->>DB: patch(requestId, { session, acknowledged: true })
+  else request.type == 'stop'
+    Server->>Server: dispatchCloseSession -> runMutation(internal.tracking.sessions.close, { deviceId })
+  end
+```
+
+Notes: `requests.acknowledge` currently requires a user-authenticated caller in the code; the plan is to allow device-auth (sessionToken) for this flow in the POC design.

@@ -6,7 +6,7 @@ type PageProps = {
 }
 export default function MapPage(_props: PageProps) {
   return (
-    <div className="h-full max-h-[calc(100vh_-_var(--header-height)_*_2)] w-full">
+    <div className="h-full max-h-[calc(100vh-var(--header-height))] w-full">
       <LastKnownLocationMap />
     </div>
   )

@@ -8,14 +8,14 @@ import { fromPromise } from 'xstate'
 import { api } from '@workspace/backend/api'
 import { createContext } from '@workspace/react-utils'
 
-import machine, { type Heartbeat} from '@workspace/heartbeat'
-import type { LocationData } from '@workspace/geolocation/types'
+import machine, { type Heartbeat } from '@workspace/heartbeat'
 
 import { useWindowEvent } from '@/shared/hooks/use-window-event'
 import { useDeviceId } from '@/shared/hooks/use-device-id'
 
 import type { Device } from '@/entities/device/types'
 import { useGeolocationContext } from '@/features/geolocation'
+import { useDeviceToken } from '@/shared/hooks/use-device-token'
 
 export namespace HeartbeatManager {
   export type Actor = Heartbeat.Actor
@@ -62,13 +62,18 @@ export const HeartbeatManager = (props: HeartbeatManager.Props) => {
   const heartbeat = useMutation(api.devices.heartbeat.send)
   const disconnect = useMutation(api.devices.heartbeat.disconnect)
 
+  const [token, setToken] = useDeviceToken()
+
   const { actor: geolocatorActor } = useGeolocationContext()
 
-  async function dispatcher({ input }: { input: { interval?: number; location?: LocationData } }) {
-    if (!device?._id) throw new Error('no deviceId')
-    const { sessionToken } = await heartbeat({ deviceId: device._id, ...input })
+  async function dispatcher({ input }: { input: Heartbeat.Dispatcher.Input }) {
+    if (!device?._id) throw new Error('device is not registered')
+    if (!token) throw new Error('cannot heartbeat without a session token')
+    const { sessionToken } = await heartbeat({ sessionToken: token, ...input })
+    if (sessionToken) setToken(sessionToken)
     return sessionToken
   }
+
   async function disconnector(options: { input: { token: string } }) {
     const { token: sessionToken } = options.input
     if (!sessionToken) throw new Error('no session token')

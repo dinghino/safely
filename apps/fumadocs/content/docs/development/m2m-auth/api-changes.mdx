@@ -1,0 +1,75 @@
+---
+title: "API and Contracts"
+description: "RPC changes and helper signatures to support device session token based authentication for M2M flows."
+---
+
+## Summary
+
+This page lists the minimal RPC and helper changes to support session-token-based device authentication for automated RPCs like `heartbeat.send` and `requests.acknowledge`.
+
+Keep in mind:
+
+- For now we'll accept a `sessionToken` parameter in place of `deviceId` for device-initiated RPCs.
+- Server will validate `sessionToken` by looking up `deviceSessionTokens` and mapping to a `deviceSessions` entry.
+- The rest of the contract remains the same: the server enforces that actions are permitted for the mapped `deviceId` and session.
+
+### Recommended DB schema extension
+
+Extend `deviceSessionTokens` table with:
+
+- `revoked: v.optional(v.boolean())` (default false)
+- `lastUsedAt: v.optional(v.number())`
+- `issuedBy: v.optional(v.id('users'))` (nullable, who provisioned it)
+
+Note: Convex already provides `_creationTime` and `_id` for rows. Use `_creationTime` for the token issuance timestamp unless you need an explicit client-provided timestamp.
+
+### Helper functions (server-side)
+
+We already export a set of helpers in `packages/backend/convex/lib/devices` that you can reuse and (if needed) wrap for auth flows. Relevant helpers include:
+
+- `helpers.heartbeat.getSessionTokenRecord(ctx, { sessionToken })` — lookup token record
+- `helpers.heartbeat.getDeviceSession(ctx, sessionId)` — lookup session by sessionId
+- `helpers.heartbeat.getSessionToken(ctx, { sessionId })` — creates/gets a token for a session
+- `helpers.heartbeat.scheduleDisconnect(ctx, { sessionId, sessionToken })` / `helpers.heartbeat.removeScheduleDisconnect(ctx, sessionId)` — scheduler helpers
+
+Recommended small wrappers (thin utilities) you can add on top of these (same module or in `lib/auth` later):
+
+- `getSessionByToken(ctx, token): Promise<{ session, tokenRecord } | null>` — uses `getSessionTokenRecord` + `getDeviceSession`, checks `revoked`.
+- `requireSessionByToken(ctx, token)` — same but throws on invalid/revoked.
+- `revokeSessionToken(ctx, token)` and `rotateSessionToken(ctx, oldToken)` for lifecycle operations.
+
+### RPC changes (minimal)
+
+- `heartbeat.send`:
+  - Current args: `{ deviceId, interval, location }`
+  - New optional mode: accept `{ sessionToken }` instead of `deviceId`.
+  - If `sessionToken` provided: resolve deviceId from token and continue as before.
+
+- `requests.acknowledge`:
+  - Current auth: user-based
+  - Add support to allow calls authenticated by `sessionToken` when the session maps to the target device of the request. Use `requireSessionByToken` to ensure this.
+
+### Pseudocode example: validating session token in heartbeat.send
+
+```ts
+// inside heartbeat.send handler
+if (args.sessionToken) {
+  const session = await helpers.heartbeat.getSessionByToken(ctx, args.sessionToken)
+  if (!session) throw new Error('Invalid session token')
+  // proceed using session.deviceId where deviceId was previously used
+}
+```
+
+### Token generation note
+
+For POC token generation we can use `nanoid(48)` to create 48-character tokens. This is simple and avoids adding heavy crypto deps. If later we want signed tokens we can migrate to HMAC-signed tokens or JWTs.
+
+### Audit & metrics
+
+- Update `deviceSessionTokens.lastUsedAt` on each successful token-authenticated RPC.
+- Emit audit events when tokens are created, rotated, or revoked.
+
+### Migration notes
+
+- No mandatory schema backfill is required for the POC — use Convex's `_creationTime` for issuance timestamps when needed.
+- Client update: devices must be able to store and use the `sessionToken` value in place of `deviceId` for M2M flows. For POC tokens are passed as RPC arguments; later migrate to headers (e.g. `x-safely-device`).

@@ -23,3 +23,10 @@ export function isRequestValid(data: ValidationOptions) {
   // request must be either from this device or from the current user
   return isFromThisDevice(data) || isFromCurrentUser(data)
 }
+
+export function isRequestPending<T extends { acknowledged: boolean }>(
+  request: T | null | undefined,
+): request is T {
+  if (!request) return false
+  return !request.acknowledged
+}

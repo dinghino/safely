@@ -6,6 +6,7 @@ import {
   LayoutDashboardIcon,
   ListTodoIcon,
   MapIcon,
+  MapPinIcon,
   PawPrintIcon,
   SettingsIcon,
   SmartphoneIcon,
@@ -23,7 +24,6 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
-  SidebarSeparator,
 } from '@workspace/ui/components/sidebar'
 import Link from 'next/link'
 
@@ -45,6 +45,11 @@ const items = [
     title: 'Devices',
     url: '/devices',
     icon: SmartphoneIcon,
+  },
+  {
+    title: 'Places',
+    url: '/places',
+    icon: MapPinIcon,
   },
   {
     title: 'Maps',

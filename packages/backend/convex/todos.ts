@@ -71,18 +71,13 @@ export const deleteTodo = mutation({
 export const deleteCompletedTodo = mutation({
 
   handler: async (ctx, args) => {
-    await getCurrentUserOrThrow(ctx)
-    // todo: verify that the todo belongs to the user
-    //await ctx.db.delete(args.id)
     const user = await getCurrentUserOrThrow(ctx)
 
-    return await ctx.db
+    const todosList = await ctx.db
       .query('todos')
-      .withIndex('byUserCompleted', (q) => q.eq('created_by', user._id).eq('completed',true)).collect()
-    //.query('todos')
-    //.withIndex('byCreatedBy', (q) => q.eq('created_by', user._id))
-    //.collect()
-    //guardare la getall per recuperare la lista da cancellare
-    return { success: true }
+      .withIndex('byUserCompleted', (q) => q.eq('created_by', user._id).eq('completed', true)).collect()
+
+    //check all todos from one specific user and delete all todoes completed
+    return await Promise.all(todosList.map(t => ctx.db.delete('todos', t._id)))
   },
 })

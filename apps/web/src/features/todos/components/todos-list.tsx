@@ -19,7 +19,7 @@ import { Conditional } from '@workspace/react-utils/components'
 
 import Loader from '@/components/loader'
 
-import { useDeleteTodo, useTodos, useToggleTodo } from '../hooks'
+import { useDeleteCompletedTodo, useDeleteTodo, useTodos, useToggleTodo } from '../hooks'
 import type { Todo } from '../types'
 import { EditTodoForm } from './todo-form'
 import { cn } from '@/lib/utils'
@@ -102,6 +102,28 @@ function DeleteTodoButton({ todo }: { todo: Todo }) {
     </DeleteDialogButton>
   )
 }
+
+export function DeleteCompletedTodoButton(props: Omit<React.ComponentProps<typeof Button>, 'children' | 'onClick'>) {
+  const deleteCompleted = useDeleteCompletedTodo()
+  return (
+    <DeleteDialogButton
+      onClick={async () => { await deleteCompleted() }}
+      title="Delete all completed todo"
+      description={
+        <>
+          Are you sure you want to remove all completed todos? <br />
+          This action cannot be undone.
+        </>
+      }
+      aria-label="Delete all"
+    >
+      <Button variant="ghost" size="icon" aria-label="Delete todo" {...props} className={cn("cursor-pointer", props.className)}>
+        <Trash2 />
+      </Button>
+    </DeleteDialogButton>
+  )
+}
+
 
 function EditTodoDialog({ todo }: { todo: Todo }) {
   const [open, SetOpen] = useState(false)

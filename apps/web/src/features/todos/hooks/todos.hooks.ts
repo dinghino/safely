@@ -45,6 +45,5 @@ export function useDeleteTodo() {
 }
 
 export function useDeleteCompletedTodo() {
-  const deleteTodo = useMutation(api.todos.deleteCompletedTodo)
-  return (id: Id<'todos'>) => deleteTodo({ id })
+  return useMutation(api.todos.deleteCompletedTodo)
 }

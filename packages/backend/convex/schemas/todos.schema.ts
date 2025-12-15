@@ -10,3 +10,4 @@ export const todos = defineTable({
 })
   .index('byCreatedBy', ['created_by'])
   .index('byCompleted', ['completed'])
+  .index('byUserCompleted', ['created_by', 'completed'])

@@ -29,7 +29,7 @@
     "leaflet-draw": "^1.0.4",
     "lucide-react": "^0.544.0",
     "nanoid": "^5.1.5",
-    "next": "15.5.7",
+    "next": "15.5.9",
     "react": "19.2.1",
     "react-dom": "19.2.1",
     "react-leaflet": "^5.0.0",

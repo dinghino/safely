@@ -69,6 +69,7 @@ export const deleteTodo = mutation({
 })
 
 export const deleteCompletedTodo = mutation({
+  args: {},
   handler: async (ctx) => {
     const user = await getCurrentUserOrThrow(ctx)
 

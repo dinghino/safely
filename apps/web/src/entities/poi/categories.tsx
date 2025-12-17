@@ -1,14 +1,11 @@
 import { cn } from '@/lib/utils'
-import type { api } from '@workspace/backend/api'
+
 import { Badge } from '@workspace/ui/components/badge'
 import { Button } from '@workspace/ui/components/button'
-import type { FunctionReturnType } from 'convex/server'
 import { type IconName, DynamicIcon } from 'lucide-react/dynamic'
 import { useMemo } from 'react'
-
-// todo: move to types
-export type PoiCategory = NonNullable<FunctionReturnType<typeof api.pois.categories.get>>
-export type PoiCategoryGroup = NonNullable<FunctionReturnType<typeof api.pois.groups.get>>
+import { getCategoryColor } from './lib'
+import type { CategoryGroup, CategoryItem } from './types'
 
 export const CategoryIcon = (
   props: {
@@ -36,9 +33,10 @@ export namespace PoiCategoryColorBadge {
  * Customize size and shape via className
  */
 export function PoiCategoryColorBadge(props: PoiCategoryColorBadge.Props) {
+  const background = getCategoryColor(props.data)
   return (
     <div
-      style={{ background: props.data.color.value }}
+      style={{ background }}
       className={cn('aspect-square size-2 rounded-full', props.className)}
     />
   )
@@ -46,7 +44,7 @@ export function PoiCategoryColorBadge(props: PoiCategoryColorBadge.Props) {
 
 export namespace PoiCategoryItem {
   export type Props = {
-    category: PoiCategory
+    category: CategoryItem
     className?: string
     showDescription?: boolean
   }
@@ -54,7 +52,7 @@ export namespace PoiCategoryItem {
 
 export const PoiCategoryItem = (props: PoiCategoryItem.Props) => {
   const { category, className = '', showDescription = true, ...rest } = props
-  const bg = category.color?.value ?? '#E5E7EB'
+  const bg = getCategoryColor(category)
 
   return (
     <div className={cn('flex items-center gap-3 p-2', className)} {...rest}>
@@ -75,15 +73,15 @@ export const PoiCategoryItem = (props: PoiCategoryItem.Props) => {
   )
 }
 
-export const PoiCategoryGroupName = (props: { group: PoiCategoryGroup }) => {
+export const PoiCategoryGroupName = (props: { group: CategoryGroup }) => {
   return <>{props.group ? props.group.name : 'No Group'}</>
 }
 
 export type PoiCategoryListProps = {
-  categories: PoiCategory[]
+  categories: CategoryItem[]
 }
 
-type CategoriesMap = Map<string, PoiCategory[]>
+type CategoriesMap = Map<string, CategoryItem[]>
 
 export const PoiCategoryListComponent = ({ categories }: PoiCategoryListProps) => {
   const { data, descriptions } = useMemo(() => {
@@ -124,7 +122,7 @@ export const PoiCategoryListComponent = ({ categories }: PoiCategoryListProps) =
 
 export namespace CategoriesGroupFilterComponent {
   export type Props = {
-    groups: PoiCategoryGroup[]
+    groups: CategoryGroup[]
     selectedGroupIds: string[]
     onChange: (selected: string[]) => void
   }
@@ -163,7 +161,7 @@ export const CategoriesGroupFilterComponent = (props: CategoriesGroupFilterCompo
 
 export namespace CategoryBadge {
   export type Props = {
-    category: PoiCategory
+    category: CategoryItem
   } & React.ComponentProps<typeof Badge>
 }
 export const CategoryBadge = (props: CategoryBadge.Props) => {
@@ -171,12 +169,9 @@ export const CategoryBadge = (props: CategoryBadge.Props) => {
     <Badge
       variant="secondary"
       className="inline-flex items-center gap-2"
-      style={{ background: props.category.color.value }}
+      style={{ background: getCategoryColor(props.category) }}
     >
-      <DynamicIcon
-        name={(props.category.icon?.name ?? 'circle') as IconName}
-        className="size-4 text-white"
-      />
+      <CategoryIcon icon={props.category.icon} className="size-4 text-white" />
       <span className="text-white">{props.category.name}</span>
     </Badge>
   )

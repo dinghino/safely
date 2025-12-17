@@ -67,6 +67,11 @@ export const pointOfInterest = defineTable({
    * searches and filtering results by location.
    */
   geohash: v.string(),
+  // for external references
+  attribution: v.optional(v.object({
+    source: v.string(),
+    url: v.optional(v.string()),
+  })),
 })
   // default index for all POIs in a defined area
   .index('geohash', ['geohash'])

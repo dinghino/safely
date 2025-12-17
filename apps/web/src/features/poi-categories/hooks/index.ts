@@ -3,9 +3,19 @@ import { api } from '@workspace/backend/api'
 import type { Id } from '@workspace/backend/dataModel'
 import { useQuery } from 'convex/react'
 
+/**
+ * Get all POI categories
+ */
+export function usePoiCategories() {
+  return useQuery(api.pois.categories.all)
+}
+/**
+ * Get all POI category groups
+ */
 export function usePoiCategoryGroups() {
   return useQuery(api.pois.groups.getAll)
 }
+
 export function useCategoryGroupById(id: Id<'poiCategoryGroup'>) {
   return useQuery(api.pois.groups.get, { id })
 }

@@ -29,6 +29,14 @@ export const deleteCategory = mutation({
   },
 })
 
+export const all = query({
+  handler: async (ctx) => {
+    const categories = await ctx.db.query('poiCategory').collect()
+    const withGroup = categories.map((category) => injectGroupData(ctx, category))
+    return await Promise.all(withGroup)
+  },
+})
+
 /**
  * Get a single POI category by ID
  */

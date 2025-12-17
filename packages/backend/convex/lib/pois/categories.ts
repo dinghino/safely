@@ -7,8 +7,8 @@ import type { QueryCtx } from '../../_generated/server'
  */
 export async function injectGroupData(ctx: QueryCtx, category: Doc<'poiCategory'>) {
   // `groupId` is required on `poiCategory`, so fetch and attach the group.
-  const data = (await ctx.db.get('poiCategoryGroup', category.groupId))!
-  const { color, ...group } = data
+  const group = (await ctx.db.get('poiCategoryGroup', category.groupId))!
+  const { color } = group
   const { groupId, ...categoryWithoutGroupId } = category
   return { ...categoryWithoutGroupId, group, color }
 }

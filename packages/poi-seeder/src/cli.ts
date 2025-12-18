@@ -24,6 +24,37 @@ function validateCategories(options: any): string[] {
 }
 
 /**
+ * Map POIs to import DTOs by category
+ */
+function mapPOIsToImportDTOs(pois: SourcePOI[], categories: string[]): POIImportDto[] {
+  // Group by category for mapping
+  const poisByCategory = new Map<string, SourcePOI[]>()
+  for (const categorySlug of categories) {
+    poisByCategory.set(
+      categorySlug,
+      pois.filter((p) => p.sourceId.includes(categorySlug)),
+    )
+  }
+
+  // Map to import DTOs
+  const allImports: POIImportDto[] = []
+  for (const [categorySlug, categoryPois] of poisByCategory.entries()) {
+    if (categoryPois.length > 0) {
+      const imports = mapBatchToPOIImports(categoryPois, categorySlug)
+      allImports.push(...imports)
+    }
+  }
+
+  // Fallback: if categorization failed, use first category
+  if (allImports.length === 0 && pois.length > 0 && categories[0]) {
+    const imports = mapBatchToPOIImports(pois, categories[0])
+    allImports.push(...imports)
+  }
+
+  return allImports
+}
+
+/**
  * Log POI results with sample data and optional DTO preview
  */
 function logPOIResults(
@@ -51,32 +82,11 @@ function logPOIResults(
   if (options.dto) {
     console.log('\n\n📦 Import DTO Preview:\n')
 
-    // Group by category for mapping
-    const poisByCategory = new Map<string, SourcePOI[]>()
-    for (const categorySlug of options.categories) {
-      poisByCategory.set(
-        categorySlug,
-        pois.filter((p) => p.sourceId.includes(categorySlug)),
-      )
-    }
+    const allImports = mapPOIsToImportDTOs(pois, options.categories)
 
-    const allImports: POIImportDto[] = []
-    for (const [categorySlug, categoryPois] of poisByCategory.entries()) {
-      if (categoryPois.length > 0) {
-        const imports = mapBatchToPOIImports(categoryPois, categorySlug)
-        allImports.push(...imports)
-      }
-    }
-
-    // Fallback: if categorization failed, just use first category
-    if (allImports.length === 0 && pois.length > 0 && options.categories[0]) {
-      const imports = mapBatchToPOIImports(pois, options.categories[0])
-      allImports.push(...imports)
-    }
-
-    console.log(JSON.stringify(allImports.slice(0, 3), null, 2))
-    if (allImports.length > 3) {
-      console.log(`\n...and ${allImports.length - 3} more would be imported`)
+    console.log(JSON.stringify(allImports.slice(0, count), null, 2))
+    if (allImports.length > count) {
+      console.log(`\n...and ${allImports.length - count} more would be imported`)
     }
 
     if (isDryRun) {
@@ -186,30 +196,7 @@ program
         return
       }
 
-      // Group by category for mapping
-      const poisByCategory = new Map<string, SourcePOI[]>()
-      for (const categorySlug of categories) {
-        poisByCategory.set(
-          categorySlug,
-          pois.filter((p) => p.sourceId.includes(categorySlug)),
-        )
-      }
-
-      // Map to import DTOs
-      const allImports: POIImportDto[] = []
-      for (const [categorySlug, categoryPois] of poisByCategory.entries()) {
-        if (categoryPois.length > 0) {
-          const imports = mapBatchToPOIImports(categoryPois, categorySlug)
-          allImports.push(...imports)
-        }
-      }
-
-      // Fallback: if categorization failed, use first category
-      if (allImports.length === 0 && pois.length > 0 && categories[0]) {
-        const imports = mapBatchToPOIImports(pois, categories[0])
-        allImports.push(...imports)
-      }
-
+      const allImports = mapPOIsToImportDTOs(pois, categories)
       console.log(`✓ Mapped ${allImports.length} POIs to import format\n`)
 
       // Initialize Convex client and fetch categories

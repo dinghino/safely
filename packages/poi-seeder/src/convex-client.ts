@@ -1,19 +1,29 @@
 import { ConvexHttpClient } from 'convex/browser'
 import type { Config } from './config.js'
 import type { ConvexPOIDto } from './mapper.js'
-
+import type { PoiCategory } from '@workspace/backend/types'
+import { api } from '@workspace/backend/api'
 /**
  * Convex client wrapper for POI operations
  */
 export class ConvexPOIClient {
   private client: ConvexHttpClient
+  public categories: PoiCategory[]
 
   constructor(config: Config) {
-    if (!config.convexUrl || !config.convexDeployKey) {
-      throw new Error('Convex configuration is missing')
+    if (!config.convexUrl) {
+      throw new Error('Convex URL is required')
     }
     this.client = new ConvexHttpClient(config.convexUrl)
-    this.client.setAuth(config.convexDeployKey)
+    this.categories = []
+  }
+
+  async setup() {
+    this.categories = await this.client.query(api.pois.categories.all)
+  }
+
+  getCategoryBySlug(slug: string): PoiCategory | undefined {
+    return this.categories.find((cat) => cat.slug === slug)
   }
 
   /**

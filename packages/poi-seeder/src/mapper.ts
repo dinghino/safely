@@ -1,117 +1,76 @@
-import type { Id } from "@workspace/backend/dataModel";
-import type { SourcePOI } from "./types.js";
+import type { Id } from '@workspace/backend/dataModel'
+import type { SourcePOI } from './types.js'
 
 /**
- * DTO for creating a POI in Convex
- * Maps to the pointOfInterest table schema
+ * Simplified DTO for POI import
+ * Client will resolve category IDs and finalize structure before sending to Convex
+ */
+export interface POIImportDto {
+  name: string
+  description?: string
+  categorySlug: string // Will be resolved to ID by client
+  coordinates: {
+    lat: number
+    lng: number
+  }
+  metadata?: {
+    address?: string
+    phone?: string
+    website?: string
+  }
+  attribution?: {
+    source: string
+    url?: string
+  }
+}
+
+/**
+ * Final DTO sent to Convex mutation
+ * After category ID resolution
  */
 export interface ConvexPOIDto {
-  name: string;
-  description?: string;
-  categoryId: Id<"poiCategory">;
-  addedBy: Id<"users">;
-  geohash: string;
+  name: string
+  description?: string
+  categoryId: Id<'poiCategory'>
+  addedBy: Id<'users'>
+  coordinates: {
+    lat: number
+    lng: number
+  }
+  metadata?: {
+    address?: string
+    phone?: string
+    website?: string
+  }
   attribution?: {
-    source: string;
-    url?: string;
-  };
+    source: string
+    url?: string
+  }
 }
 
 /**
- * Category mapping configuration
- * Maps source categories to Convex category IDs
+ * Map a SourcePOI to POIImportDto
+ * This creates the intermediate format before category ID resolution
  */
-export type CategoryMapping = Map<string, Id<"poiCategory">>;
+export function mapToPOIImport(source: SourcePOI, categorySlug: string): POIImportDto {
+  const attribution = buildAttribution(source)
 
-/**
- * Mapper options
- */
-export interface MapperOptions {
-  authorId: Id<"users">;
-  categoryMapping: CategoryMapping;
-  defaultCategoryId: Id<"poiCategory">;
-}
-
-/**
- * Map a SourcePOI to ConvexPOIDto
- */
-export function mapToConvexPOI(
-  source: SourcePOI,
-  options: MapperOptions
-): ConvexPOIDto {
-  // Determine category ID
-  const categoryId = source.category
-    ? options.categoryMapping.get(source.category) || options.defaultCategoryId
-    : options.defaultCategoryId;
-
-  // Generate geohash from coordinates
-  const geohash = generateGeohash(source.latitude, source.longitude);
-
-  // Build attribution based on source type
-  const attribution = buildAttribution(source);
+  const metadata: POIImportDto['metadata'] = {}
+  if (source.address) metadata.address = source.address
+  if (source.phone) metadata.phone = source.phone
+  if (source.website) metadata.website = source.website
 
   return {
     name: source.name,
     description: source.description,
-    categoryId,
-    addedBy: options.authorId,
-    geohash,
+    categorySlug,
+    coordinates: {
+      lat: source.latitude,
+      lng: source.longitude,
+    },
+    metadata: Object.keys(metadata).length > 0 ? metadata : undefined,
     attribution,
-  };
-}
-
-/**
- * Generate a geohash from latitude and longitude
- * TODO: Replace with H3 indexing library (h3-js)
- * For now, using a simple placeholder implementation
- */
-function generateGeohash(lat: number, lon: number, precision = 9): string {
-  // TODO: Use H3 indexing instead
-  // import { latLngToCell } from 'h3-js'
-  // return latLngToCell(lat, lon, resolution)
-  
-  // Temporary simple geohash for development
-  const BASE32 = "0123456789bcdefghjkmnpqrstuvwxyz";
-  let isEven = true;
-  let latMin = -90;
-  let latMax = 90;
-  let lonMin = -180;
-  let lonMax = 180;
-  let geohash = "";
-  let bit = 0;
-  let ch = 0;
-
-  while (geohash.length < precision) {
-    if (isEven) {
-      const mid = (lonMin + lonMax) / 2;
-      if (lon > mid) {
-        ch |= 1 << (4 - bit);
-        lonMin = mid;
-      } else {
-        lonMax = mid;
-      }
-    } else {
-      const mid = (latMin + latMax) / 2;
-      if (lat > mid) {
-        ch |= 1 << (4 - bit);
-        latMin = mid;
-      } else {
-        latMax = mid;
-      }
-    }
-
-    isEven = !isEven;
-
-    if (bit < 4) {
-      bit++;
-    } else {
-      geohash += BASE32[ch];
-      bit = 0;
-      ch = 0;
-    }
   }
-
-  return geohash;
 }
 
 /**
@@ -119,28 +78,25 @@ function generateGeohash(lat: number, lon: number, precision = 9): string {
  */
 function buildAttribution(source: SourcePOI): { source: string; url?: string } | undefined {
   switch (source.sourceType) {
-    case "osm":
+    case 'osm':
       return {
-        source: "OpenStreetMap",
-        url: `https://www.openstreetmap.org/${source.sourceId.replace("osm:", "").replace(":", "/")}`,
-      };
-    case "geojson":
+        source: 'OpenStreetMap',
+        url: `https://www.openstreetmap.org/${source.sourceId.replace('osm:', '').replace(':', '/')}`,
+      }
+    case 'geojson':
       return {
-        source: "GeoJSON Import",
-      };
-    case "manual":
-      return undefined; // No attribution for manual entries
+        source: 'GeoJSON Import',
+      }
+    case 'manual':
+      return undefined // No attribution for manual entries
     default:
-      return undefined;
+      return undefined
   }
 }
 
 /**
  * Batch mapper for multiple POIs
  */
-export function mapBatchToConvexPOIs(
-  sources: SourcePOI[],
-  options: MapperOptions
-): ConvexPOIDto[] {
-  return sources.map(source => mapToConvexPOI(source, options));
+export function mapBatchToPOIImports(sources: SourcePOI[], categorySlug: string): POIImportDto[] {
+  return sources.map((source) => mapToPOIImport(source, categorySlug))
 }

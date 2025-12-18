@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import type { BoundingBox } from './config.js'
 
 /**
  * Intermediate POI representation (adapter output format)
@@ -30,20 +31,10 @@ export const sourcePOISchema = z.object({
 export type SourcePOI = z.infer<typeof sourcePOISchema>
 
 /**
- * OSM-specific feature from Overpass API or OSM exports
+ * GeoJSON types
  */
-export interface OSMFeature {
-  type: 'node' | 'way' | 'relation'
-  id: number
-  lat?: number
-  lon?: number
-  center?: { lat: number; lon: number } // For ways/relations
-  tags?: Record<string, string>
-}
 type CoordinateTuple = [lon: number, lat: number]
-/**
- * GeoJSON Geometry types with proper coordinate types
- */
+
 type PointGeometry = {
   type: 'Point'
   coordinates: CoordinateTuple
@@ -66,9 +57,6 @@ type MultiPointGeometry = {
 
 type GeoJSONGeometry = PointGeometry | LineStringGeometry | PolygonGeometry | MultiPointGeometry
 
-/**
- * GeoJSON Feature
- */
 export interface GeoJSONFeature {
   type: 'Feature'
   geometry: GeoJSONGeometry
@@ -76,7 +64,16 @@ export interface GeoJSONFeature {
 }
 
 /**
+ * Options for fetching POIs from a source
+ */
+export interface FetchOptions {
+  boundingBox: BoundingBox
+  categories: string[] // category slugs
+}
+
+/**
  * Adapter interface - all adapters must implement this
+ * Used for parsing raw data from files or API responses
  */
 export interface POIAdapter {
   /**
@@ -88,4 +85,21 @@ export interface POIAdapter {
    * Validate that the input is compatible with this adapter
    */
   validate(input: unknown): boolean
+}
+
+/**
+ * Fetcher interface - high-level interface for fetching POIs from various sources
+ * Extends POIAdapter for backward compatibility
+ */
+export interface POIFetcher extends POIAdapter {
+  /**
+   * Fetch POIs from source with given options
+   * Returns normalized SourcePOI[] ready for mapping
+   */
+  fetch(options: FetchOptions): Promise<SourcePOI[]>
+
+  /**
+   * List available categories for this fetcher
+   */
+  listCategories(): string[]
 }

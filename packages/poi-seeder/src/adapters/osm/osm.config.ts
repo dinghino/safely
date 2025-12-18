@@ -1,36 +1,4 @@
-/**
- * OSM tag mapping configuration
- * Maps our POI category slugs to OSM tag combinations
- *
- * Each category can have multiple tag queries that will be OR'd together
- */
-
-export interface OSMTagQuery {
-  /**
-   * OSM tag key-value pairs
-   * Multiple pairs in one query are AND'd together
-   */
-  tags: Record<string, string>
-  /**
-   * Optional description of what this tag combination represents
-   */
-  description?: string
-}
-
-export interface CategoryOSMMapping {
-  /**
-   * Our category slug
-   */
-  categorySlug: string
-  /**
-   * Display name
-   */
-  name: string
-  /**
-   * OSM tag queries - will be OR'd together in the Overpass query
-   */
-  osmQueries: OSMTagQuery[]
-}
+import type { CategoryOSMMapping } from './types.js'
 
 /**
  * OSM tag mappings for our actual POI categories
@@ -122,31 +90,3 @@ export const defaultOSMCategoryMappings: CategoryOSMMapping[] = [
   // Note: Dangers and Alerts categories (bait/poison, hazards, lost pets, etc.)
   // are not typically in OSM - these would be user-reported POIs
 ]
-
-/**
- * Build Overpass QL query for a category mapping
- */
-export function buildOverpassQuery(
-  mapping: CategoryOSMMapping,
-  bbox: { minLat: number; maxLat: number; minLon: number; maxLon: number },
-): string {
-  const { minLat, minLon, maxLat, maxLon } = bbox
-
-  // Build individual node queries for each tag combination
-  const queries = mapping.osmQueries.map((query) => {
-    const tagFilters = Object.entries(query.tags)
-      .map(([key, value]) => `["${key}"="${value}"]`)
-      .join('')
-
-    return `  node${tagFilters}(${minLat},${minLon},${maxLat},${maxLon});`
-  })
-
-  // Combine all queries with union
-  return `[out:json][timeout:60];
-(
-${queries.join('\n')}
-);
-out body;
->;
-out skel qt;`
-}

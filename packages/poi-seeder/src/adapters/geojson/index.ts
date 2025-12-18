@@ -1,7 +1,9 @@
-import type { GeoJSONFeature, POIAdapter, SourcePOI } from '../types.js'
+import type { GeoJSONFeature, POIAdapter, SourcePOI } from '../../types.js'
+import { sourcePOISchema } from '../../types.js'
 
 /**
  * Adapter for GeoJSON files
+ * For reading and parsing GeoJSON data
  */
 export class GeoJSONAdapter implements POIAdapter {
   /**
@@ -62,7 +64,11 @@ export class GeoJSONAdapter implements POIAdapter {
 
     return features
       .map((f) => this.convertGeoJSONFeature(f))
-      .filter((poi): poi is SourcePOI => poi !== null)
+      .filter((poi): poi is SourcePOI => {
+        if (!poi) return false
+        const result = sourcePOISchema.safeParse(poi)
+        return result.success
+      })
   }
 
   private convertGeoJSONFeature(feature: GeoJSONFeature): SourcePOI | null {

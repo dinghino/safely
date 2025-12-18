@@ -1,5 +1,39 @@
 import type { CategoryOSMMapping } from './types.js'
 
+/** build a reverse mapping from OSM tags to our category slugs. we need
+ * this to look up the tags values and map them to our categories when we DTO
+ * to {@link SourcePOI}
+ */
+export function mapToOSMCategories(mappings = defaultOSMCategoryMappings) {
+  return mappings.reduce((acc, m) => {
+    for (const query of m.osmQueries) {
+      for (const tag of Object.values(query.tags)) {
+        if (!acc.has(tag)) {
+          acc.set(tag, [])
+        }
+        acc.get(tag)!.push(m.slug)
+      }
+    }
+    return acc
+  }, new Map<string, string[]>())
+}
+
+export type ReverseMapping = ReturnType<typeof mapToOSMCategories>
+
+export function getCategoryFromTags(
+  tags: Record<string, string> | undefined,
+  mapping: CategoryOSMMapping[],
+) {
+  if (!tags) return undefined
+  for (const tagQuery of Object.values(tags)) {
+    const category = mapping.find((m) =>
+      m.osmQueries.some((q) => Object.values(q.tags).includes(tagQuery)),
+    )
+    if (category) return category.slug
+  }
+  return undefined
+}
+
 /**
  * OSM tag mappings for our actual POI categories
  * Based on packages/backend/convex/seeds/poi_categories.ts
@@ -9,62 +43,52 @@ import type { CategoryOSMMapping } from './types.js'
  */
 export const defaultOSMCategoryMappings: CategoryOSMMapping[] = [
   {
-    categorySlug: 'dog-park',
-    name: 'Dog Park',
+    slug: 'dog-park',
     osmQueries: [{ tags: { leisure: 'dog_park' } }, { tags: { amenity: 'dog_park' } }],
   },
   {
-    categorySlug: 'off-leash-area',
-    name: 'Off-Leash Area',
+    slug: 'off-leash-area',
     osmQueries: [
       { tags: { leisure: 'dog_park' } },
       // TODO: Find better OSM tags for off-leash areas
     ],
   },
   {
-    categorySlug: 'dog-waste-station',
-    name: 'Dog Waste Station',
+    slug: 'dog-waste-station',
     osmQueries: [
       { tags: { amenity: 'waste_disposal', waste: 'dog_excrement' } },
       // TODO: Verify OSM tags for dog waste stations
     ],
   },
   {
-    categorySlug: 'water-fountain',
-    name: 'Water Fountain',
+    slug: 'water-fountain',
     osmQueries: [{ tags: { amenity: 'drinking_water' } }, { tags: { amenity: 'water_point' } }],
   },
   {
-    categorySlug: 'vet-clinic',
-    name: 'Vet Clinic',
+    slug: 'vet-clinic',
     osmQueries: [{ tags: { amenity: 'veterinary' } }],
   },
   {
-    categorySlug: 'groomer',
-    name: 'Groomer',
+    slug: 'groomer',
     osmQueries: [{ tags: { shop: 'pet_grooming' } }],
   },
   {
-    categorySlug: 'pet-sitting-boarding',
-    name: 'Pet Sitting / Boarding',
+    slug: 'pet-sitting-boarding',
     osmQueries: [
       // TODO: Find OSM tags for pet boarding/sitting
       { tags: { amenity: 'animal_boarding' } },
     ],
   },
   {
-    categorySlug: 'shelter-rescue',
-    name: 'Shelter / Rescue',
+    slug: 'shelter-rescue',
     osmQueries: [{ tags: { amenity: 'animal_shelter' } }],
   },
   {
-    categorySlug: 'pet-supply-store',
-    name: 'Pet Supply Store',
+    slug: 'pet-supply-store',
     osmQueries: [{ tags: { shop: 'pet' } }],
   },
   {
-    categorySlug: 'dog-friendly-facilities',
-    name: 'Dog-Friendly Facilities',
+    slug: 'dog-friendly-facilities',
     osmQueries: [
       // TODO: Find tags for dog-friendly cafes/restaurants
       { tags: { amenity: 'cafe', dog: 'yes' } },
@@ -72,16 +96,14 @@ export const defaultOSMCategoryMappings: CategoryOSMMapping[] = [
     ],
   },
   {
-    categorySlug: 'dog-friendly-beach',
-    name: 'Dog-Friendly Beach',
+    slug: 'dog-friendly-beach',
     osmQueries: [
       { tags: { natural: 'beach', dog: 'yes' } },
       // TODO: Verify tags for dog-friendly beaches
     ],
   },
   {
-    categorySlug: 'animal-control-office',
-    name: 'Animal Control Office',
+    slug: 'animal-control-office',
     osmQueries: [
       // TODO: Find proper OSM tags for animal control
       { tags: { office: 'government', government: 'animal_control' } },
@@ -90,3 +112,5 @@ export const defaultOSMCategoryMappings: CategoryOSMMapping[] = [
   // Note: Dangers and Alerts categories (bait/poison, hazards, lost pets, etc.)
   // are not typically in OSM - these would be user-reported POIs
 ]
+
+export const reverseOSMCategoryMap = mapToOSMCategories(defaultOSMCategoryMappings)

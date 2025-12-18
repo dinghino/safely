@@ -36,11 +36,7 @@ export interface CategoryOSMMapping {
   /**
    * Our category slug
    */
-  categorySlug: string
-  /**
-   * Display name
-   */
-  name: string
+  slug: string
   /**
    * OSM tag queries - will be OR'd together in the Overpass query
    */

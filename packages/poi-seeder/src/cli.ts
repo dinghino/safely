@@ -3,7 +3,7 @@ import { Command } from 'commander'
 import { config as dotenvConfig } from 'dotenv'
 import { createFetcher } from './adapters/index.js'
 import { loadConfig } from './config.js'
-import { mapBatchToPOIImports, type POIImportDto } from './mapper.js'
+import { DtoMapper } from './mapper.js'
 import { ConvexPOIClient } from './convex-client.js'
 import type { SourcePOI } from './types.js'
 
@@ -21,37 +21,6 @@ function validateCategories(options: any): string[] {
     process.exit(1)
   }
   return options.categories
-}
-
-/**
- * Map POIs to import DTOs by category
- */
-function mapPOIsToImportDTOs(pois: SourcePOI[], categories: string[]): POIImportDto[] {
-  // Group by category for mapping
-  const poisByCategory = new Map<string, SourcePOI[]>()
-  for (const categorySlug of categories) {
-    poisByCategory.set(
-      categorySlug,
-      pois.filter((p) => p.sourceId.includes(categorySlug)),
-    )
-  }
-
-  // Map to import DTOs
-  const allImports: POIImportDto[] = []
-  for (const [categorySlug, categoryPois] of poisByCategory.entries()) {
-    if (categoryPois.length > 0) {
-      const imports = mapBatchToPOIImports(categoryPois, categorySlug)
-      allImports.push(...imports)
-    }
-  }
-
-  // Fallback: if categorization failed, use first category
-  if (allImports.length === 0 && pois.length > 0 && categories[0]) {
-    const imports = mapBatchToPOIImports(pois, categories[0])
-    allImports.push(...imports)
-  }
-
-  return allImports
 }
 
 /**
@@ -81,8 +50,10 @@ function logPOIResults(
   // Show import DTO preview
   if (options.dto) {
     console.log('\n\n📦 Import DTO Preview:\n')
+    const mapper = new DtoMapper()
+    const allImports = mapper.batchImportDto(pois, options.categories)
 
-    const allImports = mapPOIsToImportDTOs(pois, options.categories)
+    // const allImports = mapPOIsToImportDTOs(pois, options.categories)
 
     console.log(JSON.stringify(allImports.slice(0, count), null, 2))
     if (allImports.length > count) {
@@ -127,15 +98,13 @@ program
       console.log('🚀 Fetching POIs from OpenStreetMap...\n')
 
       const config = loadConfig(false)
+      const { boundingBox } = config
       console.log('✓ Configuration loaded')
       console.log(
-        `  Bounding box: [${config.boundingBox.minLat}, ${config.boundingBox.minLon}] to [${config.boundingBox.maxLat}, ${config.boundingBox.maxLon}]\n`,
+        `  Bounding box: [${boundingBox.minLat}, ${boundingBox.minLon}] to [${boundingBox.maxLat}, ${boundingBox.maxLon}]\n`,
       )
 
-      const pois = await fetcher.fetch({
-        boundingBox: config.boundingBox,
-        categories,
-      })
+      const pois = await fetcher.fetch({ boundingBox, categories })
 
       logPOIResults(pois, { ...options, categories })
 
@@ -158,6 +127,7 @@ program
   .action(async (options) => {
     try {
       const fetcher = createFetcher({ type: 'osm' })
+      const mapper = new DtoMapper()
 
       if (options.listCategories) {
         console.log('\n📋 Available OSM category mappings:\n')
@@ -174,15 +144,13 @@ program
       console.log('🚀 Starting POI seed...\n')
 
       const config = loadConfig(true) // Require Convex config
+      const { boundingBox } = config
       console.log('✓ Configuration loaded')
       console.log(
-        `  Bounding box: [${config.boundingBox.minLat}, ${config.boundingBox.minLon}] to [${config.boundingBox.maxLat}, ${config.boundingBox.maxLon}]\n`,
+        `  Bounding box: [${boundingBox.minLat}, ${boundingBox.minLon}] to [${boundingBox.maxLat}, ${boundingBox.maxLon}]\n`,
       )
 
-      const pois = await fetcher.fetch({
-        boundingBox: config.boundingBox,
-        categories,
-      })
+      const pois = await fetcher.fetch({ boundingBox, categories })
 
       if (options.dryRun) {
         logPOIResults(pois, { ...options, categories, dto: true }, true)
@@ -195,8 +163,8 @@ program
         console.log('No POIs to import.')
         return
       }
-
-      const allImports = mapPOIsToImportDTOs(pois, categories)
+      const allImports = mapper.batchImportDto(pois, categories)
+      // const allImports = mapPOIsToImportDTOs(pois, categories)
       console.log(`✓ Mapped ${allImports.length} POIs to import format\n`)
 
       // Initialize Convex client and fetch categories

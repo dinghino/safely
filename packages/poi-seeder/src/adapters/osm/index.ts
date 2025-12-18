@@ -1,6 +1,6 @@
 import type { FetchOptions, POIFetcher, SourcePOI } from '../../types.js'
 import { sourcePOISchema } from '../../types.js'
-import { defaultOSMCategoryMappings } from './osm.config.js'
+import { defaultOSMCategoryMappings, getCategoryFromTags } from './osm.config.js'
 import { buildOverpassQuery } from './query-builder.js'
 import type { CategoryOSMMapping, OSMFeature } from './types.js'
 
@@ -26,19 +26,19 @@ export class OSMFetcher implements POIFetcher {
     const allPOIs: SourcePOI[] = []
 
     for (const categorySlug of options.categories) {
-      const mapping = this.categoryMappings.find((m) => m.categorySlug === categorySlug)
+      const mapping = this.categoryMappings.find((m) => m.slug === categorySlug)
 
       if (!mapping) {
         console.warn(`⚠️  Unknown category: ${categorySlug} (skipping)`)
         continue
       }
 
-      console.log(`📍 Fetching: ${mapping.name} (${categorySlug})`)
+      console.log(`📍 Fetching: ${mapping.slug}`)
 
       const query = buildOverpassQuery(mapping, options.boundingBox)
       const pois = await this.fetchWithQuery(query)
 
-      console.log(`✓ Found ${pois.length} POIs for ${mapping.name}\n`)
+      console.log(`✓ Found ${pois.length} POIs for ${mapping.slug}\n`)
       allPOIs.push(...pois)
     }
 
@@ -49,7 +49,7 @@ export class OSMFetcher implements POIFetcher {
    * List available category slugs
    */
   listCategories(): string[] {
-    return this.categoryMappings.map((m) => m.categorySlug)
+    return this.categoryMappings.map((m) => m.slug)
   }
 
   /**
@@ -164,13 +164,13 @@ export class OSMFetcher implements POIFetcher {
 
     // Build description from tags
     const description = this.buildDescription(tags)
-
+    const category  = getCategoryFromTags(feature.tags, this.categoryMappings)
     return {
       name,
       description,
       latitude: lat,
       longitude: lon,
-      category: undefined, // Category determined by mapping context
+      category,
       tags,
       sourceId: `osm:${feature.type}:${feature.id}`,
       sourceType: 'osm',

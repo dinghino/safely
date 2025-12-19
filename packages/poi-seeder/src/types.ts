@@ -103,3 +103,7 @@ export interface POIFetcher extends POIAdapter {
    */
   listCategories(): string[]
 }
+
+export interface Writer {
+  write(data: any[]): Promise<void>
+}

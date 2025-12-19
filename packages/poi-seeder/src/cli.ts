@@ -2,7 +2,7 @@
 import { Command } from 'commander'
 import { config as dotenvConfig } from 'dotenv'
 import { createFetcher } from './adapters/index.js'
-import { loadConfig } from './config.js'
+import { loadConfig, type Config } from './config.js'
 import { DtoMapper } from './mapper.js'
 import { ConvexPOIClient } from './convex-client.js'
 import type { SourcePOI } from './types.js'
@@ -23,47 +23,76 @@ function validateCategories(options: any): string[] {
   return options.categories
 }
 
-/**
- * Log POI results with sample data and optional DTO preview
- */
-function logPOIResults(
-  pois: SourcePOI[],
-  options: { dto?: boolean; categories: string[]; count?: number },
-  isDryRun = false,
-) {
-  const count = options.count ?? 3
-  console.log(`\n📊 Total POIs fetched: ${pois.length}\n`)
+namespace logging {
+  /**
+   * Log POI results with sample data and optional DTO preview
+   */
+  export function results(
+    pois: SourcePOI[],
+    options: { dto?: boolean; categories: string[]; count?: number },
+    isDryRun = false,
+  ) {
+    const count = options.count ?? 3
+    console.log(`\n📊 Total POIs fetched: ${pois.length}\n`)
 
-  if (pois.length === 0) {
-    console.log('No POIs found.')
-    return
-  }
-
-  // Show sample source POIs
-  console.log('Sample Source POIs:')
-  console.log(JSON.stringify(pois.slice(0, count), null, 2))
-
-  if (pois.length > count) {
-    console.log(`\n...and ${pois.length - count} more`)
-  }
-
-  // Show import DTO preview
-  if (options.dto) {
-    console.log('\n\n📦 Import DTO Preview:\n')
-    const mapper = new DtoMapper()
-    const allImports = mapper.batchImportDto(pois, options.categories)
-
-    // const allImports = mapPOIsToImportDTOs(pois, options.categories)
-
-    console.log(JSON.stringify(allImports.slice(0, count), null, 2))
-    if (allImports.length > count) {
-      console.log(`\n...and ${allImports.length - count} more would be imported`)
+    if (pois.length === 0) {
+      console.log('No POIs found.')
+      return
     }
 
-    if (isDryRun) {
-      console.log('\n✓ Dry run complete. No data was written to Convex.')
+    // Show sample source POIs
+    console.log('Sample Source POIs:')
+    console.log(JSON.stringify(pois.slice(0, count), null, 2))
+
+    if (pois.length > count) {
+      console.log(`\n...and ${pois.length - count} more`)
+    }
+
+    // Show import DTO preview
+    if (options.dto) {
+      console.log('\n\n📦 Import DTO Preview:\n')
+      const mapper = new DtoMapper()
+      const allImports = mapper.batchImportDto(pois, options.categories)
+
+      // const allImports = mapPOIsToImportDTOs(pois, options.categories)
+
+      console.log(JSON.stringify(allImports.slice(0, count), null, 2))
+      if (allImports.length > count) {
+        console.log(`\n...and ${allImports.length - count} more would be imported`)
+      }
+
+      if (isDryRun) {
+        console.log('\n✓ Dry run complete. No data was written to Convex.')
+      }
     }
   }
+  export function listCategories(options: { listCategories?: boolean }, fetcher: any) {
+    if (!options.listCategories) return
+
+    console.log('\n📋 Available OSM category mappings:\n')
+    const categories = fetcher.listCategories()
+    for (const slug of categories) {
+      console.log(`  - ${slug}`)
+    }
+    console.log('')
+  }
+  export function bbox({ boundingBox }: Config) {
+    if (!boundingBox) return
+    const { minLat, minLon, maxLat, maxLon } = boundingBox
+    console.log(`  Bounding box: [${minLat}, ${minLon}] to [${maxLat}, ${maxLon}]\n`)
+  }
+}
+
+async function writeToFile(options: { write?: boolean }, pois: SourcePOI[], categories: string[]) {
+  if (!options.write) return
+  console.log('\n💾 Writing fetched POIs to output folder')
+  const { JsonWriter } = await import('./writer/json.js')
+  const sourceWriter = new JsonWriter('source.json')
+  const parsedWriter = new JsonWriter('dto.json')
+  const mapper = new DtoMapper()
+  const allImports = mapper.batchImportDto(pois, categories)
+  await sourceWriter.write(pois)
+  await parsedWriter.write(allImports)
 }
 
 const program = new Command()
@@ -75,38 +104,30 @@ program
 
 program
   .command('fetch')
-  .description('Fetch POIs from OSM and log to console (no Convex write)')
+  .description('Fetch POIs from OSM and log to console (no db write)')
   .option('-c, --categories <slugs...>', 'Category slugs to fetch (e.g., dog-park vet-clinic)')
-  .option('--list-categories', 'List available category mappings')
+  .option('-l', '--list-categories', 'List available category mappings')
   .option('--dto', 'Show import DTO mapping preview')
+  .option('--write', 'Write fetched POIs to JSON file (output.json)')
   .action(async (options) => {
     try {
       const fetcher = createFetcher({ type: 'osm' })
 
-      if (options.listCategories) {
-        console.log('\n📋 Available OSM category mappings:\n')
-        const categories = fetcher.listCategories()
-        for (const slug of categories) {
-          console.log(`  - ${slug}`)
-        }
-        console.log('')
-        return
-      }
-
+      logging.listCategories(options, fetcher)
       const categories = validateCategories(options)
 
-      console.log('🚀 Fetching POIs from OpenStreetMap...\n')
-
       const config = loadConfig(false)
+      console.log(JSON.stringify(config, null, 2))
+      console.log(JSON.stringify(options, null, 2))
       const { boundingBox } = config
       console.log('✓ Configuration loaded')
-      console.log(
-        `  Bounding box: [${boundingBox.minLat}, ${boundingBox.minLon}] to [${boundingBox.maxLat}, ${boundingBox.maxLon}]\n`,
-      )
+      logging.bbox(config)
 
+      console.log('🚀 Fetching POIs from OpenStreetMap...\n')
       const pois = await fetcher.fetch({ boundingBox, categories })
 
-      logPOIResults(pois, { ...options, categories })
+      logging.results(pois, { ...options, categories })
+      await writeToFile(options, pois, categories)
 
       // TODO: May add option to write results to file for debugging
     } catch (error) {
@@ -129,33 +150,21 @@ program
       const fetcher = createFetcher({ type: 'osm' })
       const mapper = new DtoMapper()
 
-      if (options.listCategories) {
-        console.log('\n📋 Available OSM category mappings:\n')
-        const categories = fetcher.listCategories()
-        for (const slug of categories) {
-          console.log(`  - ${slug}`)
-        }
-        console.log('')
-        return
-      }
+      logging.listCategories(options, fetcher)
 
       const categories = validateCategories(options)
 
-      console.log('🚀 Starting POI seed...\n')
-
       const config = loadConfig(true) // Require Convex config
-      const { boundingBox } = config
       console.log('✓ Configuration loaded')
-      console.log(
-        `  Bounding box: [${boundingBox.minLat}, ${boundingBox.minLon}] to [${boundingBox.maxLat}, ${boundingBox.maxLon}]\n`,
-      )
+      logging.bbox(config)
 
+      console.log('🚀 Starting POI seed...\n')
+      const { boundingBox } = config
       const pois = await fetcher.fetch({ boundingBox, categories })
 
-      if (options.dryRun) {
-        logPOIResults(pois, { ...options, categories, dto: true }, true)
-        return
-      }
+      if (options.dryRun) return logging.results(pois, { ...options, categories, dto: true }, true)
+
+      // Proceed with mapping and importing
 
       console.log(`\n📊 Total POIs fetched: ${pois.length}\n`)
 

@@ -5,7 +5,7 @@
   "description": "POI seeder for importing data from OSM and other sources into Convex",
   "scripts": {
     "build": "tsup",
-    "dev": "bun run src/cli.ts",
+    "app": "bun run src/cli.ts",
     "fetch": "bun run src/cli.ts fetch",
     "seed": "bun run src/cli.ts seed",
     "type-check": "tsc --noEmit"

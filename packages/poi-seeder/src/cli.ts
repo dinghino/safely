@@ -134,6 +134,11 @@ program
     }
   })
 
+/**
+ * Seed command - fetch, map, and import POIs to Convex
+ * @deprecated since not implemented yet and should disappear due to moving logic
+ * to convex
+ */
 program
   .command('seed')
   .description('Seed POIs from OSM to Convex database')

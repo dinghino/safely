@@ -117,8 +117,6 @@ program
       const categories = validateCategories(options)
 
       const config = loadConfig(false)
-      console.log(JSON.stringify(config, null, 2))
-      console.log(JSON.stringify(options, null, 2))
       const { boundingBox } = config
       console.log('✓ Configuration loaded')
       logging.bbox(config)

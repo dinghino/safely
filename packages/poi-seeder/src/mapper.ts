@@ -1,4 +1,3 @@
-import type { Id } from '@workspace/backend/dataModel'
 import type { SourcePOI } from './types.js'
 import { z } from 'zod/v4'
 
@@ -32,15 +31,14 @@ const importDto = z.object({
 export type ImportDto = z.infer<typeof importDto>
 
 /**
- * Final DTO sent to Convex mutation
+ * Final DTO sent to Convex function
  * After category ID resolution
- * @note will be deprecated if we move to direct Convex actions
  */
 export interface ConvexPOIDto {
   name: string
   description?: string
-  categoryId: Id<'poiCategory'>
-  addedBy: Id<'users'>
+  categoryId: string
+  addedBy?: string
   coordinates: {
     lat: number
     lng: number

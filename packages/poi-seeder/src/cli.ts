@@ -4,7 +4,7 @@ import { config as dotenvConfig } from 'dotenv'
 import { createFetcher } from './adapters/index.js'
 import { loadConfig, type Config } from './config.js'
 import { DtoMapper } from './mapper.js'
-import { ConvexPOIClient } from './convex-client.js'
+
 import type { SourcePOI } from './types.js'
 
 // Load .env file
@@ -130,71 +130,6 @@ program
       // TODO: May add option to write results to file for debugging
     } catch (error) {
       console.error('\n❌ Error during fetch:', error)
-      process.exit(1)
-    }
-  })
-
-/**
- * Seed command - fetch, map, and import POIs to Convex
- * @deprecated since not implemented yet and should disappear due to moving logic
- * to convex
- */
-program
-  .command('seed')
-  .description('Seed POIs from OSM to Convex database')
-  .requiredOption(
-    '-c, --categories <slugs...>',
-    'Category slugs to seed (e.g., dog-park vet-clinic)',
-  )
-  .option('--list-categories', 'List available category mappings')
-  .option('--dry-run', 'Fetch and map POIs without writing to Convex')
-  .action(async (options) => {
-    try {
-      const fetcher = createFetcher({ type: 'osm' })
-      const mapper = new DtoMapper()
-
-      logging.listCategories(options, fetcher)
-
-      const categories = validateCategories(options)
-
-      const config = loadConfig(true) // Require Convex config
-      console.log('✓ Configuration loaded')
-      logging.bbox(config)
-
-      console.log('🚀 Starting POI seed...\n')
-      const { boundingBox } = config
-      const pois = await fetcher.fetch({ boundingBox, categories })
-
-      if (options.dryRun) return logging.results(pois, { ...options, categories, dto: true }, true)
-
-      // Proceed with mapping and importing
-
-      console.log(`\n📊 Total POIs fetched: ${pois.length}\n`)
-
-      if (pois.length === 0) {
-        console.log('No POIs to import.')
-        return
-      }
-      const allImports = mapper.batchImportDto(pois, categories)
-      // const allImports = mapPOIsToImportDTOs(pois, categories)
-      console.log(`✓ Mapped ${allImports.length} POIs to import format\n`)
-
-      // Initialize Convex client and fetch categories
-      console.log('Connecting to Convex...')
-      const client = new ConvexPOIClient(config)
-      await client.setup()
-      console.log(`✓ Connected. Found ${client.categories.length} categories in database\n`)
-
-      // TODO: Resolve category IDs from slugs
-      // TODO: Convert POIImportDto to ConvexPOIDto
-      // TODO: Call client.createPOIsBatch()
-      console.log('⚠️  Category resolution and POI creation not yet implemented')
-      console.log('Next steps:')
-      console.log('  1. Build category slug → ID mapping using client.getCategoryBySlug()')
-      console.log('  2. Convert POIImportDto to ConvexPOIDto')
-      console.log('  3. Call client.createPOIsBatch(convexPOIs)')
-    } catch (error) {
-      console.error('\n❌ Error during seed:', error)
       process.exit(1)
     }
   })

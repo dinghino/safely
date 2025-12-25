@@ -1,9 +1,11 @@
 import * as auth from './auth'
 import * as devices from './devices'
+import * as pois from './pois'
 
 export const Service = {
   auth,
   devices,
+  pois,
 }
 
 export function slugify(text: string) {

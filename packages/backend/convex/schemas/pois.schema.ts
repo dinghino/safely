@@ -55,7 +55,7 @@ export const poiCategory = defineTable({
     filterFields: ['groupId', 'name'],
   })
 
-export const pointOfInterest = defineTable({
+export const pois = defineTable({
   name: v.string(),
   description: v.optional(v.string()),
   categoryId: v.id('poiCategory'),
@@ -72,6 +72,7 @@ export const pointOfInterest = defineTable({
     source: v.string(),
     url: v.optional(v.string()),
   })),
+  sourceData: v.optional(v.any()),
 })
   // default index for all POIs in a defined area
   .index('geohash', ['geohash'])

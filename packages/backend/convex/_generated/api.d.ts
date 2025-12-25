@@ -26,6 +26,8 @@ import type * as lib_devices_logs from "../lib/devices/logs.js";
 import type * as lib_devices_options from "../lib/devices/options.js";
 import type * as lib_index from "../lib/index.js";
 import type * as lib_pois_categories from "../lib/pois/categories.js";
+import type * as lib_pois_index from "../lib/pois/index.js";
+import type * as pois_add from "../pois/add.js";
 import type * as pois_categories from "../pois/categories.js";
 import type * as pois_groups from "../pois/groups.js";
 import type * as presence from "../presence.js";
@@ -70,6 +72,8 @@ declare const fullApi: ApiFromModules<{
   "lib/devices/options": typeof lib_devices_options;
   "lib/index": typeof lib_index;
   "lib/pois/categories": typeof lib_pois_categories;
+  "lib/pois/index": typeof lib_pois_index;
+  "pois/add": typeof pois_add;
   "pois/categories": typeof pois_categories;
   "pois/groups": typeof pois_groups;
   presence: typeof presence;

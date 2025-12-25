@@ -17,6 +17,7 @@
   "license": "ISC",
   "description": "",
   "devDependencies": {
+    "@types/ngeohash": "^0.6.3",
     "@types/node": "^25.0.1",
     "typescript": "^5.9.3"
   },
@@ -24,8 +25,10 @@
     "@clerk/backend": "^2.27.0",
     "@convex-dev/geospatial": "^0.2.1",
     "@convex-dev/presence": "^0.3.0",
+    "@workspace/poi-seeder": "workspace:*",
     "convex": "^1.31.0",
     "nanoid": "^5.1.6",
+    "ngeohash": "^0.6.3",
     "svix": "^1.82.0"
   }
 }

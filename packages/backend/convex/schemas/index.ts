@@ -12,4 +12,4 @@ export { todos } from './todos.schema'
 export { trackLocation, trackSession, trackRequests } from './tracker.schema'
 export { users } from './users.schema'
 
-export { poiCategoryGroup, poiCategory, pointOfInterest } from './pois.schema'
+export { poiCategoryGroup, poiCategory, pois } from './pois.schema'

@@ -16,7 +16,8 @@ export const ensureCoverage = mutation({
   handler: async (ctx, args) => {
     const { bounds, categories: categoryIds } = args
 
-    // 1. Resolve category slugs (similar logic to get.inView)
+    // 1. Resolve category slugs
+    // resolveCategories handles the empty array case by returning all categories
     const categories = await helpers.pois.categories.resolveCategories(ctx, categoryIds)
     const categorySlugs = categories.map((c) => c.slug)
 

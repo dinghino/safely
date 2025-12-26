@@ -2,10 +2,12 @@ import * as auth from './auth'
 import * as devices from './devices'
 import * as pois from './pois'
 import * as users from './users'
+import { geohash } from './geohash'
 
 export const Service = {
   auth,
   devices,
+  geohash,
   pois,
   users,
 }

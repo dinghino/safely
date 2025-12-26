@@ -28,13 +28,16 @@ export async function getMissingCells(ctx: QueryCtx, params: PlannerParams): Pro
   }
 
   // 2. Query scrapedRegions for these cells
-  // We can't do a massive "in" query efficiently if there are many cells.
-  // But likely for a viewport it's < 50 cells.
-  // Filter approach:
-  const scraped = await ctx.db
-    .query('scrapedRegions')
-    .filter((q) => q.or(...cells.map((cell) => q.eq(q.field('geohash'), cell))))
-    .collect()
+  // We perform individual indexed queries in parallel to avoid full table scans.
+  const scrapedResults = await Promise.all(
+    cells.map((cell) =>
+      ctx.db
+        .query('scrapedRegions')
+        .withIndex('geohash', (q) => q.eq('geohash', cell))
+        .first(),
+    ),
+  )
+  const scraped = scrapedResults.filter((r): r is NonNullable<typeof r> => r !== null)
 
   // 3. Filter to only missing/stale/incomplete cells
   const now = Date.now()

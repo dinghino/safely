@@ -1,8 +1,8 @@
-export {}
-
 import * as categories from './categories'
 import * as gis from './poi.location'
-
-export { categories, gis as location, management }
 import * as management from './management'
-export * as scraper from './scraping'
+import * as scraper from './scraping'
+import * as poi from './poi'
+
+export { categories, location, management, scraper, poi }
+const location = gis

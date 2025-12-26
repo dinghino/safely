@@ -2,89 +2,81 @@ import {
   internalAction,
   internalMutation,
   internalQuery,
-  type MutationCtx,
-  type QueryCtx,
+  type ActionCtx,
 } from '../_generated/server'
 import { v } from 'convex/values'
 import { internal } from '../_generated/api'
 import { geohash } from '../lib/geohash'
-import { createFetcher } from '@workspace/poi-seeder'
+import { createFetcher, type POIFetcher } from '@workspace/poi-seeder'
 import { DtoMapper } from '@workspace/poi-seeder/mapper'
-import * as helpers from '../lib/pois'
+import { Service as helpers } from '../lib'
 
-const SCRAPE_PRECISION = 6 // ~600m x 1.2km
+const SCRAPE_PRECISION = 5 // ~4.9km x 4.9km
 
-export const fetchFromSource = internalAction({
+export const scrapeCells = internalAction({
   args: {
-    lat: v.number(),
-    lng: v.number(),
-    categories: v.array(v.string()), // Slugs
+    cells: v.array(v.string()), // Geohashes at precision 6
+    categories: v.array(v.string()),
     force: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
-    const { lat, lng, categories, force } = args
+    const { cells, categories, force } = args
 
-    // 1. Calculate geohash for the target location
-    const centerHash = geohash.encode(lat, lng, SCRAPE_PRECISION)
-
-    // 2. Process cell
-    const cellHash = centerHash
-
-    // 3. Check if already scraped
-    const isScraped = await ctx.runQuery(internal.pois.scraping.checkScraped, {
-      geohash: cellHash,
-      categories,
-    })
-
-    if (isScraped && !force) {
-      console.log(`Skipping ${cellHash}, already scraped.`)
-      return
-    }
-
-    // 4. Fetch from Source
-    const bbox = geohash.decode_bbox(cellHash)
+    // Create fetcher and mapper once
     const fetcher = createFetcher({ type: 'osm' })
-
-    console.log(`Fetching ${cellHash} from OSM...`)
-
-    const rawPois = await fetcher.fetch({
-      boundingBox: bbox,
-      categories: categories,
-    })
-
-    if (rawPois.length === 0) {
-      await ctx.runMutation(internal.pois.scraping.saveScrapedData, {
-        pois: [],
-        geohash: cellHash,
-        source: 'osm',
-        categories,
-      })
-      return
-    }
-
-    // 5. Map to DTO
     const mapper = new DtoMapper()
-    const importDtos = mapper.batchImportDto(rawPois, categories)
 
-    // 6. Save to DB
-    await ctx.runMutation(internal.pois.scraping.saveScrapedData, {
-      pois: importDtos.map((d) => ({
-        name: d.name,
-        description: d.description,
-        categorySlug: d.categorySlug,
-        coordinates: d.coordinates,
-        metadata: d.metadata,
-        attribution: d.attribution,
-      })),
-      geohash: cellHash,
-      source: 'osm',
-      categories,
-    })
+    // Process sequentially to avoid rate limits (429)
+    for (const cellHash of cells) {
+      await processCell(ctx, cellHash, categories, fetcher, mapper, force)
+      // Small delay to be nice to Overpass
+      await new Promise((resolve) => setTimeout(resolve, 100))
+    }
   },
 })
 
+export const scrapeBoundingBox = internalAction({
+  args: {
+    bounds: helpers.pois.management.boundsValidator,
+    categories: v.array(v.string()), // slugs
+    force: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    const { bounds, categories, force } = args
+
+    // 1. Calculate cells
+    // todo: normalize bbox API to be cleaner. choose one format for all our APIs
+    const cells = geohash.bboxes(bounds, SCRAPE_PRECISION)
+
+    console.log(`Manual scrape: ${cells.length} cells`, { categories, force })
+
+    // 2. Reuse shared fetcher/mapper setup
+    const fetcher = createFetcher({ type: 'osm' })
+    const mapper = new DtoMapper()
+
+    // 3. Process sequentially (to avoid 429 and 400 from concurrency)
+    for (const cellHash of cells) {
+      await processCell(ctx, cellHash, categories, fetcher, mapper, force)
+      // 1s delay
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+    }
+  },
+})
 // --- Internal API ---
 
+/**
+ * Checks if a geohash cell has been recently scraped.
+ *
+ * This function queries the 'scrapedRegions' table to determine if a valid,
+ * non-expired scrape record exists for the given geohash. It also verifies
+ * that the scrape record covers all requested categories.
+ *
+ * @param ctx - The query context.
+ * @param args - Object containing:
+ *   - geohash: The geohash string to check (precision 6).
+ *   - categories: Array of category slugs required.
+ * @returns boolean - True if the cell is recently scraped and covers all categories, false otherwise.
+ */
 export const checkScraped = internalQuery({
   args: {
     geohash: v.string(),
@@ -98,7 +90,7 @@ export const checkScraped = internalQuery({
       .order('desc')
       .first()
 
-    if (!scraped) return false
+    if (!scraped || scraped.status !== 'done') return false
 
     // Check expiration
     if (scraped.expiresAt && scraped.expiresAt < Date.now()) {
@@ -108,6 +100,16 @@ export const checkScraped = internalQuery({
     // Check if all requested categories were covered
     const covered = args.categories.every((c) => scraped.categories.includes(c))
     return covered
+  },
+})
+
+export const initializePendingCells = internalMutation({
+  args: {
+    cells: v.array(v.string()),
+    categories: v.array(v.string()),
+  },
+  handler: async (ctx, args) => {
+    await helpers.pois.scraper.initializePendingCells(ctx, args)
   },
 })
 
@@ -133,11 +135,8 @@ export const saveScrapedData = internalMutation({
     const allCategories = await ctx.db.query('poiCategory').collect()
     const catMap = new Map(allCategories.map((c) => [c.slug, c]))
 
-    const systemUser = await ctx.db.query('users').first()
-    if (!systemUser) {
-      console.warn('No users found to attribute POIs to. Skipping save.')
-      return
-    }
+    // Get the system user responsible for seeding
+    const systemUser = await helpers.users.getSeederUser(ctx)
 
     // Parallel insertion with count tracking
     const insertResults = await Promise.all(
@@ -147,15 +146,12 @@ export const saveScrapedData = internalMutation({
           console.warn(`Category slug not found: ${poiData.categorySlug}`)
           return { success: false, categorySlug: poiData.categorySlug }
         }
-        const { lat: latitude, lng: longitude } = poiData.coordinates
-        await helpers.management.createPointOfInterest(ctx, {
+
+        await helpers.pois.management.createPointOfInterest(ctx, {
           data: {
-            name: poiData.name,
-            description: poiData.description,
+            ...poiData,
             categoryId: category._id,
-            coordinates: { latitude, longitude },
-            attribution: poiData.attribution,
-            metadata: poiData.metadata,
+            coordinates: { latitude: poiData.coordinates.lat, longitude: poiData.coordinates.lng },
           },
           user: systemUser,
           category: category,
@@ -173,13 +169,87 @@ export const saveScrapedData = internalMutation({
     }
 
     // Mark region as scraped
-    await ctx.db.insert('scrapedRegions', {
-      geohash: cellHash,
-      source,
-      categories,
-      scrapedAt: Date.now(),
-      expiresAt: Date.now() + 1000 * 60 * 60 * 24 * 30, // 30 days
-      counts,
-    })
+    const existing = await ctx.db
+      .query('scrapedRegions')
+      .withIndex('geohash', (q) => q.eq('geohash', cellHash))
+      .first()
+
+    if (existing) {
+      const mergedCounts = { ...(existing.counts || {}) }
+      for (const [slug, count] of Object.entries(counts)) {
+        mergedCounts[slug] = (mergedCounts[slug] || 0) + count
+      }
+
+      await ctx.db.patch(existing._id, {
+        source,
+        categories: Array.from(new Set([...existing.categories, ...categories])),
+        scrapedAt: Date.now(),
+        expiresAt: Date.now() + 1000 * 60 * 60 * 24 * 30, // 30 days
+        counts: mergedCounts,
+        status: 'done',
+      })
+    } else {
+      await ctx.db.insert('scrapedRegions', {
+        geohash: cellHash,
+        source,
+        categories,
+        scrapedAt: Date.now(),
+        expiresAt: Date.now() + 1000 * 60 * 60 * 24 * 30, // 30 days
+        counts,
+        status: 'done',
+      })
+    }
   },
 })
+
+// --- Helpers ---
+
+/**
+ * Helper to process a single cell: check, fetch, map, and save.
+ */
+async function processCell(
+  ctx: ActionCtx,
+  cellHash: string,
+  categories: string[],
+  fetcher: POIFetcher, // Type from poi-seeder
+  mapper: DtoMapper,
+  force?: boolean,
+) {
+  try {
+    // 1. Check if already scraped
+    const isScraped = await ctx.runQuery(internal.pois.scraping.checkScraped, {
+      geohash: cellHash,
+      categories,
+    })
+
+    if (isScraped && !force) {
+      return
+    }
+
+    // 2. Fetch from OSM
+    const boundingBox = geohash.decode_bbox(cellHash)
+    const rawPois = await fetcher.fetch({ boundingBox, categories })
+
+    // 3. Handle empty results
+    if (rawPois.length === 0) {
+      await ctx.runMutation(internal.pois.scraping.saveScrapedData, {
+        geohash: cellHash,
+        source: 'osm',
+        pois: [],
+        categories,
+      })
+      return
+    }
+
+    // 4. Map and Save
+    const pois = mapper.batchImportDto(rawPois, categories)
+    await ctx.runMutation(internal.pois.scraping.saveScrapedData, {
+      geohash: cellHash,
+      source: 'osm',
+      pois,
+      categories,
+    })
+  } catch (err) {
+    console.error(`Failed to scrape cell ${cellHash}:`, err)
+  }
+}

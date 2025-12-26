@@ -15,6 +15,7 @@ export const scrapedRegions = defineTable({
   categories: v.array(v.string()),
   // Count of POIs found per category: {categorySlug: count}
   counts: v.optional(v.record(v.string(), v.number())),
+  status: v.optional(v.union(v.literal('pending'), v.literal('done'))),
 })
   .index('geohash', ['geohash'])
   .index('source_geohash', ['source', 'geohash'])

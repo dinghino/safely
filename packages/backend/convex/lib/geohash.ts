@@ -37,4 +37,14 @@ export const geohash = {
   neighbors: (hash: string) => {
     return ngeohash.neighbors(hash)
   },
+
+  /**
+   * Get all geohashes within a bounding box
+   */
+  bboxes: (
+    bounds: { sw: { lat: number; lng: number }; ne: { lat: number; lng: number } },
+    precision: number,
+  ) => {
+    return ngeohash.bboxes(bounds.sw.lat, bounds.sw.lng, bounds.ne.lat, bounds.ne.lng, precision)
+  },
 }

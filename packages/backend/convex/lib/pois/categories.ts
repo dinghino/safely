@@ -1,5 +1,5 @@
 import type { PaginationResult } from 'convex/server'
-import type { Doc } from '../../_generated/dataModel'
+import type { Doc, Id } from '../../_generated/dataModel'
 import type { QueryCtx } from '../../_generated/server'
 
 /**
@@ -23,4 +23,19 @@ export async function injectInPaginated(
   const withGroup = paginated.page.map((category) => injectGroupData(ctx, category))
   const page = await Promise.all(withGroup)
   return { ...paginated, page }
+}
+
+/**
+ * Resolves a list of category IDs to their documents.
+ * If the input list is empty, fetches ALL categories.
+ */
+export async function resolveCategories(
+  ctx: QueryCtx,
+  ids: Id<'poiCategory'>[],
+): Promise<Doc<'poiCategory'>[]> {
+  if (ids.length === 0) {
+    return await ctx.db.query('poiCategory').collect()
+  }
+  const docs = await Promise.all(ids.map((id) => ctx.db.get(id)))
+  return docs.filter((c): c is NonNullable<typeof c> => c !== null)
 }

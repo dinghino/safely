@@ -14,7 +14,13 @@ export const poiDataValidator = v.object({
   metadata: v.optional(v.any()),
 })
 
+export const boundsValidator = v.object({
+  sw: v.object({ lat: v.number(), lng: v.number() }),
+  ne: v.object({ lat: v.number(), lng: v.number() }),
+})
+
 export type PoiData = Infer<typeof poiDataValidator>
+export type Bounds = Infer<typeof boundsValidator>
 
 export type CreateOptions = {
   data: PoiData

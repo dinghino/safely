@@ -33,12 +33,9 @@ export class OSMFetcher implements POIFetcher {
         continue
       }
 
-      console.log(`📍 Fetching: ${mapping.slug}`)
-
       const query = buildOverpassQuery(mapping, options.boundingBox)
       const pois = await this.fetchWithQuery(query)
 
-      console.log(`✓ Found ${pois.length} POIs for ${mapping.slug}\n`)
       allPOIs.push(...pois)
     }
 
@@ -72,7 +69,8 @@ export class OSMFetcher implements POIFetcher {
     })
 
     if (!response.ok) {
-      throw new Error(`Overpass API error: ${response.status} ${response.statusText}`)
+      const text = await response.text()
+      throw new Error(`Overpass API error: ${response.status} ${response.statusText}\n${text}`)
     }
 
     const data = await response.json()
@@ -164,7 +162,7 @@ export class OSMFetcher implements POIFetcher {
 
     // Build description from tags
     const description = this.buildDescription(tags)
-    const category  = getCategoryFromTags(feature.tags, this.categoryMappings)
+    const category = getCategoryFromTags(feature.tags, this.categoryMappings)
     return {
       name,
       description,

@@ -9,4 +9,6 @@ export const users = defineTable({
   username: v.optional(v.string()),
   firstName: v.optional(v.string()),
   lastName: v.optional(v.string()),
-}).index('by_external_id', ['external_id'])
+})
+  .index('by_external_id', ['external_id'])
+  .index('by_username', ['username'])

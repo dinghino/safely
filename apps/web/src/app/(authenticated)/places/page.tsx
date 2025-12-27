@@ -77,7 +77,7 @@ export default function PlacesPage() {
 
 /// internal prototypes
 
-export namespace CategoryGroupCard {
+namespace CategoryGroupCard {
   export type Props = {
     group: CategoryGroup
   }
@@ -87,7 +87,7 @@ export namespace CategoryGroupCard {
  * Card component for category group navigation.
  * Displays group info and links to category-specific pages.
  */
-export const CategoryGroupCard = ({ group }: CategoryGroupCard.Props) => {
+const CategoryGroupCard = ({ group }: CategoryGroupCard.Props) => {
   return (
     <article
       className={cn(
@@ -109,7 +109,7 @@ export const CategoryGroupCard = ({ group }: CategoryGroupCard.Props) => {
   )
 }
 
-export namespace CategoryLinks {
+namespace CategoryLinks {
   export type Props = {
     groupId: Id<'poiCategoryGroup'>
   }
@@ -118,7 +118,7 @@ export namespace CategoryLinks {
 /**
  * Renders category links for a given group.
  */
-export const CategoryLinks = ({ groupId }: CategoryLinks.Props) => {
+const CategoryLinks = ({ groupId }: CategoryLinks.Props) => {
   const categories = usePoiGroupCategoriesById(groupId)
 
   return (

@@ -52,7 +52,7 @@ export async function inflatePois(
 
   // 4. Assemble final objects
   return pois.map((poi) => {
-    const coordinates = gisMap.get(poi._id)
+    const coordinates = gisMap.get(poi._id)!
     const category = categoryMap.get(poi.categoryId)!
 
     return {

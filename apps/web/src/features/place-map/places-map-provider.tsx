@@ -28,8 +28,8 @@ export namespace PlacesMapProvider {
     filteredPlaces: Place[]
     /** Loading state */
     isLoading: boolean
-    /** Focus the map on a specific place, or Deslect if already selected */
-    focusOnPlace: (place: Place) => void
+    /** Focus the map on a specific place, or Deselect if already selected */
+    focusOnPlace: (id: Id<'pois'>) => void
     /** forwarded category IDs that are active */
     categories: Id<'poiCategory'>[]
 
@@ -85,8 +85,8 @@ export function PlacesMapProvider(props: PlacesMapProvider.Props) {
   )
   const focusedPlace = focusedPlaceQuery ?? null
 
-  const focusOnPlace = (place: Place) => {
-    toggleFocusPlaceId(place._id)
+  const focusOnPlace = (id: Id<'pois'>) => {
+    toggleFocusPlaceId(id)
   }
 
   const value: PlacesMapProvider.State = {

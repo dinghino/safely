@@ -17,7 +17,12 @@ export const one = query({
     if (!doc) {
       throw new Error('POI not found')
     }
-    const [item] = await helpers.pois.poi.inflatePois(ctx, [doc])
+    const [category] = await helpers.pois.categories.resolveCategories(ctx, [doc.categoryId])
+    const { coordinates } = (await helpers.pois.location.geospatial.get(ctx, id))!
+    const [item] = await helpers.pois.poi.inflatePois(ctx, [doc], {
+      gisMap: new Map([[id, coordinates]]),
+      categoryMap: new Map([[category._id, category]]),
+    })
     return item
   },
 })

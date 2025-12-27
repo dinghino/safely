@@ -35,7 +35,7 @@ export const PlaceListWidget = ({ className }: PlaceListWidget.Props) => {
 
         <ul className="flex flex-col gap-1">
           {filteredPlaces?.map((place) => (
-            <PlaceCard key={place._id} place={place} onClick={() => focusOnPlace(place)} />
+            <PlaceCard key={place._id} place={place} onClick={() => focusOnPlace(place._id)} />
           ))}
         </ul>
       </div>

@@ -15,7 +15,6 @@ import {
   type ReactNode,
 } from 'react'
 import dynamic from 'next/dynamic'
-
 import { renderToString } from 'react-dom/server'
 import type {
   CircleMarkerProps,
@@ -125,7 +124,7 @@ function ShadMap({
   className,
   ...props
 }: Omit<MapContainerProps, 'zoomControl'> & {
-  center: LatLngExpression
+  center?: LatLngExpression
   ref?: Ref<LeafletMap>
 }) {
   return (

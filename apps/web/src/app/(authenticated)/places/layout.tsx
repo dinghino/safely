@@ -1,6 +1,6 @@
 'use client'
 
-import { PoiCategoryColorBadge } from '@/entities/poi/categories'
+import { PoiCategoryColorBadge } from '@/entities/places/categories'
 import { usePoiCategoryGroups } from '@/features/poi-categories/hooks'
 import { Badge } from '@workspace/ui/components/badge'
 import Link from 'next/link'

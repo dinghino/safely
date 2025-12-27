@@ -3,6 +3,8 @@ import type { FunctionReturnType } from 'convex/server'
 export type CategoryItem = NonNullable<FunctionReturnType<typeof api.pois.categories.get>>
 export type CategoryGroup = NonNullable<FunctionReturnType<typeof api.pois.groups.get>>
 
+export type Place = NonNullable<FunctionReturnType<typeof api.pois.get.inView>>['pois'][number]
+
 // /** Minimal group data for display */
 // export type CategoryGroup = {
 //   _id: Id<'poiCategoryGroup'>

@@ -7,6 +7,21 @@ import { query } from '../_generated/server'
 import { Service as helpers } from '../lib'
 import type { CategoryMap, GisMap } from '../lib/pois/poi'
 
+export const one = query({
+  args: {
+    id: v.id('pois'),
+  },
+  handler: async (ctx, args) => {
+    const { id } = args
+    const doc = await ctx.db.get('pois', id)
+    if (!doc) {
+      throw new Error('POI not found')
+    }
+    const [item] = await helpers.pois.poi.inflatePois(ctx, [doc])
+    return item
+  },
+})
+
 /**
  * Returns POIs within the given bounding box and categories.
  * @note works in tandem with the {@link ensureCoverage} mutation to fill in our gaps.

@@ -1,6 +1,6 @@
 'use client'
 
-import { PoiCategoryItem } from '@/entities/poi/categories'
+import { PoiCategoryItem } from '@/entities/places/categories'
 import { usePoiGroupCategoriesBySlug } from '@/features/poi-categories/hooks'
 import { LoaderIcon } from 'lucide-react'
 import Link from 'next/link'

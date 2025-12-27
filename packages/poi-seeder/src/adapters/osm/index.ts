@@ -24,21 +24,20 @@ export class OSMFetcher implements POIFetcher {
    */
   async fetch(options: FetchOptions): Promise<SourcePOI[]> {
     const allPOIs: SourcePOI[] = []
-
+    // todo: this can be optimized with parallel fetching but overpass might throw a 429 error
+    // if we fetch too many categories at once, so we need to figure it out. maybe load balance
+    // on our side using different overpass api urls?
     for (const categorySlug of options.categories) {
       const mapping = this.categoryMappings.find((m) => m.slug === categorySlug)
 
       if (!mapping) {
-        console.warn(`⚠️  Unknown category: ${categorySlug} (skipping)`)
+        console.debug(`⚠️ [OSM Fetcher] Unknown category: ${categorySlug} (skipping)`)
         continue
       }
-
-      console.log(`📍 Fetching: ${mapping.slug}`)
 
       const query = buildOverpassQuery(mapping, options.boundingBox)
       const pois = await this.fetchWithQuery(query)
 
-      console.log(`✓ Found ${pois.length} POIs for ${mapping.slug}\n`)
       allPOIs.push(...pois)
     }
 
@@ -72,7 +71,8 @@ export class OSMFetcher implements POIFetcher {
     })
 
     if (!response.ok) {
-      throw new Error(`Overpass API error: ${response.status} ${response.statusText}`)
+      const text = await response.text()
+      throw new Error(`Overpass API error: ${response.status} ${response.statusText}\n${text}`)
     }
 
     const data = await response.json()
@@ -164,7 +164,7 @@ export class OSMFetcher implements POIFetcher {
 
     // Build description from tags
     const description = this.buildDescription(tags)
-    const category  = getCategoryFromTags(feature.tags, this.categoryMappings)
+    const category = getCategoryFromTags(feature.tags, this.categoryMappings)
     return {
       name,
       description,

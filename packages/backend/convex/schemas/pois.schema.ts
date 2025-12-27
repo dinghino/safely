@@ -60,29 +60,20 @@ export const pois = defineTable({
   description: v.optional(v.string()),
   categoryId: v.id('poiCategory'),
   addedBy: v.id('users'),
-  /**
-   * geohash for the POI location to allow for efficient querying
-   * and proximity searches.
-   * This allows us to avoid complex geospatial queries for simple
-   * searches and filtering results by location.
-   */
-  geohash: v.string(),
   // for external references
-  attribution: v.optional(v.object({
-    source: v.string(),
-    url: v.optional(v.string()),
-  })),
+  attribution: v.optional(
+    v.object({
+      source: v.string(),
+      url: v.optional(v.string()),
+    }),
+  ),
   sourceData: v.optional(v.any()),
 })
-  // default index for all POIs in a defined area
-  .index('geohash', ['geohash'])
-  // default combined query for nearby POIs by category
-  .index('category_hash', ['categoryId', 'geohash'])
   // category lookup
   .index('category', ['categoryId'])
   // by whom added, mostly for auditing and show a user their added POIs
   .index('addedBy', ['addedBy'])
   .searchIndex('search_name', {
     searchField: 'name',
-    filterFields: ['categoryId', 'geohash'],
+    filterFields: ['categoryId'],
   })

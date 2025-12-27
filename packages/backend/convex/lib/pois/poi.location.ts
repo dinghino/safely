@@ -7,6 +7,4 @@ export type PoiGeospatialFilter = {
   categoryGroup: Id<'poiCategoryGroup'>
 }
 
-export const geospatial = new GeospatialIndex<Id<'pois'>, PoiGeospatialFilter>(
-  components.geospatial,
-)
+export const geospatial = new GeospatialIndex<Id<'pois'>, PoiGeospatialFilter>(components.poisGis)

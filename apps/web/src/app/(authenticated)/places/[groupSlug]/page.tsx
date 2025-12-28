@@ -2,7 +2,6 @@ import { fetchQuery } from 'convex/nextjs'
 import { notFound } from 'next/navigation'
 import { api } from '@workspace/backend/api'
 import { Skeleton } from '@workspace/ui/components/skeleton'
-import { PlacesRouteDispatcher } from '@/entities/places/context'
 
 type Props = {
   params: Promise<{ groupSlug: string }>
@@ -14,7 +13,6 @@ export default async function PoiCategoryGroupPage(props: Props) {
 
   return (
     <div className="">
-      <PlacesRouteDispatcher groupSlug={slug} />
       <h1>Category Group page</h1>
       {group ? <p>Group: {group?.name}</p> : <Skeleton className="h-4 w-24" />}
       <p>show places in the given category group and select category for narrow search</p>

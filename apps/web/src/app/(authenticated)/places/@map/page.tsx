@@ -1,10 +1,5 @@
-import { PlacesMapProvider } from '@/features/place-map'
-import { PlaceMapWidget } from '@/widgets/places'
+import { PlacesMapHeader } from '@/views/places-header'
 
 export default function MapPage() {
-  return (
-    <PlacesMapProvider>
-      <PlaceMapWidget />
-    </PlacesMapProvider>
-  )
+  return <PlacesMapHeader />
 }

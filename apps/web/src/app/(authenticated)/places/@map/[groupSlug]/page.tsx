@@ -1,8 +1,7 @@
 import { notFound } from 'next/navigation'
 import { fetchQuery } from 'convex/nextjs'
 import { api } from '@workspace/backend/api'
-import { PlacesMapProvider } from '@/features/place-map'
-import { PlaceMapWidget } from '@/widgets/places'
+import { PlacesMapHeader } from '@/views/places-header'
 
 type Props = {
   params: Promise<{ groupSlug: string }>
@@ -10,17 +9,13 @@ type Props = {
 
 export default async function GroupMapPage(props: Props) {
   const { groupSlug: slug } = await props.params
-  const categories = await fetchQuery(api.pois.categories.getByGroupSlug, { slug })
+  const group = await fetchQuery(api.pois.groups.getBySlug, { slug })
 
-  if (!categories) {
-    return notFound()
-  }
+  if (!group) return notFound()
 
+  // We need categories for the map filter
+  const categories = await fetchQuery(api.pois.categories.getByGroupId, { groupId: group._id })
   const categoryIds = categories.map((c) => c._id)
 
-  return (
-    <PlacesMapProvider categories={categoryIds}>
-      <PlaceMapWidget />
-    </PlacesMapProvider>
-  )
+  return <PlacesMapHeader categoryIds={categoryIds} breadcrumbs={{ group }} />
 }

@@ -1,16 +1,19 @@
 import { notFound } from 'next/navigation'
 import { fetchQuery } from 'convex/nextjs'
 
+import { api } from '@workspace/backend/api'
+
+import { PlacesRouteDispatcher } from '@/entities/places/context'
+
 import { PlacesMapProvider } from '@/features/place-map'
 import { PlaceListWidget, PlaceMapWidget } from '@/widgets/places'
-import { api } from '@workspace/backend/api'
 
 type Props = {
   params: Promise<{ groupSlug: string; categorySlug: string }>
 }
 
 export default async function PoiCategoryPage(props: Props) {
-  const { categorySlug: slug } = await props.params
+  const { categorySlug: slug, groupSlug } = await props.params
   const category = await fetchQuery(api.pois.categories.getBySlug, { slug })
 
   if (!category) {
@@ -19,11 +22,7 @@ export default async function PoiCategoryPage(props: Props) {
 
   return (
     <>
-      {/* <p>poi category page</p> */}
-      {/* <p>
-        dashboard to show places in the given group and category, user added pois for this category
-        etc
-      </p> */}
+      <PlacesRouteDispatcher groupSlug={groupSlug} categorySlug={slug} />
       <div className="relative isolate h-[512px]">
         <PlacesMapProvider categories={[category._id]}>
           <PlaceMapWidget>{/* <ScrapedCellsLayer /> */}</PlaceMapWidget>

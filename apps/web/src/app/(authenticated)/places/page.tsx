@@ -37,7 +37,7 @@ export default function PlacesPage() {
   const groups = usePoiCategoryGroups()
 
   return (
-    <div className="space-y-6">
+    <div className="isolate space-y-6">
       {/* Placeholder for future relevant/personalized places */}
       <Empty className="border border-dashed">
         <EmptyHeader>

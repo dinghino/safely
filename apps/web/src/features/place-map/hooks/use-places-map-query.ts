@@ -1,3 +1,5 @@
+'use client'
+
 import { useEffect, useState } from 'react'
 import { useMapEvents } from 'react-leaflet/hooks'
 import { useMutation, useQuery } from 'convex/react'

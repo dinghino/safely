@@ -1,6 +1,6 @@
 'use client'
 
-import { PlaceCard } from '@/entities/places/components/place-card/place-card'
+import { PlaceListItem } from '@/entities/places/components/place-list-item'
 import { cn } from '@/lib/utils'
 import { Spinner } from '@workspace/ui/components/spinner'
 import { usePlacesMap } from '@/features/place-map'
@@ -35,7 +35,7 @@ export const PlaceListWidget = ({ className }: PlaceListWidget.Props) => {
 
         <ul className="flex flex-col gap-1">
           {filteredPlaces?.map((place) => (
-            <PlaceCard key={place._id} place={place} onClick={() => focusOnPlace(place._id)} />
+            <PlaceListItem key={place._id} place={place} onClick={() => focusOnPlace(place._id)} />
           ))}
         </ul>
       </div>

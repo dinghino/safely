@@ -39,8 +39,8 @@ export namespace PlacesMapProvider {
 
   export type Props = {
     children: ReactNode
-    categories: Id<'poiCategory'>[]
-    searchQuery: string
+    categories?: Id<'poiCategory'>[]
+    searchQuery?: string
   }
 }
 
@@ -68,7 +68,7 @@ function useFilteredPlaces({ places, search }: { places: Place[]; search: string
  * with {@link PlaceFiltersProvider} to provide the necessary data.
  */
 export function PlacesMapProvider(props: PlacesMapProvider.Props) {
-  const { children, categories, searchQuery: search } = props
+  const { children, categories = [], searchQuery: search = '' } = props
 
   const [bounds, setBounds] = useState(INITIAL_BOUNDS)
 

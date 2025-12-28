@@ -3,7 +3,11 @@
  * used in the app with react-native-actions-sheet.
  * @see https://rnas.vercel.app/guides/sheetmanager
  */
-import { registerSheet, type RouteDefinition, type SheetDefinition } from 'react-native-actions-sheet'
+import {
+  registerSheet,
+  type RouteDefinition,
+  type SheetDefinition,
+} from 'react-native-actions-sheet'
 
 import { DeviceSettingsSheet } from './device-settings'
 import { DebugLocationsDataSheet } from './debug-locations-data'
@@ -24,7 +28,7 @@ declare module 'react-native-actions-sheet' {
       payload: DebugLocationsDataSheet.Props
     }>
     'debug-geo-events': SheetDefinition<{
-      payload: DebugGeoEventsSheet.Props,
+      payload: DebugGeoEventsSheet.Props
       routes: {
         'events-list': RouteDefinition
         'events-filter': RouteDefinition

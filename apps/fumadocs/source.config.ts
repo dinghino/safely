@@ -15,10 +15,7 @@ export const docs = defineDocs({
 export default defineConfig({
   mdxOptions: {
     // MDX options
-    remarkPlugins: [
-      remarkMdxFiles,
-      remarkMdxMermaid,
-    ],
+    remarkPlugins: [remarkMdxFiles, remarkMdxMermaid],
   },
   lastModifiedTime: 'git',
 })

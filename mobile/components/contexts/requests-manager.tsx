@@ -4,7 +4,11 @@ import { useMutation, useQuery } from 'convex/react'
 import { api } from '@workspace/backend/api'
 
 import { useDeviceContext } from './device-manager'
-import { isRequestPending, isRequestValid, type TrackingRequest } from '@/lib/shared/request-helpers'
+import {
+  isRequestPending,
+  isRequestValid,
+  type TrackingRequest,
+} from '@/lib/shared/request-helpers'
 import BackgroundGeolocation from 'react-native-background-geolocation'
 import { useSessionToken } from '@/lib/hooks/auth-hooks'
 

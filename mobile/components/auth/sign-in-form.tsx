@@ -4,7 +4,6 @@ import { type TextInput, View } from 'react-native'
 import { Link } from 'expo-router'
 import { useSignIn } from '@clerk/clerk-expo'
 
-
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'

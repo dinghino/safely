@@ -1,4 +1,4 @@
-const { hairlineWidth } = require('nativewind/theme');
+const { hairlineWidth } = require('nativewind/theme')
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
@@ -70,4 +70,4 @@ module.exports = {
     hoverOnlyWhenSupported: true,
   },
   plugins: [require('tailwindcss-animate')],
-};
+}

@@ -45,12 +45,12 @@ export const poiCategory = defineTable({
 })
   .index('name', ['name'])
   .index('groupId', ['groupId'])
-  .index('search_slug', ['slug'])
+  .index('slug', ['slug'])
   .searchIndex('search_name', {
     searchField: 'name',
     filterFields: ['groupId', 'slug'],
   })
-  .searchIndex('slug', {
+  .searchIndex('search_slug', {
     searchField: 'slug',
     filterFields: ['groupId', 'name'],
   })

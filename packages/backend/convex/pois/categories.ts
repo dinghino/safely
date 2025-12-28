@@ -78,6 +78,20 @@ export const search = query({
   },
 })
 
+export const getBySlug = query({
+  args: {
+    slug: v.string(),
+  },
+  handler: async (ctx, { slug }) => {
+    const category = await ctx.db
+      .query('poiCategory')
+      .withIndex('slug', (q) => q.eq('slug', slug))
+      .first()
+    if (!category) return null
+    return await injectGroupData(ctx, category)
+  },
+})
+
 /**
  * Get paginated POI categories in a given group
  */

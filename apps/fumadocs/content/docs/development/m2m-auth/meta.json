@@ -3,12 +3,5 @@
   "description": "Design and API changes for M2M authentication",
   "root": false,
   "icon": "key",
-  "pages": [
-    "index.mdx",
-    "tldr.mdx",
-    "design.mdx",
-    "lifecycle.mdx",
-    "api-changes.mdx",
-    "..."
-  ]
+  "pages": ["index.mdx", "tldr.mdx", "design.mdx", "lifecycle.mdx", "api-changes.mdx", "..."]
 }

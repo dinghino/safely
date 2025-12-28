@@ -19,8 +19,8 @@ export function TodosCard() {
       </CardHeader>
       <CardContent>
         <Authenticated>
-          <div className='inline-flex gap-2 items-center w-full mb-2'>
-            <CreateTodoForm className='flex-1'/>
+          <div className="mb-2 inline-flex w-full items-center gap-2">
+            <CreateTodoForm className="flex-1" />
             <DeleteCompletedTodoButton variant="destructive" />
           </div>
           <TodosList />

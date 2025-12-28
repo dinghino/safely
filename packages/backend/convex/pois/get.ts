@@ -18,13 +18,14 @@ export const one = query({
       throw new Error('POI not found')
     }
 
-    const [category] = await helpers.pois.categories.resolveCategories(ctx, [doc.categoryId])
-    const { coordinates } = (await helpers.pois.location.geospatial.get(ctx, id))!
+    // const [category] = await helpers.pois.categories.resolveCategories(ctx, [doc.categoryId])
+    // const { coordinates } = (await helpers.pois.location.geospatial.get(ctx, id))!
 
-    const gisMap: GisMap = new Map([[id, coordinates]])
-    const categoryMap: CategoryMap = new Map([[category!._id, category!]])
+    // const gisMap: GisMap = new Map([[id, coordinates]])
+    // const categoryMap: CategoryMap = new Map([[category!._id, category!]])
 
-    const [item] = await helpers.pois.poi.inflatePois(ctx, [doc], { gisMap, categoryMap })
+    const [item] = await helpers.pois.poi.inflatePois(ctx, [doc])
+    // const [item] = await helpers.pois.poi.inflatePois(ctx, [doc], { gisMap, categoryMap })
 
     return item
   },
@@ -42,24 +43,12 @@ export const inView = query({
   handler: async (ctx, args) => {
     const { bounds, categories: categoryIds } = args
 
-    // 1. Resolve category slugs
     // resolveCategories handles the empty array case by returning all categories
     const categories = await helpers.pois.categories.resolveCategories(ctx, categoryIds)
     const categorySlugs = categories.map((c) => c.slug)
     const effectiveCategoryIds = categories.map((c) => c._id)
 
-    // console.debug('requesting pois in view', bounds, categorySlugs)
-
-    const missingCells = await helpers.pois.scraper.getMissingCells(ctx, {
-      bounds,
-      categories: categorySlugs,
-    })
-
-    // 2. Return missing cells so client can trigger scraping
-    // We cannot schedule actions from a query.
-    // The client or a separate process must monitor this field and trigger scraping.
-
-    // 4. Query Geospatial Index
+    // Query Geospatial Index for bounding box
     const { results } = await helpers.pois.location.geospatial.query(ctx, {
       shape: {
         type: 'rectangle',
@@ -75,10 +64,12 @@ export const inView = query({
       limit: 1000,
     })
 
+    // map results for inflation
     const gisMap: GisMap = new Map(results.map((r) => [r.key, r.coordinates]))
     const categoryMap: CategoryMap = new Map(categories.map((c) => [c._id, c]))
 
     const poiIds = results.map((r) => r.key)
+
     const _docs = await Promise.all(poiIds.map((id) => ctx.db.get('pois', id)))
     const docs = _docs.filter((doc): doc is Doc<'pois'> => doc !== null)
 
@@ -88,7 +79,6 @@ export const inView = query({
     })
     return {
       pois: mergedPois,
-      missingCells,
       categorySlugs,
     }
   },

@@ -88,7 +88,6 @@ export const DeviceManager = ({ children }: DeviceManager.Props) => {
     if (!deviceId || !sessionToken) return
     heartbeatMutation({ sessionToken })
     return () => {
-
       console.log('💔 [Manager] Disconnecting device on unmount')
       disconnectMutation({ sessionToken }).catch((e) => {
         console.error('💔 [Manager] Error disconnecting device on unmount', e)

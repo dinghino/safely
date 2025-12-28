@@ -2,9 +2,10 @@ import { cn } from '@/lib/utils'
 
 /**
  * Wrapper for custom `icon` component for `MapMarker` to give a pin-like appearance
- * to its children that are the actual icon content.  
+ * to its children that are the actual icon content.
  */
 export const FancyMarkerIcon = (props: { children: React.ReactNode; className?: string }) => {
+  const { children, className, ...rest } = props
   return (
     <div
       className={cn(
@@ -16,10 +17,11 @@ export const FancyMarkerIcon = (props: { children: React.ReactNode; className?: 
         'shadow-xl',
         '-translate-y-3',
         'transition-all',
-        props.className,
+        className,
       )}
+      {...rest}
     >
-      {props.children}
+      {children}
     </div>
   )
 }

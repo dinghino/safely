@@ -13,9 +13,7 @@
     "./lib/*": "./src/lib/*",
     ".": "./src/index.ts"
   },
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "scripts": {
     "check-types": "tsup --noEmit"
   },

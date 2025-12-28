@@ -45,3 +45,5 @@ export type DeviceLogPayload<T extends DeviceLogType = DeviceLogType> = Extract<
 
 export type PoiCategoryGroup = FromFunction<typeof api.pois.groups.get>
 export type PoiCategory = FromFunction<typeof api.pois.categories.get>
+
+export type { Bounds as MapQueryBounds } from '../convex/lib/pois/management'

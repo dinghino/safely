@@ -31,7 +31,7 @@ export const Wireframe = (props: Wireframe.Props) => {
           className={cn(
             'absolute top-0 left-0 rounded bg-muted p-0.5 font-mono text-[0.5rem]',
             'opacity-25 transition-opacity',
-            'z-30'
+            'z-30',
           )}
         >
           {title}

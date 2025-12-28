@@ -12,7 +12,13 @@ import type { Device } from '@/entities/device/types'
  * @note This will be expanded with more fields to edit the device properties when
  * we add them
  */
-export function DeviceInfoForm({ device, onSubmitted }: { device: Device; onSubmitted?: () => void }) {
+export function DeviceInfoForm({
+  device,
+  onSubmitted,
+}: {
+  device: Device
+  onSubmitted?: () => void
+}) {
   const rename = useMutation(api.devices.manage.rename)
 
   const form = useAppForm({

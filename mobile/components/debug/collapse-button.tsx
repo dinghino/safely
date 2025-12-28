@@ -1,6 +1,5 @@
-import { useColorScheme } from "nativewind"
-import { Button } from "../ui/button"
-
+import { useColorScheme } from 'nativewind'
+import { Button } from '../ui/button'
 
 export const Trigger = ({ children, ...props }: { children: React.ReactNode }) => {
   const { colorScheme } = useColorScheme()

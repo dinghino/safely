@@ -76,9 +76,10 @@ export const deleteCompletedTodo = mutation({
     // get all todos from one specific user marked as completed
     const todosList = await ctx.db
       .query('todos')
-      .withIndex('byUserCompleted', (q) => q.eq('created_by', user._id).eq('completed', true)).collect()
-    
-    await Promise.all(todosList.map(t => ctx.db.delete('todos', t._id)))
+      .withIndex('byUserCompleted', (q) => q.eq('created_by', user._id).eq('completed', true))
+      .collect()
+
+    await Promise.all(todosList.map((t) => ctx.db.delete('todos', t._id)))
     return { success: true }
   },
 })

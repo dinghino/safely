@@ -50,7 +50,7 @@ export const DebugGeoEventsSheet: React.FC<DebugGeoEventsSheet.Props> = (_props)
         snapPoints={[100]}
         containerStyle={{ backgroundColor, gap: 8 }}
         routes={routes}
-        initialRoute='events-list'
+        initialRoute="events-list"
       />
     </FilterProvider>
   )

@@ -7,22 +7,20 @@ export type GisMap = Map<Id<'pois'>, { latitude: number; longitude: number }>
 type Injected = Awaited<ReturnType<typeof injectGroups>>[number]
 export type CategoryMap = Map<Id<'poiCategory'>, NonNullable<Injected>>
 
+type Options = { gisMap: GisMap; categoryMap: CategoryMap }
+
+function ensureOptions(options?: { gisMap?: GisMap; categoryMap?: CategoryMap }): Options {
+  const { gisMap = new Map(), categoryMap = new Map() } = options ?? {}
+  return { gisMap, categoryMap }
+}
+
 /**
  * Inflates a list of POI documents with their coordinates and category data.
  * Optimized with batching to avoid N+1 queries.
  */
-export async function inflatePois(
-  ctx: QueryCtx,
-  pois: Doc<'pois'>[],
-  options?: {
-    gisMap?: GisMap
-    categoryMap?: CategoryMap
-  },
-) {
+export async function inflatePois(ctx: QueryCtx, pois: Doc<'pois'>[], options?: Partial<Options>) {
   if (pois.length === 0) return []
-
-  const gisMap: GisMap = options?.gisMap ?? new Map()
-  const categoryMap: CategoryMap = options?.categoryMap ?? new Map()
+  const { gisMap, categoryMap } = ensureOptions(options)
 
   // 1. Fetch missing coordinates from geospatial index if not provided
   if (gisMap.size === 0) {
@@ -36,7 +34,6 @@ export async function inflatePois(
   const neededCategoryIds = Array.from(new Set(pois.map((p) => p.categoryId))).filter(
     (id) => !categoryMap.has(id),
   )
-  console.log('inflatePois:needed categories', neededCategoryIds)
   if (neededCategoryIds.length > 0) {
     const categoriesBase = await Promise.all(
       neededCategoryIds.map((id) => ctx.db.get('poiCategory', id)),
@@ -50,9 +47,9 @@ export async function inflatePois(
     }
   }
 
-  // 4. Assemble final objects
+  // 3. Assemble final objects
   return pois.map((poi) => {
-    const coordinates = gisMap.get(poi._id)
+    const coordinates = gisMap.get(poi._id)!
     const category = categoryMap.get(poi.categoryId)!
 
     return {

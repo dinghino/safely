@@ -10,7 +10,7 @@ export namespace TimerBadge {
     /**
      * Tick interval
      * @default 1 second
-    */
+     */
     tick?: number
   }
 }

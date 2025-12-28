@@ -103,11 +103,15 @@ function DeleteTodoButton({ todo }: { todo: Todo }) {
   )
 }
 
-export function DeleteCompletedTodoButton(props: Omit<React.ComponentProps<typeof Button>, 'children' | 'onClick'>) {
+export function DeleteCompletedTodoButton(
+  props: Omit<React.ComponentProps<typeof Button>, 'children' | 'onClick'>,
+) {
   const deleteCompleted = useDeleteCompletedTodo()
   return (
     <DeleteDialogButton
-      onClick={async () => { await deleteCompleted() }}
+      onClick={async () => {
+        await deleteCompleted()
+      }}
       title="Delete all completed todo"
       description={
         <>
@@ -117,13 +121,18 @@ export function DeleteCompletedTodoButton(props: Omit<React.ComponentProps<typeo
       }
       aria-label="Delete all"
     >
-      <Button variant="ghost" size="icon" aria-label="Delete todo" {...props} className={cn("cursor-pointer", props.className)}>
+      <Button
+        variant="ghost"
+        size="icon"
+        aria-label="Delete todo"
+        {...props}
+        className={cn('cursor-pointer', props.className)}
+      >
         <Trash2 />
       </Button>
     </DeleteDialogButton>
   )
 }
-
 
 function EditTodoDialog({ todo }: { todo: Todo }) {
   const [open, SetOpen] = useState(false)

@@ -21,7 +21,7 @@ export const toRadians = (degrees: number): number => (degrees * Math.PI) / 180
 
 export const metersToLat = (meters: number): number => meters / 111_111
 
-export const metersToLng = (meters: number, latitude: number): number => 
+export const metersToLng = (meters: number, latitude: number): number =>
   meters / (111_111 * Math.cos(toRadians(latitude)))
 
 export function distanceInMeters(c1: Position, c2: Position): number {

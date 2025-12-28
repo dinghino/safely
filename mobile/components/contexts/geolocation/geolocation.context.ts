@@ -79,7 +79,8 @@ function reducer(
       return {
         ...prev,
         state: { ...prev.state, ...payload },
-        events: [...prev.events,
+        events: [
+          ...prev.events,
           // makeEvent('🛠️ update', payload)
         ],
       }

@@ -1,6 +1,6 @@
 'use client'
 
-import { PoiCategoryItem } from '@/entities/poi/categories'
+import { PoiCategoryItem } from '@/entities/places/categories'
 import { usePoiGroupCategoriesBySlug } from '@/features/poi-categories/hooks'
 import { LoaderIcon } from 'lucide-react'
 import Link from 'next/link'
@@ -21,7 +21,7 @@ export default function PoiCategoryLayout(props: Props) {
   const { groupSlug } = use(props.params)
   const categories = usePoiGroupCategoriesBySlug(groupSlug)
   return (
-    <div className="flex items-stretch gap-4 max-lg:flex-col">
+    <>
       <div className="min-w-fit min-xl:w-[256px]">
         {!categories && <LoaderIcon className="mx-auto animate-spin" />}
         {categories && (
@@ -39,6 +39,6 @@ export default function PoiCategoryLayout(props: Props) {
         )}
       </div>
       <div className="flex-1">{props.children}</div>
-    </div>
+    </>
   )
 }

@@ -2,16 +2,17 @@
 
 import { Badge } from '@workspace/ui/components/badge'
 import { Button } from '@workspace/ui/components/button'
-import { usePlacePopup } from './place-popup-context'
+import { usePlace } from '../place-context'
 
 export namespace PlacePopupAttribution {
   export type Props = Record<string, never>
 }
 
 export const PlacePopupAttribution = () => {
-  const { attribution } = usePlacePopup()
+  const place = usePlace()
 
-  if (!attribution) return null
+  if (!place.attribution) return null
+  const { attribution } = place
 
   return (
     <>

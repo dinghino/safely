@@ -1,14 +1,14 @@
 'use client'
 
 import { CategoryIconStatic } from '@/entities/places/categories'
-import { usePlacePopup } from './place-popup-context'
+import { usePlace } from '../place-context'
 
 export namespace PlacePopupHeader {
   export type Props = Record<string, never>
 }
 
 export const PlacePopupHeader = () => {
-  const { name, category } = usePlacePopup()
+  const { name, category } = usePlace()
 
   return (
     <header className="flex items-center gap-3 border-b pb-3">

@@ -1,13 +1,13 @@
 'use client'
 
-import { usePlacePopup } from './place-popup-context'
+import { usePlace } from '../place-context'
 
 export namespace PlacePopupLocation {
   export type Props = Record<string, never>
 }
 
 export const PlacePopupLocation = () => {
-  const { coordinates } = usePlacePopup()
+  const { coordinates } = usePlace()
 
   if (!coordinates) return null
 

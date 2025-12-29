@@ -9,7 +9,7 @@ import { FancyMarkerIcon, MapMarker, MapPopup } from '@/shared/modules/maps'
 import { CategoryIconStatic } from '@/entities/places/categories'
 import type { Place } from '@/entities/places/types'
 
-import PlacePopupContent from './place-popup'
+import { PlacePopupContent } from './place-popup'
 
 export namespace PlaceMarker {
   export type Props = {

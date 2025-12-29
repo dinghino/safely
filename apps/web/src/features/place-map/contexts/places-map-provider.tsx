@@ -8,9 +8,9 @@ import { useQuery } from 'convex/react'
 import { api } from '@workspace/backend/api'
 
 import type { Place } from '@/entities/places/types'
-import { usePlacesMapQuery } from './hooks/use-places-map-query'
+import { usePlacesMapQuery } from '../hooks/use-places-map-query'
 import type { MapQueryBounds } from '@workspace/backend/types'
-import { useFocusOnPlace } from './hooks/use-focus-on-place'
+import { useFocusOnPlace } from '../hooks/use-focus-on-place'
 
 const INITIAL_BOUNDS = {
   sw: { lat: 43.84399877553671, lng: 11.06778144836426 },

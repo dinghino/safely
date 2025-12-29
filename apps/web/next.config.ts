@@ -17,6 +17,14 @@ const nextConfig: NextConfig = {
     '@workspace/nuqs',
     '@workspace/form',
   ],
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'picsum.photos',
+      },
+    ],
+  },
   experimental: {
     serverActions: {
       allowedOrigins: ['192.168.0.10', 'https://lbg22w26-3001.euw.devtunnels.ms'],

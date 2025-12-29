@@ -11,6 +11,7 @@ import {
 } from '@workspace/ui/components/breadcrumb'
 import { cn } from '@/lib/utils'
 import type { CategoryGroup, CategoryItem, Place } from '@/entities/places/types'
+import { MapPinIcon } from 'lucide-react'
 
 export namespace PlacesBreadcrumbs {
   export type Props = {
@@ -28,10 +29,15 @@ export function PlacesBreadcrumbs({ className, group, category, place }: PlacesB
         <BreadcrumbItem>
           {group ? (
             <BreadcrumbLink asChild>
-              <Link href="/places">Places</Link>
+              <Link href="/places" className="group flex items-center gap-1">
+                <MapPinIcon className="size-3.5 opacity-50 group-hover:opacity-100" /> Places
+              </Link>
             </BreadcrumbLink>
           ) : (
-            <BreadcrumbPage>Places</BreadcrumbPage>
+            <BreadcrumbPage>
+              <MapPinIcon />
+              Places
+            </BreadcrumbPage>
           )}
         </BreadcrumbItem>
 

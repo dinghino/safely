@@ -34,8 +34,8 @@ export function PlacesBreadcrumbs({ className, group, category, place }: PlacesB
               </Link>
             </BreadcrumbLink>
           ) : (
-            <BreadcrumbPage>
-              <MapPinIcon />
+            <BreadcrumbPage className="flex items-center gap-1">
+              <MapPinIcon className="size-3.5" />
               Places
             </BreadcrumbPage>
           )}

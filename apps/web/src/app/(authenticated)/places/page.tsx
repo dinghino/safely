@@ -1,14 +1,23 @@
 'use client'
 
 import Link from 'next/link'
-import type { Id } from '@workspace/backend/dataModel'
+import { ChevronDownCircleIcon, ChevronRightIcon } from 'lucide-react'
 
+import type { Id } from '@workspace/backend/dataModel'
 import { Badge } from '@workspace/ui/components/badge'
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@workspace/ui/components/collapsible'
+import { Button } from '@workspace/ui/components/button'
 
 import { cn } from '@/lib/utils'
 
 import { PoiCategoryColorBadge, CategoryIcon } from '@/entities/places/categories'
 import type { CategoryGroup } from '@/entities/places/types'
+import { PlaceCategoryItem } from '@/entities/places/components/category-item'
+
 import { usePoiGroupCategoriesById } from '@/features/poi-categories/hooks'
 
 import { PlaceFiltersFacade } from '@/features/place-filters'
@@ -22,9 +31,6 @@ import {
 import { usePoiCategoryGroups } from '@/features/poi-categories/hooks'
 import { FilteredMapProvider, PlaceListWidget, PlaceMapWidget } from '@/widgets/places'
 import { ScrapedCellsLayer } from '@/shared/modules/admin/place-coverage/components/scraped-cells-layer'
-import type { PoiCategory } from '@workspace/backend/types'
-import { ChevronRightIcon } from 'lucide-react'
-import { Button } from '@workspace/ui/components/button'
 
 /**
  * Main default page for places route.
@@ -57,50 +63,85 @@ export default function PlacesPage() {
         </EmptyContent>
       </Empty>
 
-      {/* todo: wrap both these into context to allow sync between filters, map and lists */}
-      <FilteredMapProvider>
-        <PlaceFiltersFacade />
-        <div className="flex h-[600px] gap-4">
-          <PlaceListWidget className="w-72" />
-          <PlaceMapWidget>
-            <ScrapedCellsLayer />
-          </PlaceMapWidget>
-        </div>
-      </FilteredMapProvider>
-
       {/* Category Navigation Section */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {groups?.map((group) => (
-          <CategoryGroupCard key={group._id} group={group} />
-        ))}
-      </div>
-      {/* CATEGORIES CARDS EXAMPLE */}
-      <div className="space-y-8">
-        {groups?.map((group) => (
-          <section className="flex flex-col gap-4" key={group._id}>
-            <header className="group inline-flex w-full items-center gap-3">
-              <h3 className="font-bold text-xl">{group.name}</h3>
-
-              <Button asChild variant="ghost">
-                <Link
-                  href={`/places/${group.slug}`}
-                  className={cn(
-                    'opacity-25 transition-opacity group-hover:opacity-100',
-                    'duration-350 ease-in-out',
-                    // 'inline-flex items-center gap-0',
-                    'text-xs uppercase',
-                    'text-muted-foreground',
-                  )}
-                >
-                  <span>see all</span>
-                  <ChevronRightIcon className="size-3.5" />
-                </Link>
-              </Button>
-            </header>
-            <CategoryCardList group={group} />
-          </section>
-        ))}
-      </div>
+      <section className="grid grid-cols-[1fr_3fr_1fr] gap-4">
+        {/* <div className="space-y-8">
+          {groups?.map((group) => (
+            <article className="flex flex-col gap-4" key={group._id}>
+              <header className="inline-flex w-full items-center gap-3">
+                <Button asChild variant="ghost" className="group w-fit">
+                  <Link href={`/places/${group.slug}`}>
+                    <h3 className="font-bold text-xl">{group.name}</h3>
+                    <ChevronRightIcon
+                      className={cn(
+                        'opacity-25 transition-opacity group-hover:opacity-100',
+                        'transition-transform group-hover:translate-x-1',
+                        'duration-250 ease-in-out',
+                        'inline-flex items-center gap-0',
+                        'text-xs uppercase',
+                        'text-muted-foreground',
+                      )}
+                    />
+                  </Link>
+                </Button>
+              </header>
+              <CategoryCardList group={group} />
+            </article>
+          ))}
+        </div> */}
+        <div className="relative space-y-8">
+          {groups?.map((group) => (
+            <Collapsible key={group._id} defaultOpen>
+              <article className="relative">
+                <header className="sticky top-[500px] z-1000 flex justify-between gap-4">
+                  <Button asChild variant="ghost" className="group w-fit">
+                    <Link href={`/places/${group.slug}`}>
+                      <h3 className="font-bold text-xl">{group.name}</h3>
+                      <ChevronRightIcon
+                        className={cn(
+                          'opacity-25 transition-opacity group-hover:opacity-100',
+                          'transition-transform group-hover:translate-x-1',
+                          'duration-250 ease-in-out',
+                          'inline-flex items-center gap-0',
+                          'text-xs uppercase',
+                          'text-muted-foreground',
+                        )}
+                      />
+                    </Link>
+                  </Button>
+                  <CollapsibleTrigger asChild>
+                    <Button variant="ghost">
+                      <ChevronDownCircleIcon />
+                    </Button>
+                  </CollapsibleTrigger>
+                </header>
+              </article>
+              <CollapsibleContent className="mt-4">
+                <CategoryCardList group={group} />
+              </CollapsibleContent>
+            </Collapsible>
+          ))}
+        </div>
+        <div className="space-y-4">
+          {/* todo: wrap both these into context to allow sync between filters, map and lists */}
+          <FilteredMapProvider>
+            <PlaceFiltersFacade />
+            <div className="flex h-[600px] gap-4">
+              <PlaceListWidget className="w-72" />
+              <PlaceMapWidget>
+                <ScrapedCellsLayer />
+              </PlaceMapWidget>
+            </div>
+          </FilteredMapProvider>
+        </div>
+        <div>
+          <div className="grid grid-cols-2 gap-4">
+            {groups?.map((group) => (
+              <CategoryGroupCard key={group._id} group={group} className="" />
+            ))}
+          </div>
+        </div>
+      </section>
     </div>
   )
 }
@@ -110,6 +151,7 @@ export default function PlacesPage() {
 namespace CategoryGroupCard {
   export type Props = {
     group: CategoryGroup
+    className?: string
   }
 }
 
@@ -117,11 +159,12 @@ namespace CategoryGroupCard {
  * Card component for category group navigation.
  * Displays group info and links to category-specific pages.
  */
-const CategoryGroupCard = ({ group }: CategoryGroupCard.Props) => {
+const CategoryGroupCard = ({ group, className = '' }: CategoryGroupCard.Props) => {
   return (
     <article
       className={cn(
         'rounded-lg border border-dashed p-4 transition-colors hover:bg-muted dark:hover:bg-muted/10',
+        className,
       )}
     >
       <header className="relative isolate inline-flex w-full cursor-pointer items-center gap-2">
@@ -172,33 +215,6 @@ const CategoryLinks = ({ groupId }: CategoryLinks.Props) => {
 
 // region category cards
 
-const CategoryCard = ({ category }: { category: PoiCategory }) => {
-  return (
-    <article
-      className={cn(
-        'rounded-lg border border-muted p-4 transition-colors hover:bg-muted dark:hover:bg-muted/10',
-        'flex flex-row gap-4',
-        'relative isolate cursor-pointer',
-      )}
-    >
-      <div
-        className="flex size-12 shrink-0 items-center justify-center rounded-xl"
-        style={{ backgroundColor: `${category.color.value}15` }}
-      >
-        <CategoryIcon
-          icon={category.icon}
-          style={{ color: category.color.value }}
-          className="size-8"
-        />
-      </div>
-      <header className="w-full gap-2">
-        <Link href={`/places/${category.slug}`} className="absolute inset-0 z-10" />
-        <h2 className="font-bold text-lg">{category.name}</h2>
-        <p className="mt-1 text-muted-foreground text-xs">{category.description}</p>
-      </header>
-    </article>
-  )
-}
 const CategoryCardList = ({ group }: { group: CategoryGroup }) => {
   const categories = usePoiGroupCategoriesById(group._id)
 
@@ -206,7 +222,12 @@ const CategoryCardList = ({ group }: { group: CategoryGroup }) => {
     // <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
     <div className="space-y-4">
       {categories?.map((category) => (
-        <CategoryCard key={category._id} category={category} />
+        <PlaceCategoryItem
+          variant="lg"
+          key={category._id}
+          category={category}
+          className="rounded-lg border border-muted/50 hover:border-muted"
+        />
       ))}
     </div>
   )

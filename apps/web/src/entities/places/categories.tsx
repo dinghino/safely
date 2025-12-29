@@ -6,6 +6,7 @@ import { Button } from '@workspace/ui/components/button'
 import { type IconName, DynamicIcon } from 'lucide-react/dynamic'
 import { getCategoryColor } from './lib'
 import type { CategoryGroup, CategoryItem } from './types'
+import { PlaceCategoryItem } from './components/category-item'
 
 export const CategoryIcon = (
   props: {
@@ -62,37 +63,6 @@ export function PoiCategoryColorBadge(props: PoiCategoryColorBadge.Props) {
   )
 }
 
-export namespace PoiCategoryItem {
-  export type Props = {
-    category: CategoryItem
-    className?: string
-    showDescription?: boolean
-  }
-}
-
-export const PoiCategoryItem = (props: PoiCategoryItem.Props) => {
-  const { category, className = '', showDescription = true, ...rest } = props
-  const bg = getCategoryColor(category)
-
-  return (
-    <div className={cn('flex items-center gap-3 p-2', className)} {...rest}>
-      <div
-        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
-        style={{ background: bg }}
-        aria-hidden
-      >
-        <CategoryIcon icon={category.icon} className="h-5 w-5 text-white" />
-      </div>
-      <div className="flex flex-col">
-        <div className="font-medium text-sm">{category.name}</div>
-        {showDescription && category.description ? (
-          <div className="text-muted-foreground text-xs">{category.description}</div>
-        ) : null}
-      </div>
-    </div>
-  )
-}
-
 export const PoiCategoryGroupName = (props: { group: CategoryGroup }) => {
   return <>{props.group ? props.group.name : 'No Group'}</>
 }
@@ -131,7 +101,7 @@ export const PoiCategoryListComponent = ({ categories }: PoiCategoryListProps) =
 
           <div className="grid grid-cols-1 gap-2">
             {items.map((cat) => (
-              <PoiCategoryItem key={cat._id} category={cat} />
+              <PlaceCategoryItem key={cat._id} category={cat} />
             ))}
           </div>
         </section>

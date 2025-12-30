@@ -29,7 +29,7 @@ export function PlaceThumbnailComponent(props: PlaceThumbnailComponent.Props) {
   return (
     <div
       className={cn(
-        'relative overflow-hidden rounded-t-xl bg-muted',
+        'relative overflow-hidden',
         aspectRatio === 'square' && 'aspect-square',
         aspectRatio === 'video' && 'aspect-video',
         aspectRatio === 'portrait' && 'aspect-3/4',
@@ -40,10 +40,10 @@ export function PlaceThumbnailComponent(props: PlaceThumbnailComponent.Props) {
         src={imageUrl}
         alt="Place thumbnail"
         fill
-        className="object-cover transition-transform duration-500 hover:scale-105"
+        className="object-cover"
         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
       />
-      <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent opacity-60" />
+      {/* <div className="absolute inset-0 bg-linear-to-t from-black/60 via-transparent to-transparent opacity-60" /> */}
     </div>
   )
 }

@@ -12,6 +12,7 @@ export namespace PlaceRatingComponent {
     className?: string
     showReviewCount?: boolean
     size?: 'sm' | 'md'
+    variant?: 'single' | 'multiple'
   }
 }
 /**
@@ -20,7 +21,7 @@ export namespace PlaceRatingComponent {
  * component API will likely change in the future.
  */
 export function PlaceRatingComponent(props: PlaceRatingComponent.Props) {
-  const { place, className, showReviewCount = true, size = 'sm' } = props
+  const { place, className, showReviewCount = true, size = 'sm', variant = 'multiple' } = props
   const { rating, reviewCount, _id } = place
 
   // Use a deterministic mock rating if not provided (for development)
@@ -30,15 +31,45 @@ export function PlaceRatingComponent(props: PlaceRatingComponent.Props) {
   const displayRating = rating ?? Number(mockRating)
   const displayReviews = reviewCount ?? mockReviews
 
+  // round to the .5
+  const roundedRating = Math.round(displayRating * 2) / 2
+  const ratingColor = getStarColor(roundedRating)
+
+  // make either the array or a single star depending on variant prop
+  const stars =
+    variant === 'single' ? (
+      <Star className={cn(ratingColor, size === 'sm' ? 'size-3' : 'size-4')} />
+    ) : (
+      Array.from({ length: 5 }).map((_, i) => (
+        <Star
+          key={i}
+          className={cn(
+            {
+              'fill-current': i < Math.floor(roundedRating),
+              'text-current': i >= Math.floor(roundedRating),
+            },
+            size === 'sm' ? 'size-3' : 'size-4',
+          )}
+        />
+      ))
+    )
+
   return (
     <div className={cn('flex items-center gap-1.5', className)}>
       <div
         className={cn(
-          'flex items-center gap-0.5 rounded-md bg-green-50 px-1.5 py-0.5 font-bold text-green-700 dark:bg-green-900/30 dark:text-green-400',
-          size === 'sm' ? 'text-xs' : 'text-sm',
+          'flex items-center gap-0.5 rounded-md px-1.5 py-0.5 font-bold',
+          ratingColor,
+          {
+            'h-5': variant === 'single',
+            'h-6': variant === 'multiple',
+            'text-xs': size === 'sm',
+            'text-sm': size === 'md',
+          },
+          getBackgroundColor(roundedRating),
         )}
       >
-        <Star className={cn('fill-current', size === 'sm' ? 'size-3' : 'size-4')} />
+        {stars}
         {displayRating}
       </div>
       {showReviewCount && (
@@ -49,3 +80,19 @@ export function PlaceRatingComponent(props: PlaceRatingComponent.Props) {
 }
 
 export const PlaceRating = createPlaceContextConsumer(PlaceRatingComponent)
+
+function getStarColor(rating: number) {
+  if (rating >= 4) return 'text-green-700 dark:text-green-400'
+  if (rating >= 3) return 'text-yellow-700 dark:text-yellow-400'
+  if (rating >= 2) return 'text-orange-700 dark:text-orange-400'
+  if (rating >= 1) return 'text-red-700 dark:text-red-400'
+  return 'text-muted-foreground'
+}
+
+function getBackgroundColor(rating: number) {
+  if (rating >= 4) return 'bg-green-500/10'
+  if (rating >= 3) return 'bg-yellow-500/10'
+  if (rating >= 2) return 'bg-orange-500/10'
+  if (rating >= 1) return 'bg-red-500/10'
+  return 'bg-muted-foreground/10'
+}

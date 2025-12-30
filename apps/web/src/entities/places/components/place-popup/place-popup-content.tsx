@@ -1,7 +1,7 @@
 'use client'
 
 import type { Place } from '@/entities/places/types'
-import { PlacePopupProvider } from './place-popup-context'
+import { PlaceProvider } from '../place-context'
 import { PlacePopupHeader } from './place-popup-header'
 import { PlacePopupLocation } from './place-popup-location'
 import { PlacePopupAttribution } from './place-popup-attribution'
@@ -18,7 +18,7 @@ export namespace PlacePopupContent {
  */
 export const PlacePopupContent = ({ place }: PlacePopupContent.Props) => {
   return (
-    <PlacePopupProvider value={place}>
+    <PlaceProvider place={place}>
       <div className="flex flex-col gap-3 p-1">
         <PlacePopupHeader />
         <div className="space-y-2 text-[11px]">
@@ -26,6 +26,6 @@ export const PlacePopupContent = ({ place }: PlacePopupContent.Props) => {
           <PlacePopupAttribution />
         </div>
       </div>
-    </PlacePopupProvider>
+    </PlaceProvider>
   )
 }

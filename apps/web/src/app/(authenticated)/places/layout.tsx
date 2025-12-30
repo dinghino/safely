@@ -7,19 +7,20 @@ import Link from 'next/link'
 
 type Props = {
   children: React.ReactNode
+  map: React.ReactNode
 }
 /**
  * Root layout for Places views. Renders category group navigation at the top
  */
 export default function PoiCategoryGroupPage(props: Props) {
+  const { children, map } = props
   const groups = usePoiCategoryGroups()
   return (
-    <div className="my-4 grid grid-cols-1 grid-rows-[auto_1fr] gap-4">
+    <div className="mb-4 grid grid-cols-1 grid-rows-[auto_1fr] gap-4">
+      <header className="sticky top-(--header-height) z-50 flex flex-col gap-2 bg-background pb-2">
+        {map}
+      </header>
       <div className="content-grid">
-        <header className="mb-4 h-fit">
-          <h1 className="font-bold text-2xl">Explore Places</h1>
-          <p className="text-muted-foreground text-sm">What's around you and relevant</p>
-        </header>
         <div className="inline-flex flex-wrap gap-2">
           <Badge asChild variant="secondary" key="all">
             <Link href="/places">
@@ -36,7 +37,7 @@ export default function PoiCategoryGroupPage(props: Props) {
           ))}
         </div>
       </div>
-      {props.children}
+      <section className="content-grid">{children}</section>
     </div>
   )
 }

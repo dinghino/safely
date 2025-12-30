@@ -4,6 +4,8 @@ import { useMemo, useEffect } from 'react'
 import { useMapEvents } from 'react-leaflet/hooks'
 import { latLngBounds } from 'leaflet'
 
+import { cn } from '@/lib/utils'
+
 import {
   Map as MapContainer,
   MapTileLayer,
@@ -42,6 +44,7 @@ export namespace PlaceMapWidget {
      * extra map layers and layer groups to render
      */
     children?: React.ReactNode
+    className?: string
   }
 }
 
@@ -49,9 +52,10 @@ export namespace PlaceMapWidget {
  * Map widget for places exploration.
  * Renders the Leaflet map with place markers from PlacesMapProvider.
  */
-export const PlaceMapWidget = ({ children }: PlaceMapWidget.Props) => {
+export const PlaceMapWidget = (props: PlaceMapWidget.Props) => {
+  const { children, className } = props
   return (
-    <MapContainer bounds={toLatLngTuple(INITIAL_BOUNDS)} className="h-full flex-1">
+    <MapContainer bounds={toLatLngTuple(INITIAL_BOUNDS)} className={cn('h-full flex-1', className)}>
       <MapLayers defaultTileLayer="Default" defaultLayerGroups={['places']}>
         <MapTileLayer />
         <MapTiles layers={['mapnik', 'osm', 'topographic', 'worldStreet']} />

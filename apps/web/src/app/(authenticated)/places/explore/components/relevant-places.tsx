@@ -10,15 +10,15 @@ export function RelevantPlaces() {
   return (
     <Empty className="border border-dashed">
       <EmptyHeader>
-        <EmptyTitle>Relevant places</EmptyTitle>
+        <EmptyTitle>Highlights</EmptyTitle>
         <EmptyDescription>
-          We have no places to show you at the moment. Try selecting a category group above to
-          explore
+          We have no special places to show you at the moment.
         </EmptyDescription>
       </EmptyHeader>
       <EmptyContent>
         <p>
-          This section will contain user relevant places based on their preferences and location.
+          We'll show you some special places based on your location and preferences
+          as soon as they come up!
         </p>
       </EmptyContent>
     </Empty>

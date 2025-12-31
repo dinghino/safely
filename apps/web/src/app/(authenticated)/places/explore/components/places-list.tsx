@@ -18,10 +18,14 @@ import { ChevronRightIcon, HeartIcon, MapPinIcon, MoreVerticalIcon } from 'lucid
 import { cn } from '@/lib/utils'
 import { ButtonGroup } from '@workspace/ui/components/button-group'
 import { useViewMode } from '@/components/view-mode-control'
+import { useMemo } from 'react'
 
 export function PlacesList() {
   const { places } = usePlacesMap()
   const { mode } = useViewMode()
+
+  const memoized = useMemo(() => places.map(injectMockData), [places])
+
   return (
     <div
       className={cn({
@@ -29,8 +33,8 @@ export function PlacesList() {
         'grid grid-cols-3 gap-4 max-[600px]:grid-cols-1': mode === 'grid',
       })}
     >
-      {places.map((data) => (
-        <PlaceCard key={data._id} place={data} />
+      {memoized.map((place) => (
+        <PlaceCard key={place._id} place={place} />
       ))}
     </div>
   )
@@ -43,10 +47,9 @@ export function PlacesList() {
  *  - [ ] pass callbacks for actions
  *  - [ ]
  */
-function PlaceCard({ place: data }: { place: Place }) {
+function PlaceCard({ place }: { place: ReturnType<typeof injectMockData> }) {
   const { focusOnPlace } = usePlacesMap()
 
-  const place = injectMockData(data)
   return (
     <PlaceProvider key={place._id} place={place}>
       <Card className="@container gap-4 py-2 shadow-none transition-all hover:bg-muted/25">
@@ -54,7 +57,7 @@ function PlaceCard({ place: data }: { place: Place }) {
           <PlaceHeader size="md" className="flex-1" />
           <div className="flex items-center gap-0.5">
             <Tooltip>
-              <TooltipTrigger>
+              <TooltipTrigger asChild>
                 <Button variant="ghost" disabled>
                   <HeartIcon />
                 </Button>

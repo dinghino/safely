@@ -60,6 +60,7 @@ export const LargePlaceCategoryItem = (props: PlaceCategoryItem.ComponentProps) 
         'relative isolate cursor-pointer',
         className,
       )}
+      {...rest}
     >
       <div
         className="flex size-12 shrink-0 items-center justify-center rounded-xl"

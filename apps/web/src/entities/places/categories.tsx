@@ -3,39 +3,13 @@ import { cn } from '@/lib/utils'
 
 import { Badge } from '@workspace/ui/components/badge'
 import { Button } from '@workspace/ui/components/button'
-import { type IconName, DynamicIcon } from 'lucide-react/dynamic'
 import { getCategoryColor } from './lib'
 import type { CategoryGroup, CategoryItem } from './types'
 import { PlaceCategoryItem } from './components/category-item'
 
-export const CategoryIcon = (
-  props: {
-    icon: { name: string }
-  } & Omit<React.ComponentProps<typeof DynamicIcon>, 'name'>,
-) => {
-  const { icon = { name: 'circle' }, className, ...rest } = props
+import { CategoryIcon, CategoryIconStatic } from './components/category-icon'
+export { CategoryIcon, CategoryIconStatic }
 
-  return <DynamicIcon name={icon.name as IconName} className={cn('size-4', className)} {...rest} />
-}
-
-/**
- * Static version of CategoryIcon that uses SVG <use> tags.
- * Safe for server-side rendering and renderToString (Leaflet markers).
- * Requires PoiIconSymbols to be present in the document.
- */
-export const CategoryIconStatic = (
-  props: {
-    icon: { name: string }
-  } & React.SVGProps<SVGSVGElement>,
-) => {
-  const { icon = { name: 'circle' }, className, ...rest } = props
-
-  return (
-    <svg className={cn('size-4', className)} aria-hidden="true" {...rest}>
-      <use href={`#poi-icon-${icon.name}`} />
-    </svg>
-  )
-}
 
 export namespace PoiCategoryColorBadge {
   export type Props = {

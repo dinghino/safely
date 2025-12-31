@@ -3,38 +3,13 @@ import { cn } from '@/lib/utils'
 
 import { Badge } from '@workspace/ui/components/badge'
 import { Button } from '@workspace/ui/components/button'
-import { type IconName, DynamicIcon } from 'lucide-react/dynamic'
 import { getCategoryColor } from './lib'
 import type { CategoryGroup, CategoryItem } from './types'
+import { PlaceCategoryItem } from './components/category-item'
 
-export const CategoryIcon = (
-  props: {
-    icon: { name: string }
-  } & Omit<React.ComponentProps<typeof DynamicIcon>, 'name'>,
-) => {
-  const { icon = { name: 'circle' }, className, ...rest } = props
+import { CategoryIcon, CategoryIconStatic } from './components/category-icon'
+export { CategoryIcon, CategoryIconStatic }
 
-  return <DynamicIcon name={icon.name as IconName} className={cn('size-4', className)} {...rest} />
-}
-
-/**
- * Static version of CategoryIcon that uses SVG <use> tags.
- * Safe for server-side rendering and renderToString (Leaflet markers).
- * Requires PoiIconSymbols to be present in the document.
- */
-export const CategoryIconStatic = (
-  props: {
-    icon: { name: string }
-  } & React.SVGProps<SVGSVGElement>,
-) => {
-  const { icon = { name: 'circle' }, className, ...rest } = props
-
-  return (
-    <svg className={cn('size-4', className)} aria-hidden="true" {...rest}>
-      <use href={`#poi-icon-${icon.name}`} />
-    </svg>
-  )
-}
 
 export namespace PoiCategoryColorBadge {
   export type Props = {
@@ -59,37 +34,6 @@ export function PoiCategoryColorBadge(props: PoiCategoryColorBadge.Props) {
       style={{ background }}
       className={cn('aspect-square size-2 rounded-full', props.className)}
     />
-  )
-}
-
-export namespace PoiCategoryItem {
-  export type Props = {
-    category: CategoryItem
-    className?: string
-    showDescription?: boolean
-  }
-}
-
-export const PoiCategoryItem = (props: PoiCategoryItem.Props) => {
-  const { category, className = '', showDescription = true, ...rest } = props
-  const bg = getCategoryColor(category)
-
-  return (
-    <div className={cn('flex items-center gap-3 p-2', className)} {...rest}>
-      <div
-        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
-        style={{ background: bg }}
-        aria-hidden
-      >
-        <CategoryIcon icon={category.icon} className="h-5 w-5 text-white" />
-      </div>
-      <div className="flex flex-col">
-        <div className="font-medium text-sm">{category.name}</div>
-        {showDescription && category.description ? (
-          <div className="text-muted-foreground text-xs">{category.description}</div>
-        ) : null}
-      </div>
-    </div>
   )
 }
 
@@ -131,7 +75,7 @@ export const PoiCategoryListComponent = ({ categories }: PoiCategoryListProps) =
 
           <div className="grid grid-cols-1 gap-2">
             {items.map((cat) => (
-              <PoiCategoryItem key={cat._id} category={cat} />
+              <PlaceCategoryItem key={cat._id} category={cat} />
             ))}
           </div>
         </section>

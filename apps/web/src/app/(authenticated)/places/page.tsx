@@ -1,14 +1,23 @@
 'use client'
 
 import Link from 'next/link'
-import type { Id } from '@workspace/backend/dataModel'
+import { ChevronDownCircleIcon, ChevronRightIcon } from 'lucide-react'
 
+import type { Id } from '@workspace/backend/dataModel'
 import { Badge } from '@workspace/ui/components/badge'
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '@workspace/ui/components/collapsible'
+import { Button } from '@workspace/ui/components/button'
 
 import { cn } from '@/lib/utils'
 
 import { PoiCategoryColorBadge, CategoryIcon } from '@/entities/places/categories'
 import type { CategoryGroup } from '@/entities/places/types'
+import { PlaceCategoryItem } from '@/entities/places/components/category-item'
+
 import { usePoiGroupCategoriesById } from '@/features/poi-categories/hooks'
 
 import { PlaceFiltersFacade } from '@/features/place-filters'
@@ -22,6 +31,7 @@ import {
 import { usePoiCategoryGroups } from '@/features/poi-categories/hooks'
 import { FilteredMapProvider, PlaceListWidget, PlaceMapWidget } from '@/widgets/places'
 import { ScrapedCellsLayer } from '@/shared/modules/admin/place-coverage/components/scraped-cells-layer'
+import { RelevantPlaces } from './explore/components/relevant-places'
 
 /**
  * Main default page for places route.
@@ -39,47 +49,90 @@ export default function PlacesPage() {
   return (
     <div className="isolate space-y-6">
       {/* Placeholder for future relevant/personalized places */}
-      <Empty className="border border-dashed">
-        <EmptyHeader>
-          <EmptyTitle>Relevant places</EmptyTitle>
-          <EmptyDescription>
-            We have no places to show you at the moment. Try selecting a category group above to
-            explore
-          </EmptyDescription>
-        </EmptyHeader>
-        <EmptyContent>
-          <p>
-            This section will contain user relevant places based on their preferences and location.
-          </p>
-        </EmptyContent>
-      </Empty>
-
-      {/* todo: wrap both these into context to allow sync between filters, map and lists */}
-      <FilteredMapProvider>
-        <PlaceFiltersFacade />
-        <div className="flex h-[600px] gap-4">
-          <PlaceListWidget className="w-72" />
-          <PlaceMapWidget>
-            <ScrapedCellsLayer />
-          </PlaceMapWidget>
-        </div>
-      </FilteredMapProvider>
+      <RelevantPlaces />
 
       {/* Category Navigation Section */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {groups?.map((group) => (
-          <CategoryGroupCard key={group._id} group={group} />
-        ))}
-      </div>
+      <section className="grid grid-cols-[1fr_3fr_1fr] gap-4">
+        {/* <div className="space-y-8">
+          {groups?.map((group) => (
+            <article className="flex flex-col gap-4" key={group._id}>
+              <header className="inline-flex w-full items-center gap-3">
+                <Button asChild variant="ghost" className="group w-fit">
+                  <Link href={`/places/explore/${group.slug}`}>
+                    <h3 className="font-bold text-xl">{group.name}</h3>
+                    <ChevronRightIcon
+                      className={cn(
+                        'opacity-25 transition-opacity group-hover:opacity-100',
+                        'transition-transform group-hover:translate-x-1',
+                        'duration-250 ease-in-out',
+                        'inline-flex items-center gap-0',
+                        'text-xs uppercase',
+                        'text-muted-foreground',
+                      )}
+                    />
+                  </Link>
+                </Button>
+              </header>
+              <CategoryCardList group={group} />
+            </article>
+          ))}
+        </div> */}
+        <div className="relative space-y-8">
+          {groups?.map((group) => (
+            <article key={group._id} className="space-y-3">
+              <header className="flex justify-between gap-4">
+                <Button asChild variant="ghost" className="group w-full justify-between">
+                  <Link href={`/places/explore/${group.slug}`}>
+                    <h3 className="font-bold text-lg">{group.name}</h3>
+                    <ChevronRightIcon
+                      className={cn(
+                        'opacity-25 transition-opacity group-hover:opacity-100',
+                        'transition-transform group-hover:translate-x-1',
+                        'duration-250 ease-in-out',
+                        'inline-flex items-center gap-0',
+                        'text-xs uppercase',
+                        'text-muted-foreground',
+                      )}
+                    />
+                  </Link>
+                </Button>
+              </header>
+              <div className="space-y-1">
+                <CategoryCardList group={group} />
+              </div>
+            </article>
+          ))}
+        </div>
+        <div className="space-y-4">
+          {/* todo: wrap both these into context to allow sync between filters, map and lists */}
+          <FilteredMapProvider>
+            <PlaceFiltersFacade />
+            <div className="flex h-[600px] gap-4">
+              <PlaceListWidget className="w-72" />
+              <PlaceMapWidget>
+                <ScrapedCellsLayer />
+              </PlaceMapWidget>
+            </div>
+          </FilteredMapProvider>
+        </div>
+        <div>
+          <div className="grid grid-cols-2 gap-4">
+            {groups?.map((group) => (
+              <CategoryGroupCard key={group._id} group={group} className="" />
+            ))}
+          </div>
+        </div>
+      </section>
     </div>
   )
 }
 
-/// internal prototypes
+// region group cards
 
 namespace CategoryGroupCard {
   export type Props = {
     group: CategoryGroup
+    className?: string
   }
 }
 
@@ -87,15 +140,16 @@ namespace CategoryGroupCard {
  * Card component for category group navigation.
  * Displays group info and links to category-specific pages.
  */
-const CategoryGroupCard = ({ group }: CategoryGroupCard.Props) => {
+const CategoryGroupCard = ({ group, className = '' }: CategoryGroupCard.Props) => {
   return (
     <article
       className={cn(
         'rounded-lg border border-dashed p-4 transition-colors hover:bg-muted dark:hover:bg-muted/10',
+        className,
       )}
     >
       <header className="relative isolate inline-flex w-full cursor-pointer items-center gap-2">
-        <Link href={`/places/${group.slug}`} className="absolute inset-0 z-10" />
+        <Link href={`/places/explore/explore/${group.slug}`} className="absolute inset-0 z-10" />
         <PoiCategoryColorBadge data={group} className="size-4 rounded-md" />
         <h2 className="font-bold text-lg">{group.name}</h2>
       </header>
@@ -108,6 +162,8 @@ const CategoryGroupCard = ({ group }: CategoryGroupCard.Props) => {
     </article>
   )
 }
+
+// region category links
 
 namespace CategoryLinks {
   export type Props = {
@@ -126,13 +182,36 @@ const CategoryLinks = ({ groupId }: CategoryLinks.Props) => {
       {categories?.map((category) => (
         <Badge asChild variant="secondary" key={category._id} className="text-[10px]">
           <Link
-            href={`/places/${category.group.slug}/${category.slug}`}
+            href={`/places/explore/${category.group.slug}/${category.slug}`}
             className="inline-flex items-center gap-1"
           >
             <CategoryIcon icon={category.icon} />
             <span>{category.name}</span>
           </Link>
         </Badge>
+      ))}
+    </>
+  )
+}
+
+// region category cards
+
+const CategoryCardList = ({ group }: { group: CategoryGroup }) => {
+  const categories = usePoiGroupCategoriesById(group._id)
+
+  return (
+    <>
+      {categories?.map((category) => (
+        <Button
+          asChild
+          key={category._id}
+          variant="ghost"
+          className="h-fit w-full border border-muted p-0! hover:bg-muted/50"
+        >
+          <Link href={`/places/explore/${category.group.slug}/${category.slug}`} className="w-full">
+            <PlaceCategoryItem variant="lg" category={category} className="w-full" />
+          </Link>
+        </Button>
       ))}
     </>
   )

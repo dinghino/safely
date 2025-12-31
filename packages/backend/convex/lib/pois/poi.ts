@@ -47,15 +47,23 @@ export async function inflatePois(ctx: QueryCtx, pois: Doc<'pois'>[], options?: 
     }
   }
 
+  const authors = await Promise.all(pois.map((poi) => ctx.db.get('users', poi.addedBy)))
+
   // 3. Assemble final objects
   return pois.map((poi) => {
     const coordinates = gisMap.get(poi._id)!
     const category = categoryMap.get(poi.categoryId)!
+    // fixme: extract user data normalization to users lib utils
+    const author = authors.find((a) => a?._id === poi.addedBy)
+    const addedBy = author
+      ? { name: author.name, image: author.image, username: author.username, _id: author._id }
+      : null
 
     return {
       ...poi,
       coordinates,
       category,
+      addedBy,
     }
   })
 }

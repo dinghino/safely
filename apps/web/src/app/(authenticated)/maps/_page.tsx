@@ -6,6 +6,6 @@ type PageProps = {
 }
 export default function MapPage(_props: PageProps) {
   return (
-    <div>helo there in the map page</div>
+    <LastKnownLocationMap />
   )
 }

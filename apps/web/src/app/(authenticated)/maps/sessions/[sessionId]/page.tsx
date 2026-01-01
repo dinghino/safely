@@ -8,8 +8,6 @@ type PageProps = {
 export default async function MapPage(props: PageProps) {
   const { sessionId } = await props.params
   return (
-    <div className="h-full max-h-[calc(100vh_-_var(--header-height)_*_2)] w-full">
-      <SessionMap sessionId={sessionId} />
-    </div>
+    <SessionMap sessionId={sessionId} />
   )
 }

@@ -55,6 +55,72 @@ http.route({
   handler: handleClerkWebhook,
 })
 
+const handleGetIpLocation = httpAction(async (_ctx, request) => {
+  const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip')
+
+  // Default fallback (Rome, Italy)
+  const fallback = { lat: 41.9028, lng: 12.4964, zoom: 12 }
+
+  if (!ip) {
+    return new Response(JSON.stringify(fallback), {
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+    })
+  }
+
+  const fields = [
+    'status',
+    'message',
+    'country',
+    'countryCode',
+    'region',
+    'regionName',
+    'city',
+    'zip',
+    'lat',
+    'lon',
+    'timezone',
+    'proxy',
+    'query'
+  ]
+
+
+  try {
+    // We use the free endpoint of ip-api.com which does not require an API key
+    // limitations: 45 requests per minute from the same IP
+    const response = await fetch(`http://ip-api.com/json/${ip}?fields=${fields.join(',')}`)
+    const data = await response.json()
+
+    if (data.status === 'success') {
+      const { lat, lon: lng, ...rest } = data
+      return new Response(
+        JSON.stringify({ lat, lng, zoom: 13, ...rest }),
+        {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+        },
+      )
+    }
+
+    return new Response(JSON.stringify(fallback), {
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+    })
+  } catch (error) {
+    console.error('Failed to fetch IP location', error)
+    return new Response(JSON.stringify(fallback), {
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+    })
+  }
+})
+
+http.route({
+  path: '/get-ip-location',
+  method: 'GET',
+  handler: handleGetIpLocation,
+})
+
 export default http
 
 // whsec_ZsOw/5e9rNdKx7GWvekAID0VdDRekGLm

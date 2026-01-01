@@ -12,7 +12,7 @@ export default async function MapPageCatchAll(_props: Props) {
   const initial = await queryInitialLocation()
   const encoded: string = encodeFromMap(initial, { precision: 6 })
   const url = `/maps/${encoded}`
-  redirect(url as any) // we are redirecting to a valid URL, being /maps/[latlngz]
+  redirect(url as any) // we are redirecting to a valid URL, being /maps/[coords]
 
   return null
 }

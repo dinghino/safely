@@ -64,15 +64,10 @@ function useCoordinatesFromURL() {
 
   useEffect(() => {
     if (coords) return
-    console.log('matching pathname', pathname)
     const match = pathname.match(/@([^/]+)/)
-    console.log('match', match)
-    if (!match) return console.log('[InitialPositionSetter] no coords in URL')
-    if (!isValidHash(match[0])) return console.log('[InitialPositionSetter] invalid coords')
+    if (!match || !isValidHash(match[0])) return
     const decoded = decodeFromHash(match[0])
-
     setCoords(decoded)
-    console.log('saved initial coordinates', coords)
   }, [coords, pathname])
 
   return coords

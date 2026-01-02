@@ -47,7 +47,7 @@ export function PlacesList() {
  *  - [ ] pass callbacks for actions
  *  - [ ]
  */
-function PlaceCard({ place }: { place: ReturnType<typeof injectMockData> }) {
+export function PlaceCard({ place }: { place: ReturnType<typeof injectMockData> }) {
   const { focusOnPlace } = usePlacesMap()
 
   return (

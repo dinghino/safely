@@ -10,6 +10,7 @@ import {
 
 import { InitialPositionSetter, URICoordinatesDispatcher } from './_components/map-sync'
 import { ButtonGroup } from '@workspace/ui/components/button-group'
+import { PlacesMapProvider } from '@/features/place-map'
 
 type Props = {
   children: React.ReactNode
@@ -20,14 +21,19 @@ type Props = {
 export default function MapsLayout(props: Props) {
   const { children, toolbar, layers } = props
   return (
-    <div className="relative isolate h-full max-h-[calc(100vh-var(--header-height))] w-full">
-      <div className="relative z-10 grid h-full grid-cols-1 grid-rows-[auto_1fr]">
-        {toolbar}
-        <div className="pointer-events-none h-full w-[200px] max-w-full **:pointer-events-auto p-1">
-          {children}
+    <PlacesMapProvider categories={[]}>
+      <div className="relative isolate h-full max-h-[calc(100vh-var(--header-height))] w-full">
+
+        <div className="pointer-events-none relative isolate z-10 grid h-full w-full grid-cols-[auto_1fr] grid-rows-[auto_1fr] overflow-hidden">
+          <section className="pointer-events-auto row-span-full overflow-y-auto">
+            {children}
+          </section>
+          <div className="pointer-events-auto row-start-1">
+            {toolbar}
+          </div>
         </div>
-        {/* <div className="-z-10 isolate">{map}</div> */}
-        <div className="-z-10 absolute inset-0 isolate">
+
+        <section className="-z-10 absolute inset-0 isolate" data-role="map-page-wrapper">
           <MapContainer center={[0, 0]} zoom={4} className="h-full w-full">
             <MapLayers defaultTileLayer="Default">
               <MapTileLayer />
@@ -54,8 +60,8 @@ export default function MapsLayout(props: Props) {
             <URICoordinatesDispatcher />
             <InitialPositionSetter />
           </MapContainer>
-        </div>
+        </section>
       </div>
-    </div>
+    </PlacesMapProvider>
   )
 }

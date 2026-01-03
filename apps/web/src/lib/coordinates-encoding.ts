@@ -56,5 +56,5 @@ export async function queryInitialLocation() {
   // replace final .cloud with .site for http endpoints
   const convexUrl = convexUrl_.replace('.cloud', '.site')
   const res = await fetch(`${convexUrl}/get-ip-location`)
-  return await res.json()
+  return await res.json() as EncoderPosition
 }

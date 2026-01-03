@@ -1,1 +1,3 @@
-export { default } from './default'
+export default function MapToolbar() {
+  return null
+}

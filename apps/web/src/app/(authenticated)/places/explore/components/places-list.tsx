@@ -1,4 +1,16 @@
 'use client'
+import { useMemo } from 'react'
+import { ChevronRightIcon, HeartIcon, MapPinIcon, MoreVerticalIcon } from 'lucide-react'
+import { tv } from 'tailwind-variants'
+
+import { Button } from '@workspace/ui/components/button'
+import { Card, CardContent, CardFooter, CardHeader } from '@workspace/ui/components/card'
+import { Separator } from '@workspace/ui/components/separator'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@workspace/ui/components/tooltip'
+import { ButtonGroup } from '@workspace/ui/components/button-group'
+
+import { cn } from '@/lib/utils'
+
 import {
   PlaceDescription,
   PlaceHeader,
@@ -9,29 +21,35 @@ import {
 } from '@/entities/places/components'
 import type { Place } from '@/entities/places/types'
 import { UserBadge } from '@/entities/users/components/user-badge'
-import { usePlacesMap } from '@/features/place-map'
-import { Button } from '@workspace/ui/components/button'
-import { Card, CardContent, CardFooter, CardHeader } from '@workspace/ui/components/card'
-import { Separator } from '@workspace/ui/components/separator'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@workspace/ui/components/tooltip'
-import { ChevronRightIcon, HeartIcon, MapPinIcon, MoreVerticalIcon } from 'lucide-react'
-import { cn } from '@/lib/utils'
-import { ButtonGroup } from '@workspace/ui/components/button-group'
-import { useViewMode } from '@/components/view-mode-control'
-import { useMemo } from 'react'
 
-export function PlacesList() {
+import { usePlacesMap } from '@/features/place-map'
+import { useViewMode } from '@/components/view-mode-control'
+
+const variants = tv({
+  slots: {
+    container: 'flex flex-col gap-2',
+  },
+  variants: {
+    mode: {
+      list: {
+        container: 'flex flex-col gap-4'
+      },
+      grid: {
+        container: 'grid grid-cols-3 gap-4 max-[600px]:grid-cols-1'
+      },
+    }
+  },
+})
+
+export function PlacesList({ className }: { className?: string }) {
   const { places } = usePlacesMap()
   const { mode } = useViewMode()
 
   const memoized = useMemo(() => places.map(injectMockData), [places])
-
+  const classes = variants({ mode })
   return (
     <div
-      className={cn({
-        'flex flex-col gap-4': mode === 'list',
-        'grid grid-cols-3 gap-4 max-[600px]:grid-cols-1': mode === 'grid',
-      })}
+      className={cn(classes.container(), className)}
     >
       {memoized.map((place) => (
         <PlaceCard key={place._id} place={place} />

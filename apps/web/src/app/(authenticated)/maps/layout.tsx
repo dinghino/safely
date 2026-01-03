@@ -6,10 +6,11 @@ import {
   MapLayersControl,
   MapLocateControl,
   MapZoomControl,
+  MapManager,
 } from '@/shared/modules/maps'
-
-import { InitialPositionSetter, URICoordinatesDispatcher } from './_components/map-sync'
 import { ButtonGroup } from '@workspace/ui/components/button-group'
+
+import { InitialPositionSetter } from '@/shared/modules/maps/components'
 import { PlacesMapProvider } from '@/features/place-map'
 
 type Props = {
@@ -25,7 +26,7 @@ export default function MapsLayout(props: Props) {
       <div className="relative isolate h-full max-h-[calc(100vh-var(--header-height))] w-full">
 
         <div className="pointer-events-none relative isolate z-10 grid h-full w-full grid-cols-[auto_1fr] grid-rows-[auto_1fr] overflow-hidden">
-          <section className="pointer-events-auto row-span-full overflow-y-auto">
+          <section className="pointer-events-auto row-span-full overflow-y-hidden">
             {children}
           </section>
           <div className="pointer-events-auto row-start-1">
@@ -35,7 +36,7 @@ export default function MapsLayout(props: Props) {
 
         <section className="-z-10 absolute inset-0 isolate" data-role="map-page-wrapper">
           <MapContainer center={[0, 0]} zoom={4} className="h-full w-full">
-            <MapLayers defaultTileLayer="Default">
+            <MapLayers defaultTileLayer="Default" defaultLayerGroups={['places']}>
               <MapTileLayer />
               <MapTiles layers={['mapnik', 'osm', 'topographic', 'worldStreet']} />
 
@@ -57,7 +58,7 @@ export default function MapsLayout(props: Props) {
               </ButtonGroup>
             </MapLayers>
             {/* URL utility layers */}
-            <URICoordinatesDispatcher />
+            <MapManager />
             <InitialPositionSetter />
           </MapContainer>
         </section>

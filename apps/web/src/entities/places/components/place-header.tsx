@@ -3,7 +3,6 @@
 import { cn } from '@workspace/ui/lib/utils'
 import { CategoryIcon } from '@/entities/places/categories'
 import type { Place } from '@/entities/places/types'
-import { createPlaceContextConsumer } from './place-context'
 
 export namespace PlaceHeaderComponent {
   export interface Props {
@@ -56,5 +55,3 @@ export function PlaceHeaderComponent(props: PlaceHeaderComponent.Props) {
     </div>
   )
 }
-
-export const PlaceHeader = createPlaceContextConsumer(PlaceHeaderComponent)

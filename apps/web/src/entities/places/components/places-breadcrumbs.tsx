@@ -25,6 +25,11 @@ export namespace PlacesBreadcrumbs {
   }
 }
 
+/**
+ * @deprecated probably. we are building this 100 times all around
+ * because routing is fucking hard. we'll figure it out
+ * soon and centralize them.
+ */
 export default async function PlacesBreadcrumbs(props: PlacesBreadcrumbs.Props) {
   const { root, breadcrumbs } = props
 
@@ -83,17 +88,23 @@ export async function fetchSegmentsData(slugs: string[], start = 2): Promise<Nor
   const list = [group, category].filter((i) => !!i)
   return list
 }
-function makeUrl(items: Normalized[]) {
-  return `/${items.map((i) => i.slug).join('/')}`
+function makeUrl(items: Normalized[], root: string) {
+  // Ensure root doesn't have trailing slash
+  const base = root.endsWith('/') ? root.slice(0, -1) : root
+  return `${base}/${items.map((i) => i.slug).join('/')}`
 }
 
-export async function preparePlacesBreadcrumbs(opts: { slugs: string[]; startAt?: number }) {
-  const { slugs, startAt = 2 } = opts
+export async function preparePlacesBreadcrumbs(opts: {
+  slugs: string[]
+  startAt?: number
+  root?: string
+}) {
+  const { slugs, startAt = 2, root = '' } = opts
   const list = await fetchSegmentsData(slugs, startAt)
 
   const urls = list.reduce(
     (acc, item, idx, arr) => {
-      const href = makeUrl(arr.slice(0, idx + 1))
+      const href = makeUrl(arr.slice(0, idx + 1), root)
       acc.push({ href, label: item.name })
       return acc
     },

@@ -1,9 +1,6 @@
-'use client'
-
 import { cn } from '@workspace/ui/lib/utils'
 import Image from 'next/image'
 import type { Place } from '@/entities/places/types'
-import { createPlaceContextConsumer } from './place-context'
 
 export namespace PlaceThumbnailComponent {
   export interface Props {
@@ -47,5 +44,3 @@ export function PlaceThumbnailComponent(props: PlaceThumbnailComponent.Props) {
     </div>
   )
 }
-
-export const PlaceThumbnail = createPlaceContextConsumer(PlaceThumbnailComponent)

@@ -1,10 +1,7 @@
-'use client'
-
 import { Badge } from '@workspace/ui/components/badge'
 import { cn } from '@workspace/ui/lib/utils'
 import { CategoryIcon } from '../categories'
 import type { Place } from '@/entities/places/types'
-import { createPlaceContextConsumer } from './place-context'
 
 export namespace PlaceTitleComponent {
   export interface Props {
@@ -33,5 +30,3 @@ export function PlaceTitleComponent(props: PlaceTitleComponent.Props) {
     </div>
   )
 }
-
-export const PlaceTitle = createPlaceContextConsumer(PlaceTitleComponent)

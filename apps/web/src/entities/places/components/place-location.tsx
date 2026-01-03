@@ -1,8 +1,5 @@
-'use client'
-
 import { cn } from '@workspace/ui/lib/utils'
 import type { Place } from '@/entities/places/types'
-import { createPlaceContextConsumer } from './place-context'
 
 export namespace PlaceLocationComponent {
   export interface Props {
@@ -27,5 +24,3 @@ export function PlaceLocationComponent(props: PlaceLocationComponent.Props) {
     </div>
   )
 }
-
-export const PlaceLocation = createPlaceContextConsumer(PlaceLocationComponent)

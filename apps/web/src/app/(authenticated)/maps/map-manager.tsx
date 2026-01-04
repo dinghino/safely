@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useMapEvents } from 'react-leaflet/hooks'
 
 import { usePlacesMap } from '@/features/place-map'
@@ -20,6 +20,7 @@ import { encodeFromMap } from '@/lib/coordinates-encoding'
 export function MapManager() {
   const { setBounds } = usePlacesMap()
   const pathname = usePathname()
+  const search = useSearchParams()
   const router = useRouter()
 
   const handler = () => {
@@ -35,9 +36,12 @@ export function MapManager() {
     const center = map.getCenter()
     const zoom = map.getZoom()
     const encoded = encodeFromMap({ ...center, zoom })
+    const newPath = pathname.replace(/@[^/]+/, encoded)
+    const searchParams = new URLSearchParams(search).toString()
+    const url = searchParams ? `${newPath}?${searchParams}` : newPath
 
-    const url = pathname.replace(/@[^/]+/, encoded)
-    router.replace(url as any)
+    // @ts-expect-error next expects strictly typed, we can't provide that.
+    router.replace(url, { scroll: false })
   }
   const map = useMapEvents({
     moveend: handler,

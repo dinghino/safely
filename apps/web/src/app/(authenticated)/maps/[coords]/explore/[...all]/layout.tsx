@@ -3,6 +3,7 @@ import { api } from '@workspace/backend/api'
 import type { CategoryGroup, CategoryItem as Category } from '@/entities/places/types'
 import { ParamsSync } from '../../components/params-sync'
 import { ScrollArea } from '@workspace/ui/components/scroll-area'
+import { cn } from '@/lib/utils'
 
 type Props = {
   children: React.ReactNode
@@ -14,7 +15,17 @@ export default async function MapExploreLayout(props: Props) {
     // <div className="relative flex h-full flex-1 flex-col gap-4">
     <>
       <ParamsSync data={grouped} />
-      <ScrollArea className="-mr-4 flex-1 pr-4">{props.children}</ScrollArea>
+      <ScrollArea className="-mr-4 @container flex-1 pr-4">
+        <div
+          className={cn(
+            // 'flex flex-col gap-4',
+            'grid grid-cols-1 gap-2',
+            '@min-[600px]:grid-cols-2 @min-[800px]:grid-cols-3',
+          )}
+        >
+          {props.children}
+        </div>
+      </ScrollArea>
     </>
     // </div>
   )

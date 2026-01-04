@@ -5,6 +5,7 @@ import { Button } from '@workspace/ui/components/button'
 import { FilterIcon } from 'lucide-react'
 import { ButtonGroup } from '@workspace/ui/components/button-group'
 import { tv } from 'tailwind-variants'
+import { PlacesNameSearchFilter } from '@/features/place-filters/components/places-search'
 
 type Props = {
   children: React.ReactNode
@@ -51,7 +52,7 @@ export default async function MapCoordsLayout({ children, breadcrumbs }: Props) 
         {breadcrumbs}
         {/* todo: this becomes the toolbar component, maybe as parallel route? */}
         <ButtonGroup className="w-full">
-          <SearchInput placeholder="search places, categories, people..." />
+          <PlacesNameSearchFilter input={{ placeholder: 'Search places, categories, people...' }} />
           <Button size="icon" variant="outline">
             <FilterIcon />
           </Button>

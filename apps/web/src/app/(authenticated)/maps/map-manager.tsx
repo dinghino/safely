@@ -13,7 +13,7 @@ import { encodeFromMap } from '@/lib/coordinates-encoding'
  * the Application State (PlacesMapProvider), and the URL.
  *
  * Responsibilities:
- * 1. Listens to map 'moveend' events.
+ * 1. Listens to map events.
  * 2. Updates the `PlacesMapProvider` bounds state to trigger data fetching.
  * 3. Updates the URL with the current map center and zoom (@lat,lng,z) to support deep linking and sharing.
  */
@@ -22,24 +22,26 @@ export function MapManager() {
   const pathname = usePathname()
   const router = useRouter()
 
+  const handler = () => {
+    // This assumes that we have our `@lat,lng,z` in the URL and is going to
+    // target that.
+    if (!pathname.includes('@')) return
+
+    // Update Provider State (for data fetching)
+    const bounds = leafletMapBoundsToMapQueryBounds({ map })
+    setBounds(bounds)
+
+    // Get values and encode them for our URI
+    const center = map.getCenter()
+    const zoom = map.getZoom()
+    const encoded = encodeFromMap({ ...center, zoom })
+
+    const url = pathname.replace(/@[^/]+/, encoded)
+    router.replace(url as any)
+  }
   const map = useMapEvents({
-    moveend: () => {
-      // 1. Update Provider State (for data fetching)
-      const bounds = leafletMapBoundsToMapQueryBounds({ map })
-      setBounds(bounds)
-
-      // 2. Update URL (for shareability/history)
-      const center = map.getCenter()
-      const zoom = map.getZoom()
-      const encoded = encodeFromMap({ ...center, zoom })
-
-      // If we are already on a map route with coords, replace them
-      // otherwise this might be an initial load or different route structure, so be careful
-      if (pathname.includes('@')) {
-        const url = pathname.replace(/@[^/]+/, encoded)
-        router.replace(url as any)
-      }
-    }
+    moveend: handler,
+    zoomend: handler,
   })
 
   // Initial bounds sync on mount (if needed, though map usually fires moveend/load)

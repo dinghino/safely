@@ -1,7 +1,7 @@
 import { fetchQuery } from 'convex/nextjs'
 import { api } from '@workspace/backend/api'
 import type { CategoryGroup, CategoryItem as Category } from '@/entities/places/types'
-import { ParamsSync } from '../components/params-sync'
+import { ParamsSync } from '../../components/params-sync'
 import { ScrollArea } from '@workspace/ui/components/scroll-area'
 
 type Props = {
@@ -9,15 +9,12 @@ type Props = {
 }
 
 export default async function MapExploreLayout(props: Props) {
-
   const { grouped } = await getGroupedCategories()
   return (
     // <div className="relative flex h-full flex-1 flex-col gap-4">
     <>
       <ParamsSync data={grouped} />
-      <ScrollArea className="-mr-4 flex-1 pr-4">
-        {props.children}
-      </ScrollArea>
+      <ScrollArea className="-mr-4 flex-1 pr-4">{props.children}</ScrollArea>
     </>
     // </div>
   )

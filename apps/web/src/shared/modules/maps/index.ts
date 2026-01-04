@@ -5,4 +5,3 @@
 export * from './map'
 export * from './fancy-marker-icon'
 export * from './map-layers'
-export * from './components/map-manager'

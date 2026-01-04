@@ -5,5 +5,5 @@ import { PlacesMapLayer } from '@/features/place-map/components'
  * in the map.
  */
 export default function CatchAllMapLayers() {
-  return <PlacesMapLayer focusOnClick />
+  return <PlacesMapLayer />
 }

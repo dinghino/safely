@@ -6,7 +6,7 @@ export namespace PlaceThumbnailComponent {
   export interface Props {
     place: Pick<Place, '_id'> & { photos?: string[] }
     className?: string
-    aspectRatio?: 'square' | 'video' | 'portrait'
+    aspect?: 'square' | 'video' | 'portrait'
   }
 }
 
@@ -16,7 +16,7 @@ export namespace PlaceThumbnailComponent {
  * but it is kinda useful to design ui elements that will be used in the future.
  */
 export function PlaceThumbnailComponent(props: PlaceThumbnailComponent.Props) {
-  const { place, className, aspectRatio = 'video' } = props
+  const { place, className, aspect = 'video' } = props
   const { _id, photos } = place
 
   // Deterministic placeholder using place ID
@@ -27,9 +27,9 @@ export function PlaceThumbnailComponent(props: PlaceThumbnailComponent.Props) {
     <div
       className={cn(
         'relative overflow-hidden',
-        aspectRatio === 'square' && 'aspect-square',
-        aspectRatio === 'video' && 'aspect-video',
-        aspectRatio === 'portrait' && 'aspect-3/4',
+        aspect === 'square' && 'aspect-square',
+        aspect === 'video' && 'aspect-video',
+        aspect === 'portrait' && 'aspect-3/4',
         className,
       )}
     >

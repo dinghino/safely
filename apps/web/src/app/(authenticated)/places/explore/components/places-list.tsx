@@ -1,4 +1,16 @@
 'use client'
+import { useMemo } from 'react'
+import { ChevronRightIcon, HeartIcon, MapPinIcon, MoreVerticalIcon } from 'lucide-react'
+import { tv } from 'tailwind-variants'
+
+import { Button } from '@workspace/ui/components/button'
+import { Card, CardContent, CardFooter, CardHeader } from '@workspace/ui/components/card'
+import { Separator } from '@workspace/ui/components/separator'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@workspace/ui/components/tooltip'
+import { ButtonGroup } from '@workspace/ui/components/button-group'
+
+import { cn } from '@/lib/utils'
+
 import {
   PlaceDescription,
   PlaceHeader,
@@ -9,30 +21,34 @@ import {
 } from '@/entities/places/components'
 import type { Place } from '@/entities/places/types'
 import { UserBadge } from '@/entities/users/components/user-badge'
-import { usePlacesMap } from '@/features/place-map'
-import { Button } from '@workspace/ui/components/button'
-import { Card, CardContent, CardFooter, CardHeader } from '@workspace/ui/components/card'
-import { Separator } from '@workspace/ui/components/separator'
-import { Tooltip, TooltipContent, TooltipTrigger } from '@workspace/ui/components/tooltip'
-import { ChevronRightIcon, HeartIcon, MapPinIcon, MoreVerticalIcon } from 'lucide-react'
-import { cn } from '@/lib/utils'
-import { ButtonGroup } from '@workspace/ui/components/button-group'
-import { useViewMode } from '@/components/view-mode-control'
-import { useMemo } from 'react'
 
-export function PlacesList() {
+import { usePlacesMap } from '@/features/place-map'
+import { useViewMode } from '@/components/view-mode-control'
+
+const variants = tv({
+  slots: {
+    container: 'flex flex-col gap-2',
+  },
+  variants: {
+    mode: {
+      list: {
+        container: 'flex flex-col gap-4',
+      },
+      grid: {
+        container: 'grid grid-cols-3 gap-4 max-[600px]:grid-cols-1',
+      },
+    },
+  },
+})
+
+export function PlacesList({ className }: { className?: string }) {
   const { places } = usePlacesMap()
   const { mode } = useViewMode()
 
   const memoized = useMemo(() => places.map(injectMockData), [places])
-
+  const classes = variants({ mode })
   return (
-    <div
-      className={cn({
-        'flex flex-col gap-4': mode === 'list',
-        'grid grid-cols-3 gap-4 max-[600px]:grid-cols-1': mode === 'grid',
-      })}
-    >
+    <div className={cn(classes.container(), className)}>
       {memoized.map((place) => (
         <PlaceCard key={place._id} place={place} />
       ))}
@@ -47,7 +63,7 @@ export function PlacesList() {
  *  - [ ] pass callbacks for actions
  *  - [ ]
  */
-function PlaceCard({ place }: { place: ReturnType<typeof injectMockData> }) {
+export function PlaceCard({ place }: { place: ReturnType<typeof injectMockData> }) {
   const { focusOnPlace } = usePlacesMap()
 
   return (
@@ -71,7 +87,7 @@ function PlaceCard({ place }: { place: ReturnType<typeof injectMockData> }) {
         </CardHeader>
         <CardContent className="grid @max-[600px]:grid-cols-1 grid-cols-[auto_1fr] gap-4 px-2">
           <PlaceThumbnail
-            aspectRatio="square"
+            aspect="square"
             className="@max-[600px]:aspect-7/3 @max-[600px]:w-full w-48 rounded-md"
           />
           <div className="flex h-full flex-col gap-2">
@@ -114,7 +130,7 @@ function PlaceCard({ place }: { place: ReturnType<typeof injectMockData> }) {
  * Use this function to inject mock data into our places to design the cards
  * with our modular atoms even if we don't have the data yet
  */
-function injectMockData(place: Place) {
+export function injectMockData(place: Place) {
   return {
     ...place,
     description: `${place.description ?? ''}\n\n${generateRandomDescription(2)}`,

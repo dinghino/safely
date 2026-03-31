@@ -1,3 +1,5 @@
+'use client'
+
 import { createContext } from '@workspace/react-utils'
 import type { Place } from '../types'
 

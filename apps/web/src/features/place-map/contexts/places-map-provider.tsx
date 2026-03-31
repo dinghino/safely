@@ -32,6 +32,7 @@ export namespace PlacesMapProvider {
     focusOnPlace: (id: Id<'pois'>) => void
     /** forwarded category IDs that are active */
     categories: Id<'poiCategory'>[]
+    setCategories: (ids: Id<'poiCategory'>[]) => void
 
     /** The currently focused place (from URL) */
     focusedPlace: Place | null
@@ -68,9 +69,10 @@ function useFilteredPlaces({ places, search }: { places: Place[]; search: string
  * with {@link PlaceFiltersProvider} to provide the necessary data.
  */
 export function PlacesMapProvider(props: PlacesMapProvider.Props) {
-  const { children, categories = [], searchQuery: search = '' } = props
+  const { children, categories: initialCategories = [], searchQuery: search = '' } = props
 
   const [bounds, setBounds] = useState(INITIAL_BOUNDS)
+  const [categories, setCategories] = useState<Id<'poiCategory'>[]>(initialCategories)
 
   const places = usePlacesMapQuery({ categories, bounds })
   const filteredPlaces = useFilteredPlaces({ places, search })
@@ -94,6 +96,7 @@ export function PlacesMapProvider(props: PlacesMapProvider.Props) {
     setBounds,
     places,
     categories,
+    setCategories,
     filteredPlaces,
     isLoading: !places || places.length === 0,
     focusOnPlace,

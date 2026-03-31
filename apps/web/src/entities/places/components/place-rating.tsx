@@ -1,9 +1,6 @@
-'use client'
-
 import { cn } from '@workspace/ui/lib/utils'
 import { Star } from 'lucide-react'
 import type { Place } from '@/entities/places/types'
-import { createPlaceContextConsumer } from './place-context'
 
 export namespace PlaceRatingComponent {
   export interface Props {
@@ -78,8 +75,6 @@ export function PlaceRatingComponent(props: PlaceRatingComponent.Props) {
     </div>
   )
 }
-
-export const PlaceRating = createPlaceContextConsumer(PlaceRatingComponent)
 
 function getStarColor(rating: number) {
   if (rating >= 4) return 'text-green-700 dark:text-green-400'

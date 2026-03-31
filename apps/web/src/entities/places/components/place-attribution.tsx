@@ -4,7 +4,6 @@ import { cn } from '@workspace/ui/lib/utils'
 import type { Place } from '@/entities/places/types'
 import Link from 'next/link'
 import { ExternalLink } from 'lucide-react'
-import { createPlaceContextConsumer } from './place-context'
 
 export namespace PlaceAttributionComponent {
   export interface Props {
@@ -52,5 +51,3 @@ export function PlaceAttributionLink(props: PlaceAttributionComponent.Props) {
     </Button>
   )
 }
-
-export const PlaceAttribution = createPlaceContextConsumer(PlaceAttributionComponent)

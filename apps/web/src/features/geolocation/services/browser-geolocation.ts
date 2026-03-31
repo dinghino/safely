@@ -166,7 +166,7 @@ export class BrowserGeolocationProvider implements Locator.Provider {
     if (!this.timestamp) return false
     const now = Date.now()
     const valid = now - this.timestamp < maxAge
-    console.log('⏱️ checking cache age', now - this.timestamp, '<', maxAge, valid ? 'ok' : 'old')
+    // console.log('⏱️ checking cache age', now - this.timestamp, '<', maxAge, valid ? 'ok' : 'old')
     return valid
   }
 

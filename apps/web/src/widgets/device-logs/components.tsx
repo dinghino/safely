@@ -38,10 +38,8 @@ export function LogPayload_Inner({ data }: { data: DeviceActivityLog }) {
     case 'renamed':
       return (
         <span className="text-muted-foreground text-sm">
-          Name changed from{' '}
-          <strong>{data.payload.previousName}</strong> to <strong>
-            {data.payload.newName}
-          </strong>
+          Name changed from <strong>{data.payload.previousName}</strong> to{' '}
+          <strong>{data.payload.newName}</strong>
         </span>
       )
     case 'session_started':

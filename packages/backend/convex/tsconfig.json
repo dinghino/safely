@@ -19,7 +19,11 @@
     "forceConsistentCasingInFileNames": true,
     "module": "ESNext",
     "isolatedModules": true,
-    "noEmit": true
+    "noEmit": true,
+    "paths": {
+      "@workspace/poi-seeder": ["../../poi-seeder/src/index.ts"],
+      "@workspace/poi-seeder/*": ["../../poi-seeder/src/*"]
+    }
   },
   "include": ["./**/*", "../types", "system.ts"],
   "exclude": ["./_generated"]

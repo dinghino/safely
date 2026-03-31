@@ -65,7 +65,7 @@ export const send = mutation({
     // to update other entities we need some discriminator on the devices
 
     const last_seen = Date.now()
-    await ctx.db.patch(deviceId, { last_seen, status: 'online' })
+    await ctx.db.patch('devices', deviceId, { last_seen, status: 'online' })
 
     // handle location data if provided by dispatching a last known location update.
     //
@@ -112,7 +112,7 @@ export const disconnect = mutation({
         data: createActivityLog({ deviceId: device._id, type: 'disconnected', payload: {} }),
       })
     }
-    await ctx.db.patch(device._id, { status: 'offline' })
+    await ctx.db.patch('devices', device._id, { status: 'offline' })
     await helpers.heartbeat.removeScheduleDisconnect(ctx, sessionId)
   },
 })

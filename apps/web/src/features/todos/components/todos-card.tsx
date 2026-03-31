@@ -7,7 +7,7 @@ import {
   CardContent,
 } from '@workspace/ui/components/card'
 import { CreateTodoForm } from './todo-form'
-import { TodosList } from './todos-list'
+import { DeleteCompletedTodoButton, TodosList } from './todos-list'
 import { Authenticated, Unauthenticated } from 'convex/react'
 
 export function TodosCard() {
@@ -19,7 +19,10 @@ export function TodosCard() {
       </CardHeader>
       <CardContent>
         <Authenticated>
-          <CreateTodoForm />
+          <div className="mb-2 inline-flex w-full items-center gap-2">
+            <CreateTodoForm className="flex-1" />
+            <DeleteCompletedTodoButton variant="destructive" />
+          </div>
           <TodosList />
         </Authenticated>
         <Unauthenticated>

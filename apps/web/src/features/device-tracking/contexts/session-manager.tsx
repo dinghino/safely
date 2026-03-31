@@ -77,7 +77,7 @@ export const SessionManager: React.FC<SessionManager.Props> = (props) => {
             })
             const err = geo.on('ERROR', (event) => {
               unsubscribe()
-              console.log('🤬 [session.getLocation] geo error on geolocation')
+              // console.log('🤬 [session.getLocation] geo error on geolocation')
               reject(event.error)
             })
             const unsubscribe = () => {
@@ -101,7 +101,7 @@ export const SessionManager: React.FC<SessionManager.Props> = (props) => {
   // todo: remove once we're stable
   useEffect(() => {
     const logging = actor.on('error', (event) => {
-      console.log('🤬🤬🤬 tracking session error', event)
+      // console.log('🤬🤬🤬 tracking session error', event)
     })
     return () => {
       logging.unsubscribe()
@@ -126,11 +126,11 @@ export const SessionManager: React.FC<SessionManager.Props> = (props) => {
     if (!sessionToken) return
     const { _id: requestId, target } = trackingRequest
     if (target !== device?._id) return // not for us
-    console.log('✅ Acknowledging tracking request', {
-      request: trackingRequest,
-      token: sessionToken,
-      device,
-    })
+    // console.log('✅ Acknowledging tracking request', {
+    //   request: trackingRequest,
+    //   token: sessionToken,
+    //   device,
+    // })
     acknowledge({ requestId, sessionToken })
   }, [trackingRequest, acknowledge, device?._id, sessionToken])
 

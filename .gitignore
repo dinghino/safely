@@ -13,3 +13,5 @@ node_modules
 packages/backend/.snapshots
 .vercel
 /.vercel
+apps/storybook/storybook-static
+apps/storybook/debug-storybook.log

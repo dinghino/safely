@@ -1,4 +1,4 @@
-import type { Heartbeat } from "./types"
+import type { Heartbeat } from './types'
 
 export const isStalePosition = (context: Heartbeat.Context) => {
   const { position, interval } = context

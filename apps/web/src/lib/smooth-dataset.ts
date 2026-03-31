@@ -1,4 +1,3 @@
-
 export type SmoothDataSetOptions<T, K extends keyof T> = {
   /**
    * The size of the moving window to use for smoothing.

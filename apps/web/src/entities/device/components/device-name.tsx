@@ -5,7 +5,7 @@ import type { Device } from '@/entities/device/types'
 import { cn } from '@/lib/utils'
 import { DeviceStatusBadge } from './device-status'
 
-export function DeviceName({ device, showBadge = false }: { device: Device, showBadge?: boolean }) {
+export function DeviceName({ device, showBadge = false }: { device: Device; showBadge?: boolean }) {
   const isCurrent = useIsCurrent({ device })
   const name = device.name ?? 'Unknown device'
   const hasName = Boolean(device.name)

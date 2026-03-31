@@ -30,7 +30,7 @@ export async function upsertLastKnown(opts: {
   if (!existing) {
     return await ctx.db.insert('deviceLocations', { deviceId, metadata })
   }
-  await ctx.db.patch(existing._id, { metadata })
+  await ctx.db.patch('deviceLocations', existing._id, { metadata })
   return existing._id
 }
 
@@ -68,5 +68,8 @@ export async function deleteLastKnown(opts: { ctx: MutationCtx; deviceId: Id<'de
   const { ctx, deviceId } = opts
   const location = await getLastKnowndata({ ctx, deviceId })
   if (!location) return
-  await Promise.all([ctx.db.delete(location._id), geospatial.remove(ctx, deviceId)])
+  await Promise.all([
+    ctx.db.delete('deviceLocations', location._id),
+    geospatial.remove(ctx, deviceId),
+  ])
 }

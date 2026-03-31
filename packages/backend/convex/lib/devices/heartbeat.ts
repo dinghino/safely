@@ -67,7 +67,7 @@ export async function removeScheduleDisconnect(ctx: MutationCtx, sessionId: Sess
     .first()
   if (existingTimeout) {
     await ctx.scheduler.cancel(existingTimeout.scheduledFunctionId)
-    await ctx.db.delete(existingTimeout._id)
+    await ctx.db.delete('deviceSessionTimeouts', existingTimeout._id)
   }
 }
 
@@ -94,7 +94,6 @@ export async function getSessionByToken(ctx: QueryCtx, options: { sessionToken?:
   // const session = await getDeviceSession(ctx, tokenRecord.sessionId)
   return session
 }
-
 
 // /** get a session token (string) given a session id */
 // export async function getSessionToken(ctx: MutationCtx, options: { sessionId: SessionId }) {

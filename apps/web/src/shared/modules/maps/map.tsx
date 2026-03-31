@@ -15,7 +15,6 @@ import {
   type ReactNode,
 } from 'react'
 import dynamic from 'next/dynamic'
-
 import { renderToString } from 'react-dom/server'
 import type {
   CircleMarkerProps,
@@ -125,7 +124,7 @@ function ShadMap({
   className,
   ...props
 }: Omit<MapContainerProps, 'zoomControl'> & {
-  center: LatLngExpression
+  center?: LatLngExpression
   ref?: Ref<LeafletMap>
 }) {
   return (
@@ -133,7 +132,7 @@ function ShadMap({
       zoom={zoom}
       attributionControl={false}
       zoomControl={false}
-      className={cn('z-50 size-full min-h-96 flex-1 rounded-md', className)}
+      className={cn('z-50 size-full min-h-96 flex-1 rounded-none', className)}
       {...props}
     />
   )

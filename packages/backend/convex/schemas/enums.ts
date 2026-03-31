@@ -1,10 +1,6 @@
 import { v } from 'convex/values'
 
-export const deviceType = v.union(
-  v.literal('unknown'),
-  v.literal('mobile'),
-  v.literal('desktop')
-)
+export const deviceType = v.union(v.literal('unknown'), v.literal('mobile'), v.literal('desktop'))
 
 /**
  * General status of a device
@@ -54,7 +50,6 @@ export const trackingRequestStatus = v.union(
 )
 
 export const trackingRequestType = v.union(v.literal('start'), v.literal('stop'))
-
 
 export const gpsAccuracy = v.union(
   v.literal('VERY_LOW'),

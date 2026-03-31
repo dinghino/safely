@@ -1,3 +1,4 @@
+'use client'
 import { formatLatLng } from '@/entities/location/lib'
 import { useState, useEffect } from 'react'
 import { useMap } from 'react-leaflet'

@@ -29,7 +29,7 @@ export const setLast = mutation({
       geospatial.remove(ctx, deviceId),
       // add it back as new point - no we cannot patch them apparently :/
       geospatial.insert(ctx, device._id, point, { locationId }),
-      ctx.db.patch(device._id, { last_seen: Date.now() }),
+      ctx.db.patch('devices', device._id, { last_seen: Date.now() }),
     ])
   },
 })

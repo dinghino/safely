@@ -1,0 +1,47 @@
+{
+  "version": 0.6,
+  "generator": "Overpass API",
+  "elements": [
+    {
+      "type": "node",
+      "id": 123456789,
+      "lat": 40.7128,
+      "lon": -74.006,
+      "tags": {
+        "name": "Central Park Dog Run",
+        "amenity": "dog_park",
+        "description": "Large off-leash dog park with separate areas for small and large dogs",
+        "opening_hours": "06:00-22:00",
+        "website": "https://example.com/dog-park"
+      }
+    },
+    {
+      "type": "node",
+      "id": 987654321,
+      "lat": 40.758,
+      "lon": -73.9855,
+      "tags": {
+        "name": "Times Square Veterinary Clinic",
+        "amenity": "veterinary",
+        "phone": "+1-212-555-0123",
+        "addr:housenumber": "123",
+        "addr:street": "Broadway",
+        "addr:city": "New York",
+        "addr:postcode": "10036",
+        "opening_hours": "Mo-Fr 08:00-18:00; Sa 09:00-15:00"
+      }
+    },
+    {
+      "type": "node",
+      "id": 456789123,
+      "lat": 40.7489,
+      "lon": -73.968,
+      "tags": {
+        "name": "Pet Supply Plus",
+        "shop": "pet",
+        "phone": "+1-212-555-0456",
+        "website": "https://example.com/pet-store"
+      }
+    }
+  ]
+}

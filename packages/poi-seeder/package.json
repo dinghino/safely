@@ -1,0 +1,29 @@
+{
+  "name": "@workspace/poi-seeder",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./mapper": "./src/mapper.ts"
+  },
+  "description": "POI seeder for importing data from OSM and other sources into Convex",
+  "scripts": {
+    "build": "tsup",
+    "app": "bun run src/cli.ts",
+    "fetch": "bun run src/cli.ts fetch",
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "commander": "^14.0.2",
+    "convex": "^1.31.0",
+    "dotenv": "^17.2.3",
+    "zod": "^4.2.1"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@workspace/typescript-config": "workspace:*",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3"
+  }
+}

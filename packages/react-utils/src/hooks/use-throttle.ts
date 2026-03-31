@@ -1,3 +1,5 @@
+'use client'
+
 import { useMemo, useRef } from 'react'
 
 export const useThrottle = <F extends Function>(cb: F, limitMs: number): (() => void) => {

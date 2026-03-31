@@ -24,7 +24,21 @@ import type * as lib_devices_index from "../lib/devices/index.js";
 import type * as lib_devices_location from "../lib/devices/location.js";
 import type * as lib_devices_logs from "../lib/devices/logs.js";
 import type * as lib_devices_options from "../lib/devices/options.js";
+import type * as lib_geohash from "../lib/geohash.js";
 import type * as lib_index from "../lib/index.js";
+import type * as lib_pois_categories from "../lib/pois/categories.js";
+import type * as lib_pois_index from "../lib/pois/index.js";
+import type * as lib_pois_management from "../lib/pois/management.js";
+import type * as lib_pois_poi from "../lib/pois/poi.js";
+import type * as lib_pois_scraping from "../lib/pois/scraping.js";
+import type * as lib_users from "../lib/users.js";
+import type * as pois_add from "../pois/add.js";
+import type * as pois_categories from "../pois/categories.js";
+import type * as pois_get from "../pois/get.js";
+import type * as pois_groups from "../pois/groups.js";
+import type * as pois_management from "../pois/management.js";
+import type * as pois_scraping from "../pois/scraping.js";
+import type * as pois_view from "../pois/view.js";
 import type * as presence from "../presence.js";
 import type * as privateData from "../privateData.js";
 import type * as schemas_enums from "../schemas/enums.js";
@@ -32,6 +46,7 @@ import type * as schemas_index from "../schemas/index.js";
 import type * as schemas_shared_index from "../schemas/shared/index.js";
 import type * as seed from "../seed.js";
 import type * as seeds_devices from "../seeds/devices.js";
+import type * as seeds_poi_categories from "../seeds/poi_categories.js";
 import type * as system from "../system.js";
 import type * as todos from "../todos.js";
 import type * as tracking_lib from "../tracking/lib.js";
@@ -47,14 +62,6 @@ import type {
   FunctionReference,
 } from "convex/server";
 
-/**
- * A utility for referencing Convex functions in your app's API.
- *
- * Usage:
- * ```js
- * const myFunctionReference = api.myModule.myFunction;
- * ```
- */
 declare const fullApi: ApiFromModules<{
   "devices/activities": typeof devices_activities;
   "devices/get": typeof devices_get;
@@ -72,7 +79,21 @@ declare const fullApi: ApiFromModules<{
   "lib/devices/location": typeof lib_devices_location;
   "lib/devices/logs": typeof lib_devices_logs;
   "lib/devices/options": typeof lib_devices_options;
+  "lib/geohash": typeof lib_geohash;
   "lib/index": typeof lib_index;
+  "lib/pois/categories": typeof lib_pois_categories;
+  "lib/pois/index": typeof lib_pois_index;
+  "lib/pois/management": typeof lib_pois_management;
+  "lib/pois/poi": typeof lib_pois_poi;
+  "lib/pois/scraping": typeof lib_pois_scraping;
+  "lib/users": typeof lib_users;
+  "pois/add": typeof pois_add;
+  "pois/categories": typeof pois_categories;
+  "pois/get": typeof pois_get;
+  "pois/groups": typeof pois_groups;
+  "pois/management": typeof pois_management;
+  "pois/scraping": typeof pois_scraping;
+  "pois/view": typeof pois_view;
   presence: typeof presence;
   privateData: typeof privateData;
   "schemas/enums": typeof schemas_enums;
@@ -80,6 +101,7 @@ declare const fullApi: ApiFromModules<{
   "schemas/shared/index": typeof schemas_shared_index;
   seed: typeof seed;
   "seeds/devices": typeof seeds_devices;
+  "seeds/poi_categories": typeof seeds_poi_categories;
   system: typeof system;
   todos: typeof todos;
   "tracking/lib": typeof tracking_lib;
@@ -89,14 +111,30 @@ declare const fullApi: ApiFromModules<{
   "users/clerk": typeof users_clerk;
   "users/get": typeof users_get;
 }>;
-declare const fullApiWithMounts: typeof fullApi;
 
+/**
+ * A utility for referencing Convex functions in your app's public API.
+ *
+ * Usage:
+ * ```js
+ * const myFunctionReference = api.myModule.myFunction;
+ * ```
+ */
 export declare const api: FilterApi<
-  typeof fullApiWithMounts,
+  typeof fullApi,
   FunctionReference<any, "public">
 >;
+
+/**
+ * A utility for referencing Convex functions in your app's internal API.
+ *
+ * Usage:
+ * ```js
+ * const myFunctionReference = internal.myModule.myFunction;
+ * ```
+ */
 export declare const internal: FilterApi<
-  typeof fullApiWithMounts,
+  typeof fullApi,
   FunctionReference<any, "internal">
 >;
 
@@ -221,6 +259,11 @@ export declare const components: {
         "query",
         "internal",
         {
+          filtering: Array<{
+            filterKey: string;
+            filterValue: string | number | boolean | null | bigint;
+            occur: "should" | "must";
+          }>;
           levelMod: number;
           logLevel: "DEBUG" | "INFO" | "WARN" | "ERROR";
           maxDistance?: number;
@@ -229,6 +272,154 @@ export declare const components: {
           minLevel: number;
           nextCursor?: string;
           point: { latitude: number; longitude: number };
+          sorting: {
+            interval: { endExclusive?: number; startInclusive?: number };
+          };
+        },
+        Array<{
+          coordinates: { latitude: number; longitude: number };
+          distance: number;
+          key: string;
+        }>
+      >;
+    };
+  };
+  poisGis: {
+    document: {
+      get: FunctionReference<
+        "query",
+        "internal",
+        { key: string },
+        {
+          coordinates: { latitude: number; longitude: number };
+          filterKeys: Record<
+            string,
+            | string
+            | number
+            | boolean
+            | null
+            | bigint
+            | Array<string | number | boolean | null | bigint>
+          >;
+          key: string;
+          sortKey: number;
+        } | null
+      >;
+      insert: FunctionReference<
+        "mutation",
+        "internal",
+        {
+          document: {
+            coordinates: { latitude: number; longitude: number };
+            filterKeys: Record<
+              string,
+              | string
+              | number
+              | boolean
+              | null
+              | bigint
+              | Array<string | number | boolean | null | bigint>
+            >;
+            key: string;
+            sortKey: number;
+          };
+          levelMod: number;
+          maxCells: number;
+          maxLevel: number;
+          minLevel: number;
+        },
+        null
+      >;
+      remove: FunctionReference<
+        "mutation",
+        "internal",
+        {
+          key: string;
+          levelMod: number;
+          maxCells: number;
+          maxLevel: number;
+          minLevel: number;
+        },
+        boolean
+      >;
+    };
+    query: {
+      debugCells: FunctionReference<
+        "query",
+        "internal",
+        {
+          levelMod: number;
+          maxCells: number;
+          maxLevel: number;
+          minLevel: number;
+          rectangle: {
+            east: number;
+            north: number;
+            south: number;
+            west: number;
+          };
+        },
+        Array<{
+          token: string;
+          vertices: Array<{ latitude: number; longitude: number }>;
+        }>
+      >;
+      execute: FunctionReference<
+        "query",
+        "internal",
+        {
+          cursor?: string;
+          levelMod: number;
+          logLevel: "DEBUG" | "INFO" | "WARN" | "ERROR";
+          maxCells: number;
+          maxLevel: number;
+          minLevel: number;
+          query: {
+            filtering: Array<{
+              filterKey: string;
+              filterValue: string | number | boolean | null | bigint;
+              occur: "should" | "must";
+            }>;
+            maxResults: number;
+            rectangle: {
+              east: number;
+              north: number;
+              south: number;
+              west: number;
+            };
+            sorting: {
+              interval: { endExclusive?: number; startInclusive?: number };
+            };
+          };
+        },
+        {
+          nextCursor?: string;
+          results: Array<{
+            coordinates: { latitude: number; longitude: number };
+            key: string;
+          }>;
+        }
+      >;
+      nearestPoints: FunctionReference<
+        "query",
+        "internal",
+        {
+          filtering: Array<{
+            filterKey: string;
+            filterValue: string | number | boolean | null | bigint;
+            occur: "should" | "must";
+          }>;
+          levelMod: number;
+          logLevel: "DEBUG" | "INFO" | "WARN" | "ERROR";
+          maxDistance?: number;
+          maxLevel: number;
+          maxResults: number;
+          minLevel: number;
+          nextCursor?: string;
+          point: { latitude: number; longitude: number };
+          sorting: {
+            interval: { endExclusive?: number; startInclusive?: number };
+          };
         },
         Array<{
           coordinates: { latitude: number; longitude: number };

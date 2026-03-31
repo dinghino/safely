@@ -59,13 +59,7 @@ function Line({ index, count }: { index: number; count: number }) {
   return <div className="mt-1 h-full min-h-4 w-px bg-border" />
 }
 
-function EventTimestamp({
-  entry,
-  relative,
-}: {
-  entry: DeviceActivityLog
-  relative?: boolean
-}) {
+function EventTimestamp({ entry, relative }: { entry: DeviceActivityLog; relative?: boolean }) {
   const time = dayjs(entry._creationTime)
   const formatted = relative ? time.fromNow() : time.format('YYYY-MM-DD HH:mm:ss')
   return <span className="text-muted-foreground text-xs">{formatted}</span>

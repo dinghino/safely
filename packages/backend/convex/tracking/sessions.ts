@@ -125,7 +125,7 @@ export const close = internalMutation({
         deviceId: device._id,
         mode: 'passive',
       }),
-      ctx.db.patch(session._id, { endedAt: Date.now() }),
+      ctx.db.patch('trackSession', session._id, { endedAt: Date.now() }),
     ])
   },
 })
@@ -202,7 +202,7 @@ export const stop = mutation({
       mode: 'passive',
     })
 
-    return ctx.db.patch(session._id, { endedAt: Date.now() })
+    return ctx.db.patch('trackSession', session._id, { endedAt: Date.now() })
   },
 })
 
@@ -226,11 +226,14 @@ export const remove = mutation({
       .collect()
     // run the delete
     await Promise.all(
-      locations.map((loc) => [ctx.db.delete(loc._id), geospatial.remove(ctx, loc._id)]),
+      locations.map((loc) => [
+        ctx.db.delete('trackLocation', loc._id),
+        geospatial.remove(ctx, loc._id),
+      ]),
     )
 
     // then delete the session itself
-    await ctx.db.delete(session._id)
+    await ctx.db.delete('trackSession', session._id)
     return true
   },
 })

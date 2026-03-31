@@ -105,10 +105,10 @@ export default function PageWireframe({ params }: Props) {
         <div className="flex w-full pb-4 max-lg:flex-col">
           <div className="flex-1 shrink-0">
             {/* <CardHeader> */}
-              <h3 className="mb-8 font-bold text-xl">Activity Feed</h3>
+            <h3 className="mb-8 font-bold text-xl">Activity Feed</h3>
             {/* </CardHeader> */}
             {/* <CardContent className="space-y-4"> */}
-              {/* <Wireframe
+            {/* <Wireframe
                 type="widget"
                 className="sticky top-0 inline-flex h-12 w-full items-center gap-2 p-2"
                 title="EventsToolbar"
@@ -116,8 +116,8 @@ export default function PageWireframe({ params }: Props) {
                 <Wireframe className="h-6 w-24" />
                 <Wireframe className="h-6 w-6" />
               </Wireframe> */}
-              {/* <div className="space-y-2"> */}
-              <DeviceEventsLog deviceId={deviceId} />
+            {/* <div className="space-y-2"> */}
+            <DeviceEventsLog deviceId={deviceId} />
             {/* </CardContent> */}
           </div>
           <aside className="min-w-[250px] flex-0 shrink-0 px-4 md:min-w-[300px] lg:min-w-[650px]">
